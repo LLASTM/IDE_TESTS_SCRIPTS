@@ -1,0 +1,13 @@
+{
+  "cube.hwc-project": {
+    "name": "B-U585I-IOT02A_Project",
+    "connections": [],
+    "boards": [
+      {
+        "type": "NORMAL",
+        "uid": "STMicroelectronics.b-u585i-iot02a_hw-board.0.0.10$STMicroelectronics::B-U585I-IOT02A@Rev.C",
+        "removedParts": []
+      }
+    ]
+  }
+}

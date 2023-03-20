@@ -1,0 +1,23 @@
+{
+  "cube.application-project": {
+    "projectName": "PRJ-B-U585I-IOT02A",
+    "hardware-plaform": "B-U585I-IOT02A",
+    "sw-projects": [
+      {
+        "name": "SWPRJ-PRJ-B-U585I-IOT02A",
+        "path": "file:///c:/tmp/PRJ-B-U585I-IOT02A/SWPRJ-PRJ-B-U585I-IOT02A",
+        "checked": true
+      }
+    ],
+    "availableFeatures": {
+      "clock": true,
+      "pinout": true,
+      "resource_manager": true,
+      "dma": true,
+      "memory": true,
+      "interruptions": true,
+      "option_bytes": true,
+      "boot": true
+    }
+  }
+}

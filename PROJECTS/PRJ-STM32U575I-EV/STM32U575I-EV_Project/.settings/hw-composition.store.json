@@ -1,0 +1,13 @@
+{
+  "cube.hwc-project": {
+    "name": "STM32U575I-EV_Project",
+    "connections": [],
+    "boards": [
+      {
+        "type": "NORMAL",
+        "uid": "STMicroelectronics.b-u585i-iot02a_hw-board.0.0.10$STMicroelectronics::STM32U575I-EV@Rev.C",
+        "removedParts": []
+      }
+    ]
+  }
+}

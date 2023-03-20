@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/1.3.0/tools/projmgr/schemas/cproject.schema.json
+project:
+  processor:
+    endian: little
+    fpu: off
+    trustzone: off
+  compiler: GCC@0.0.0
+  description: SWPRJ-NUCLEO-U575ZI-Q with config Debug
+  groups:
+    - files:
+        - file: ./src/main.h
+        - file: ./src/main.c
+      group: UserCode
+  components:
+    - component: STMicroelectronics::Device:Startup
+    - component: ARM::CMSIS:CORE
+  output-dirs:
+    rtedir: targets/$TargetType$/RTE
+    cprjdir: lockfiles
+    intdir: build/$BuildType$
+    outdir: build/$BuildType$
+    gendir: targets/$TargetType$/generated
+  setups:
+    - setup: debug
+      misc:
+        - ASM:
+            - -g3
+          C:
+            - -g3
+            - -O0
+          CPP:
+            - -g3
+            - -O0
+      for-type:
+        - .debug+main
+    - setup: release
+      misc:
+        - C:
+            - -Os
+          CPP:
+            - -Os
+      for-type:
+        - .release+main
+  misc:
+    - C:
+        - -fdata-sections
+        - -ffunction-sections
+        - -std=gnu11
+        - -Wall
+        - -fstack-usage
+        - -mfloat-abi=soft
+      CPP:
+        - -fdata-sections
+        - -ffunction-sections
+        - -fno-cxa-atexit
+        - -fno-rtti
+        - -fno-exceptions
+        - -std=gnu++14
+        - -Wall
+        - -fstack-usage
+        - -mfloat-abi=soft
+      ASM:
+        - -x assembler-with-cpp
+        - -mfloat-abi=soft
+      Link-C:
+        - --specs=nosys.specs
+        - -Wl,-Map=image.map
+        - -Wl,--gc-sections
+        - --specs=nano.specs
+        - -Wl,--start-group -lc -lm -Wl,--end-group
+        - -static
+      Link-CPP:
+        - --specs=nano.specs
+      compiler: GCC

@@ -1,0 +1,12 @@
+{
+  "componentModel": {
+    "$type": "http://st.com/schema/sw-composer#//SWComposition",
+    "id": "5bb7d85a-2825-4cfa-a954-c1c4483e7ef5"
+  },
+  "notation": {
+    "$type": "http://www.eclipse.org/emfcloud/modelserver/notation#//Diagram",
+    "semanticElement": {
+      "uri": "5bb7d85a-2825-4cfa-a954-c1c4483e7ef5"
+    }
+  }
+}

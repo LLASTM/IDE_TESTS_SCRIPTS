@@ -1,0 +1,10 @@
+{
+  "active_configuration": "first",
+  "configurations": [
+    {
+      "cprj": "SWPRJ-NUCLEO-U575ZI-Q",
+      "id": "first",
+      "global_map": ""
+    }
+  ]
+}

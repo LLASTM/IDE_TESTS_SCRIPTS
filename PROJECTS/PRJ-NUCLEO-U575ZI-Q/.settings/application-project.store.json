@@ -1,0 +1,23 @@
+{
+  "cube.application-project": {
+    "projectName": "PRJ-NUCLEO-U575ZI-Q",
+    "hardware-plaform": "B-U585I-IOT02A",
+    "sw-projects": [
+      {
+        "name": "SWPRJ-NUCLEO-U575ZI-Q",
+        "path": "file:///c:/tmp/PRJ-NUCLEO-U575ZI-Q/SWPRJ-NUCLEO-U575ZI-Q",
+        "checked": true
+      }
+    ],
+    "availableFeatures": {
+      "clock": true,
+      "pinout": true,
+      "resource_manager": true,
+      "dma": true,
+      "memory": true,
+      "interruptions": true,
+      "option_bytes": true,
+      "boot": true
+    }
+  }
+}

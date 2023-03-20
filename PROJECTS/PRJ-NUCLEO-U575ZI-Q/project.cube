@@ -1,0 +1,11 @@
+{
+  "children": [],
+  "traits": [
+    {
+      "name": "application",
+      "files": [
+        "PRJ-NUCLEO-U575ZI-Q.csolution.yml"
+      ]
+    }
+  ]
+}

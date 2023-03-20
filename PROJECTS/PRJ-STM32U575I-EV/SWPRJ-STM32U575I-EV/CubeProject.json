@@ -1,0 +1,10 @@
+{
+  "active_configuration": "first",
+  "configurations": [
+    {
+      "cprj": "SWPRJ-STM32U575I-EV",
+      "id": "first",
+      "global_map": ""
+    }
+  ]
+}

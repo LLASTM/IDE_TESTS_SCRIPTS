@@ -1,0 +1,11 @@
+{
+  "children": [],
+  "traits": [
+    {
+      "name": "application",
+      "files": [
+        "PRJ-STM32U575I-EV.csolution.yml"
+      ]
+    }
+  ]
+}

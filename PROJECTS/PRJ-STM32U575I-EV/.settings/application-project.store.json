@@ -1,0 +1,23 @@
+{
+  "cube.application-project": {
+    "projectName": "PRJ-STM32U575I-EV",
+    "hardware-plaform": "B-U585I-IOT02A",
+    "sw-projects": [
+      {
+        "name": "SWPRJ-STM32U575I-EV",
+        "path": "file:///c:/tmp/PRJ-STM32U575I-EV/SWPRJ-STM32U575I-EV",
+        "checked": true
+      }
+    ],
+    "availableFeatures": {
+      "clock": true,
+      "pinout": true,
+      "resource_manager": true,
+      "dma": true,
+      "memory": true,
+      "interruptions": true,
+      "option_bytes": true,
+      "boot": true
+    }
+  }
+}

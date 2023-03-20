@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/1.3.0/tools/projmgr/schemas/csolution.schema.json
+solution:
+  output-dirs:
+    rtedir: $Project$/targets/$TargetType$/RTE
+    intdir: $Project$/build/$BuildType$
+    outdir: $Project$/build/$BuildType$
+    gendir: $Project$/targets/$TargetType$/generated
+  build-types:
+    - type: debug
+    - type: release
+  target-types:
+    - type: main
+  projects:
+    - project: ./SWPRJ-PRJ-B-U585I-IOT02A/SWPRJ-PRJ-B-U585I-IOT02A.cproject.yml

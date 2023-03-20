@@ -1,0 +1,13 @@
+{
+  "cube.hwc-project": {
+    "name": "NUCLEO-U575ZI-Q_Project",
+    "connections": [],
+    "boards": [
+      {
+        "type": "NORMAL",
+        "uid": "STMicroelectronics.b-u585i-iot02a_hw-board.0.0.10$STMicroelectronics::NUCLEO-U575ZI-Q@Rev.C",
+        "removedParts": []
+      }
+    ]
+  }
+}
