@@ -1,0 +1,14 @@
+ {
+    "cucumberautocomplete.steps": [
+        "repos/test-tools/e2e/features/support/*steps.ts"
+    ],
+    "cucumberautocomplete.syncfeatures": "repos/test-tools/e2e/features/*.feature",
+    "cucumberautocomplete.strictGherkinCompletion": false,
+    "editor.quickSuggestions": {
+        "comments": false,
+        "strings": true,
+        "other": true
+    },
+
+
+}

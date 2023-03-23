@@ -1,24 +1,37 @@
 #!/bin/bash
 
+echo ==================== Deleting various directories
+rm -rf  ~/AppData/Local/Cube/packs/
+rm -rf  ~/AppData/Local/Cube/bundles/*
+rm -rf  ~/AppData/Roaming/Cube/logs
+rm -rf  ~/AppData/Roaming/Finder
+rm -rf  ~/.cache/clangd/index/*
+echo ===================================================
+
+export JENKINS_CUBESTUDIO_WORKSPACE=${WORKSPACE}/cubestudio_test_workspace
+mkdir -p ${JENKINS_CUBESTUDIO_WORKSPACE}
+
+echo ===================== JENKINS_CUBESTUDIO_WORKSPACE=${JENKINS_CUBESTUDIO_WORKSPACE}
+
 mkdir -p ${WORKSPACE}/LOGFILES
 echo directory ${WORKSPACE}/LOGFILES should be created
 
 exec &> >(tee -a ${WORKSPACE}/LOGFILES/build_and_launch_cube2.log)
 
-export PATH=/c/Users/lavernhe/cube2-env/tools/git-repo-main:${PATH}
 build_path=${WORKSPACE}/CUBE2_BUILD_DIRECTORY
 
 printenv
 
-export PATH=~/cube2-env/tools/node-12.22.7/node_modules/yarn/bin:${PATH}
 
-#if [ -d ${build_path} ]; then
-#	echo Directory ${build_path} was found, deleting it
-#	/bin/rm -rf ${build_path}
-#	echo Directory ${build_path} was deleted
-#else
-#	echo No directory ${build_path} was found
-#fi
+echo ==================== displaying some tools versions
+echo node path: `which node`
+echo node version :`node --version`
+echo npm path: `which npm`
+echo npm version :`npm --version`
+echo yarn path: `which yarn`
+echo yarn version:`yarn --version`
+echo ===================================================
+
 
 echo Creating directory ${build_path}
 mkdir ${build_path}
@@ -28,9 +41,12 @@ cd ${build_path}
 
 cd_status=$?
 
-# ======================================== repo init command
+echo ======================================== repo init command
 if [ $cd_status -eq 0 ]; then
 	echo no error after cd command
+	# Adding file settings.json for cucumber completion pluggin
+	mkdir -p ${build_path}/.vscode
+	cp ${WORKSPACE}/LLA_TESTS_SCRIPTS/JSON_FILES/CUCUMBER/settings.json ${build_path}/.vscode/.
 	repo_init_status=33
 	repo_init_counter=0
 	echo running repo init command
@@ -52,7 +68,7 @@ else
 	exit 100
 fi
 
-# ======================================== repo sync command
+echo ======================================== repo sync command
 if [ ${repo_init_status} -eq 0 ]; then
 	repo_sync_status=44
 	repo_sync_counter=0
@@ -73,7 +89,7 @@ else
 	exit 101
 fi
 
-# ======================================== yarn command
+echo ======================================== yarn command
 if [ ${repo_sync_status} -eq 0 ]; then
 	yarn_status=55
 	yarn_counter=0
@@ -94,7 +110,13 @@ else
 	exit 102
 fi
 
-# ======================================== checkout for IDE branch
+echo ======================================== checkout for repos branch
+pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos
+git checkout ${JOB_BRANCH_TO_BUILD}
+git log -n 1
+popd
+
+echo ======================================== checkout for IDE branch
 pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/ide
 	git checkout ${JOB_IDE_BRANCH_TO_BUILD}
 	git_checkout_status=$?
@@ -107,14 +129,19 @@ pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/ide
 	fi
 popd
 
-# ======================================== yarn studio:browser build command
+echo =========================== get bundles
+cube bundle --install studio-prototype
+cube bundle --update
+echo ======================================== yarn studio:browser build command
 if [ ${yarn_status} -eq 0 ]; then
 	yarn_build_status=55
 	yarn_build_counter=0
-	echo running yarn studio:browser build command
-	while [ ${yarn_build_status} != 0 ]; do
+	#while [ ${yarn_build_status} != 0 ]; do
+	while [ ${yarn_build_counter} -lt 2 ]; do
 		sleep 1
 		if [ ${yarn_build_counter} -lt 2 ]; then
+			cd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY
+			echo running yarn studio:browser build command , yarn_build_counter=${yarn_build_counter}
 			yarn studio:browser build
 			yarn_build_status=$?
 			yarn_build_counter=$[ ${yarn_build_counter} + 1 ]
@@ -131,8 +158,8 @@ fi
 if [ ${yarn_build_status} -eq 0 ]; then
 	#exec &> >(tee -a ${WORKSPACE}/LOGFILES/launch_cube2.log)
 	echo cube2 should be running at localhost:3000
+	cd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY
 	yarn studio:browser start &
-	cd ..
 else
 	echo command yarn studio:browser build failed, not launching cube2
 	exit 104
@@ -140,15 +167,60 @@ fi
 
 echo Killing node process to be able to remove build directory that is locked
 # example :      2988    2410    2988      19100  pty0     1246523 09:04:23 /c/Users/lavernhe/cube2-env/tools/node-16.18.1/node
-sleep 10
+sleep 20
 
-pid=`ps -a | grep cube2-env | awk '{print $1;}'`
-if [ "$pid" -ne "" ]; then
-	echo killing pid $pid
-	kill $pid
+pid=`ps -a | grep node | awk '{print $1;}'`
+echo pid=${pid}
+echo ============== ps -a command
+ps -a
+echo ============================
+ps -a | grep node | awk '{print $1;}'
+echo ============================
+
+if [ "${pid}" != "" ]; then
+	echo killing pid ${pid}
+	kill ${pid}
+	echo node process should be killed now
 else
 	echo no pid to kill node process was found
 fi
-echo node process should be killed now
 
+echo ==================== displaying some tools versions
+echo node path: `which node`
+echo node version :`node --version`
+echo npm path: `which npm`
+echo npm version :`npm --version`
+echo yarn path: `which yarn`
+echo yarn version:`yarn --version`
+echo ===================================================
+
+cd ${build_path}
+
+echo Downloading CMSIS packs
+echo CMSIS_PACK_ROOT=${CMSIS_PACK_ROOT}
+
+cube bundle --update
+cube bundle --install pack-manager
+cube bundle --install cube-cmsis-scanner
+
+cube pack-manager sync
+
+cube pack-manager install STMicroelectronics.stm32u5xx_dfp
+cube pack-manager install STMicroelectronics.b-u585i-iot02a_hw-board
+cube pack-manager install STMicroelectronics.hts221_hw-part
+cube pack-manager install STMicroelectronics.ism330dhcx_hw-part
+cube pack-manager install STMicroelectronics.m24256-df_hw-part
+cube pack-manager install STMicroelectronics.vl53l5cx_hw-part
+cube pack-manager install STMicroelectronics.iis2mdc_hw-part
+cube pack-manager install STMicroelectronics.lps22hh_hw-part
+cube pack-manager install STMicroelectronics.stsafe-a110_hw-part
+cube pack-manager install STMicroelectronics.aps6408l-3obmx_hw-part
+cube pack-manager install STMicroelectronics.emw3080_hw-part
+cube pack-manager install STMicroelectronics.mp23db01hp_hw-part
+cube pack-manager install STMicroelectronics.mx25lm51245_hw-part
+cube pack-manager install STMicroelectronics.stg3692_hw-part
+cube pack-manager install STMicroelectronics.tcpp03-m20_hw-part
+cube pack-manager install STMicroelectronics.veml6030_hw-part
+
+cube pack-manager install STMicroelectronics.stm32u5xx_hal_drivers
 

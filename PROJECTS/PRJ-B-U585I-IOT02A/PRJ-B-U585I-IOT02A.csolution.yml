@@ -11,4 +11,4 @@ solution:
   target-types:
     - type: main
   projects:
-    - project: ./SWPRJ-PRJ-B-U585I-IOT02A/SWPRJ-PRJ-B-U585I-IOT02A.cproject.yml
+    - project: ./SWPRJ-B-U585I-IOT02A/SWPRJ-B-U585I-IOT02A.cproject.yml
