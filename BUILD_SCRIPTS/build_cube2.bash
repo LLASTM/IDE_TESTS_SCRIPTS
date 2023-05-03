@@ -46,7 +46,7 @@ if [ $cd_status -eq 0 ]; then
 	echo no error after cd command
 	# Adding file settings.json for cucumber completion pluggin
 	mkdir -p ${build_path}/.vscode
-	cp ${WORKSPACE}/LLA_TESTS_SCRIPTS/JSON_FILES/CUCUMBER/settings.json ${build_path}/.vscode/.
+	cp ${WORKSPACE}/IDE_TESTS_SCRIPTS/JSON_FILES/CUCUMBER/settings.json ${build_path}/.vscode/.
 	repo_init_status=33
 	repo_init_counter=0
 	echo running repo init command
