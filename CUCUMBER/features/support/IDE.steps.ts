@@ -27,6 +27,7 @@ const myTagRule = atMostOnePicklePerTag(["@config"]);
 setParallelCanAssign(myTagRule);
 
 import CubeWorld from "../../../test-tools/e2e/features/support/CubeWorld";
+
 setWorldConstructor(CubeWorld);
 
 // =====================================================================
@@ -70,6 +71,102 @@ Then('user searches for commit {string}', { timeout: 60 * 1000 },async function 
   }
 });
 
+// =====================================================================
+Then('user checks that {string} files are in the staging area',{ timeout: 300 * 1000 }, async function (this: CubeWorld,numberOfFiles:string) {
+  console.debug('user checks that ' + numberOfFiles + ' files are in the staging area');
+  
+  // await this.page.pause();
+
+  // theia-header scm-theia-header theia-TreeNodeSegmentGrow"
+  const numberOfFilesChanged= this.page.locator('div.theia-TreeNodeSegmentGrow > div.theia-scm-inline-actions-container > div.notification-count-container > span.notification-count').first();
+  if (numberOfFilesChanged)
+  {
+    const value=await numberOfFilesChanged.textContent();
+    console.log('found ' + value + ' files changed');
+  }
+  else{
+    console.debug('found no file changed');
+  }
+
+  console.debug('user checks that ' + numberOfFiles + ' files are in the staging area done');
+});
+
+// =====================================================================
+Then('user creates a set of {string} new files',{ timeout: 300 * 1000 }, async function (this: CubeWorld,numberOfFiles:string) {
+  console.debug('user creates a set of new files');
+
+  for (let index = 0; index < Number(numberOfFiles); index++) {
+
+    console.debug('creating file #' + index);
+    await this.page.locator('#files >> text=Files').first().waitFor({state:"visible"});
+    await this.page.locator('#files >> text=Files').first().click({ button: 'right' });
+
+    await this.page.locator('text=New File').waitFor({state:"visible"});
+    await this.page.locator('text=New File').click();
+
+    await this.page.locator('text=New FileIDE_TESTS_FAKE_REPOSITORY/FilesOK >> input[type="text"]').fill(`textFile${index}.txt`);
+    await this.page.locator('button:has-text("OK")').click();
+    
+  }
+ 
+  console.debug('user creates a set of new files done');
+
+});
+// =====================================================================
+Then('user adds all files to staging area',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
+  console.debug('user adds all files to staging area');
+ 
+  const numberOfFilesChanged= this.page.locator('div.theia-scm-inline-actions-container > div.notification-count-container > span.notification-count').first();
+  if (numberOfFilesChanged)
+  {
+    const value=await numberOfFilesChanged.textContent();
+    console.log('found ' + value + ' files changed');
+  }
+  else{
+    console.debug('found no file changed');
+  }
+
+  await this.page.locator('[id="__more__"]').first().waitFor({state: "visible"});
+  await this.page.locator('[id="__more__"]').first().click();
+ 
+  const menuElements=this.page.locator('ul.p-Menu-content > li.p-Menu-item[data-type="submenu"]' );
+  const counter = await menuElements.count();
+
+  for (let index=0; index < counter; index++)
+  {
+    const currentNode=menuElements.nth(index);
+    if (currentNode)
+    {
+      const nodeText = await currentNode.textContent();
+      if (nodeText)
+      {
+        console.debug(nodeText);
+        if (nodeText==="Changes")
+        {
+          // await this.page.pause();
+
+          currentNode.waitFor({state: "visible"});
+          currentNode.click();
+          
+          const targetElement=this.page.locator('li.p-Menu-item[data-command="__git.tabbar.toolbar.git.stage.all"]');
+          if (targetElement)
+          {
+            console.debug("user adds all files to staging area : found target element");
+            targetElement.waitFor({state: "visible"});
+            targetElement.click();
+            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            break;
+          }
+          else
+          {
+            console.debug("user adds all files to staging area : did not find target element");
+          }
+        }
+      }
+    }  
+  }
+  console.debug('user adds all files to staging area done');
+});
 // =====================================================================
 Then('user patches file textFile01.txt',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
   console.debug('user patches file textFile01.txt');
@@ -327,6 +424,7 @@ Then('user searches for {string}', { timeout: 60 * 1000 },async function (this: 
 Then('user goes to SCM view', { timeout: 60 * 1000 },async function (this: CubeWorld) {
   await this.page.locator('.p-TabBar-tabIcon.codicon.codicon-source-control').first().waitFor({state: "visible"});
   await this.page.locator('.p-TabBar-tabIcon.codicon.codicon-source-control').first().click();
+  await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
 });
 
