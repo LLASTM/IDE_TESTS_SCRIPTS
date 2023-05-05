@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE:others @IDE:others:no_board
+@IDE @IDE:others @IDE:others:no_board
 Feature: Project creation  and build
   
   Background:

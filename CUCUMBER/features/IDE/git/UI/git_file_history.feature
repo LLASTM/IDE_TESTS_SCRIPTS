@@ -6,8 +6,11 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE:git:ui @T1IDE @T1IDE-215
-Feature: After cloning repository, earch for initial message commit and then creates 2 commits and get each commit message using UI
+@IDE @IDE:git:ui @T1IDE-215
+Feature: After cloning repository :
+            search for initial message commit 
+            creates 3 commits 
+            get each commit message using UI from History view
 
   Background:
     Given user opens CubeStudio workspace in "./features/resources"
@@ -32,7 +35,7 @@ Feature: After cloning repository, earch for initial message commit and then cre
     # commit #1
     Then user goes to explorer view
     Then user patches file textFile01.txt
-    Then user saves the file
+    Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
@@ -50,7 +53,7 @@ Feature: After cloning repository, earch for initial message commit and then cre
     Then user goes to explorer view
     Then user expands project directories
     Then user patches file textFile01.txt
-    Then user saves the file
+    Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
@@ -67,7 +70,7 @@ Feature: After cloning repository, earch for initial message commit and then cre
     Then user goes to explorer view
     Then user expands project directories
     Then user patches file textFile01.txt
-    Then user saves the file
+    Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
@@ -79,6 +82,9 @@ Feature: After cloning repository, earch for initial message commit and then cre
 
     Then user goes to History view
     Then user adds a screenshot to test report
+
+    # 3 commits + initial commit
+    Then user expects to find "4" commits in History view
 
 
 

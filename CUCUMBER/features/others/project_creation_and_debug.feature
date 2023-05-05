@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE:others @IDE:others:with_board
+@IDE @IDE:others @IDE:others:with_board
 Feature: Project creation for board B-U585I-IOT02A, builds its debug configuration and step over a breakpoint added in an infinite loop
   
   Background:
@@ -25,7 +25,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     Then user adds a screenshot to test report
     Then user adds breakpoints to file main.c
     Then user adds a screenshot to test report
-    Then user saves the file
+    Then user saves all files
 
     Then user converts project '<project>'
     Then user pauses for 5 seconds
@@ -49,7 +49,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     Then user creates a debug configuration
     Then user adds a screenshot to test report
 
-    Then user saves the file
+    Then user saves all files
     Then user adds a screenshot to test report
 
     Then user starts debugger
@@ -63,7 +63,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
 
 Scenarios:
     | project        | board           | swProject                 | releaseToBuild   | loops |
-    | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | debug            | 1     |
+    | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | debug            | 4     |
 
     # | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | release            | 
     # for the 2 following boards , the device:... field is missing in file csolution.yml

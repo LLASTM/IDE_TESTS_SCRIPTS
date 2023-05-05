@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE:git:ui2 @T1IDE @T1IDE-207
+@IDE @IDE:git:ui @T1IDE-207
 Feature: clone IDE fake repository into workspace using UI
 
   Background:
@@ -17,5 +17,10 @@ Feature: clone IDE fake repository into workspace using UI
     Then user adds a screenshot to test report
     Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
     Then user adds a screenshot to test report
-    Then user goes to explorer view to search for "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
+    
+    Then user goes to explorer view
+    Then user searches for "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
     Then user adds a screenshot to test report
+
+
+    

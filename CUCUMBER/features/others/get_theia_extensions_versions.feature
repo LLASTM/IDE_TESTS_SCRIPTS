@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE:others @IDE:others:no_board
+@IDE @IDE:others @IDE:others:no_board
 Feature: get theia extensions versions and add them to test report
 
   Background:
