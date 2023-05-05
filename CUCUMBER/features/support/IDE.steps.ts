@@ -454,21 +454,23 @@ Then('user performs {string} loops on breakpoints', async function (this: CubeWo
     await this.page.locator('.theia-TreeContainer > div > .theia-TreeNode > .theia-TreeNodeContent > .theia-TreeNodeSegment').first().click();
 
     for (let index = 0; index < Number(numberOfLoops); index++) {
-        console.debug('========================= user performs loops on breakpoints: performing loop #' + index);   
-    
-        await this.page.locator('.debug-action.codicon.codicon-debug-continue').waitFor({state: "visible"});
-        await this.page.locator('.debug-action.codicon.codicon-debug-continue').click();
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-   
-        const iVariableLocator=this.page.locator(`div.theia-debug-console-variable > span[title="${index+1}"]`);
-        if (iVariableLocator)
-        {
-            const iValue = Number(await iVariableLocator.textContent());
-            console.debug('extracted i value :' + iValue);
-            console.debug('expected i value :' + (index+1));
+      console.debug('=== user performs loop #' + index + ' on breakpoint' + index);   
+  
+      await this.page.locator('.debug-action.codicon.codicon-debug-continue').waitFor({state: "visible"});
+      await this.page.locator('.debug-action.codicon.codicon-debug-continue').click();
+      await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+  
+      const iVariableLocator=this.page.locator(`div.theia-debug-console-variable > span[title="${index+1}"]`);
+      if (iVariableLocator)
+      {
+          const iValue = Number(await iVariableLocator.textContent());
+          console.debug('extracted i value :' + iValue);
+          console.debug('expected i value  :' + (index+1));
 
-            expect(iValue).toBe(index+1);
-        }      
+          expect(iValue).toBe(index+1);
+      }   
+      const image = await this.page?.screenshot();
+      image && (await this.attach(image, 'image/png'));   
     }
 });
 
