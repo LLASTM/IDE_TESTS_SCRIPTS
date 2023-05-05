@@ -30,6 +30,229 @@ import CubeWorld from "../../../test-tools/e2e/features/support/CubeWorld";
 setWorldConstructor(CubeWorld);
 
 // =====================================================================
+Then('user uses palette command to clone repository {string}',{ timeout: 60 * 1000 },async function (this: CubeWorld, repoUrl:string) {
+  await this.page.locator('div[role="button"]').nth(3).click(); // click on palette commands button
+
+  await this.page.locator('[aria-label="Type to narrow down results\\."]').click();
+  await this.page.locator('[aria-label="Type to narrow down results\\."]').fill('>git clone');
+
+  await this.page.locator('span:has-text("Git: Clone...")').first().click();
+  await this.page.locator('[placeholder="Select Repository Location"]').click();
+  await this.page.locator('[placeholder="Select Repository Location"]').fill(repoUrl);
+
+  const locatorText=`a:has-text("Clone the Git repository: ${repoUrl}")`;
+  await this.page.locator(locatorText).click();
+ 
+});
+// =====================================================================
+Then('user searches for commit {string}', { timeout: 60 * 1000 },async function (this: CubeWorld, commitText:string) {
+
+  const textToFind=`text=${commitText}`;
+  console.log('user searches for commit, textToFind=' + textToFind);
+  const foundCommit = await this.page.$(textToFind);
+
+  if (foundCommit)
+  {
+      console.log('text Initial commit was found');
+  }
+  else{
+    console.log('text Initial commit was not found');
+    // here we should set the test result to FAILED since Initial commit message was not found
+  }
+});
+
+// =====================================================================
+Then('user patches file textFile01.txt',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
+  console.log('user patches file textFile01.txt - clicking on line2 of file textFile01.txt');
+
+  const textToFill = Date.now().toString() ;
+ 
+  console.log('Added to file :' + textToFill);
+
+  await this.page.locator('.view-lines > div:nth-child(1)').click();
+  await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(textToFill);
+  
+});
+// =====================================================================
+Then('user expands project directories',{ timeout: 60 * 1000 }, async function (this: CubeWorld) {
+
+  console.log('Entering user expands project directories');
+
+  await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+  await this.page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').click();
+  await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+  await this.page.locator('text=Files').first().click();
+  await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+  await this.page.locator('text=textFile01.txt').click();
+  
+  console.log('Leaving user expands project directories');
+});
+// =====================================================================
+Then('user closes editor',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
+ 
+  await this.page.locator('[id="theia\\:menubar"] >> text=File').click();
+  await this.page.locator('text=Close Editor').click();
+  // await this.page.pause();
+  await this.page.locator('div:nth-child(2) > .theia-TreeNodeContent > .theia-TreeNodeSegment.theia-ExpansionToggle').click();
+  await this.page.locator('.theia-TreeNodeSegment').first().click();
+
+});
+// =====================================================================
+Then('user clicks on staging all changes button',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
+
+  console.log('staging all changes');
+ 
+  await this.page.locator('[id="__more__"]').first().click();
+ 
+  const menuElements=this.page.locator('ul.p-Menu-content > li.p-Menu-item[data-type="submenu"]' );
+  const counter = await menuElements.count();
+
+  for (let index=0; index < counter; index++)
+  {
+    const currentNode=menuElements.nth(index);
+    if (currentNode)
+    {
+      const nodeText = await currentNode.textContent();
+      if (nodeText)
+      {
+        console.log(nodeText);
+        if (nodeText==="Changes")
+        {
+          currentNode.click();
+          
+          const targetElement=this.page.locator('li.p-Menu-item[data-command="__git.tabbar.toolbar.git.stage.all"]');
+          if (targetElement)
+          {
+            console.log("user clicks on staging all changes button : found target element");
+            targetElement.click();
+            await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+            break;
+          }
+          else
+          {
+            console.log("user clicks on staging all changes button : did not find target element");
+          }
+        }
+      }
+    }  
+  }
+  console.log('staging all changes done');
+}); 
+// =====================================================================
+Then('user clicks on commit signed off button',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
+
+  console.log('click on commit signed off');
+
+  await this.page.locator('[id="__more__"]').first().click();
+
+  const menuElements=this.page.locator('ul.p-Menu-content > li.p-Menu-item[data-type="submenu"]' );
+  const counter = await menuElements.count();
+
+  for (let index=0; index < counter; index++)
+  {
+     const currentNode=menuElements.nth(index);
+    if (currentNode)
+    {
+      const nodeText = await currentNode.textContent();
+      if (nodeText)
+      {
+        console.log(nodeText);
+        if (nodeText==="Commit")
+        {
+          currentNode.click();
+          
+          const targetElement=this.page.locator('li.p-Menu-item[data-command="__git.tabbar.toolbar.git.commit.signOff"]');
+          if (targetElement)
+          {
+            targetElement.click();
+            await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+            break;
+          }
+        }
+      }
+    }  
+  }
+
+
+  console.log('click on Signed off done');
+
+});
+// =====================================================================
+Then('user goes to History view',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
+  console.log('user goes to History view');
+
+  await this.page.locator('[id="theia\\:menubar"] >> text=View').click();
+
+  const targetElement=this.page.locator('li.p-Menu-item[data-command="scm-history:open-branch-history"]');
+  if (targetElement)
+  {
+    console.log('user goes to History view : target element found');
+    await targetElement.waitFor();
+    await targetElement.click();
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+  }
+  else
+  {
+    console.log('user goes to History view : target element not found');
+  }
+  console.log('user goes to History view done');
+});
+// =====================================================================
+Then('user enters commit message {string}',{ timeout: 300 * 1000 }, async function (this: CubeWorld,commitMessage:string) {
+
+  console.log('filling commit message');
+
+  await this.page.locator('textarea').click();
+  await this.page.locator('textarea').fill(commitMessage);
+  await this.page.locator(`text=${commitMessage}`).press('Control+Enter');
+  await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
+  console.log('filling commit message done');
+
+});
+// =====================================================================
+Then('user collapses fake repo directory',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
+
+  console.log('Entering user collapses fake repo directory');
+
+  // closing project directories to iterate again
+  await this.page.locator('#files >> text=Files').first().click();
+  await this.page.locator('.theia-TreeNodeSegment').first().click();
+ 
+  console.log('Leaving user collapses fake repo directory');
+});
+
+// =====================================================================
+Then('user goes to explorer view', { timeout: 60 * 1000 },async function (this: CubeWorld) {
+
+  console.log('Entering user goes to explorer view');
+
+  await this.page.locator('.p-TabBar-tabIcon.codicon').first().click();
+
+  console.log('Leaving user goes to explorer view');
+});
+// =====================================================================
+Then('user searches for {string}', { timeout: 60 * 1000 },async function (this: CubeWorld, repoUrl:string) {
+  
+  const foundUrl = await this.page.$("text='" + repoUrl +"'");
+  if (foundUrl)
+  {
+      console.log('text ' + repoUrl + ' was found');
+      // here we should set the test result to PASSED since cloned repo was found
+  }
+  else{
+    console.log('text ' + repoUrl + ' was not found');
+    // here we should set the test result to FAILED since cloned repo was not found
+  }
+});
+  
+// =====================================================================
+Then('user goes to SCM view', { timeout: 60 * 1000 },async function (this: CubeWorld) {
+  await this.page.locator('.p-TabBar-tabIcon.codicon.codicon-source-control').first().click();
+
+});
+
+// =====================================================================
 Then('user add debugger console' , async function (this: CubeWorld) {
     
     await this.page.locator('[id="theia\\:menubar"] >> text=View').click();
@@ -66,12 +289,6 @@ Then('user opens file main.c of sw project {string} of application {string}', as
 // =====================================================================
 Then('user patches file main.c', async function (this: CubeWorld) {
 
-    // await this.page.locator('div[role="code"] div:has-text("int main() {")').nth(4).click();
-    // await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').press('Enter');
-
-    // await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill('#include "main.h"\nint main() {\n    int i=0;\n  while(1) {\n  }\n  return 0;\n}');
-    // await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').press('Enter');
-
     await this.page.locator('div[role="code"] div:has-text("while(1) {")').nth(4).click();
     await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').press('Enter');
     await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill('#include "main.h"\nint main() {\n    int i=0;\n  while(1) {\n    i++;\n  }\n  return 0;\n}');
@@ -106,16 +323,16 @@ Then('user saves the file' , async function (this: CubeWorld) {
    await this.page.locator('text=Save All').click();
    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
-   console.log("====================== command Save All done");
+   console.log("command Save All done");
 });
 // =====================================================================
 Then('user starts debugger', { timeout: 15 * 1000 }, async function (this: CubeWorld) {
 
-    await this.page.locator('text=Run').first().click();
-    await this.page.locator('text=Start Debugging').click();
-    await new Promise( resolve => setTimeout(resolve, + 10 * 1000) );
+  await this.page.locator('text=Run').first().click();
+  await this.page.locator('text=Start Debugging').click();
+  await new Promise( resolve => setTimeout(resolve, + 10 * 1000) );
 
-console.log('====================== debugger should be started now');
+  console.log('====================== debugger should be started now');
 });
 
 // =====================================================================
