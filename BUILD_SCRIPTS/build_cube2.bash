@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo CUBE STUDIO BUILD SCRIPT
+
 echo ==================== Deleting various directories
 rm -rf  ~/AppData/Local/Cube/packs/
 rm -rf  ~/AppData/Local/Cube/bundles/*
