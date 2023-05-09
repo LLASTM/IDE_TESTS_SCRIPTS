@@ -119,6 +119,7 @@ git log -n 1
 popd
 
 echo ======================================== cloning IDE repo
+pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos
 git clone https://github.com/PRG-Cube/cube-ide.git
 git_clone_status=$?
 if [ ${git_clone_status} -eq 0 ]; then
@@ -127,6 +128,7 @@ else
 	echo git clone https://github.com/PRG-Cube/cube-ide.git failed, stopping script
 	exit 1003
 fi
+popd
 
 echo ======================================== checkout for IDE branch
 pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/cube-ide
