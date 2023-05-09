@@ -140,9 +140,10 @@ pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/cube-ide
 	fi
 popd
 
-echo =========================== get bundles
-cube bundle --install studio-prototype
-cube bundle --update
+#echo =========================== get bundles
+#cube bundle --install studio-prototype
+#cube bundle --update
+
 echo ======================================== yarn studio:browser build command
 if [ ${yarn_status} -eq 0 ]; then
 	yarn_build_status=55
