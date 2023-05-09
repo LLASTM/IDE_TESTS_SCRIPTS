@@ -91,27 +91,6 @@ else
 	exit 101
 fi
 
-echo ======================================== yarn command
-if [ ${repo_sync_status} -eq 0 ]; then
-	yarn_status=55
-	yarn_counter=0
-	echo running yarn command
-	while [ ${yarn_status} != 0 ]; do
-		sleep 1
-		if [ ${yarn_counter} -lt 2 ]; then
-			yarn
-			yarn_status=$?
-			yarn_counter=$[ $yarn_counter + 1 ]
-		else
-			echo yarn command failed, stopping script
-			exit 3
-		fi
-	done
-else
-	echo command repo sync failed, stopping script
-	exit 102
-fi
-
 echo ======================================== checkout for repos branch
 pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos
 git checkout ${JOB_BRANCH_TO_BUILD}
@@ -143,9 +122,26 @@ pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/cube-ide
 	fi
 popd
 
-#echo =========================== get bundles
-#cube bundle --install studio-prototype
-#cube bundle --update
+echo ======================================== yarn command
+if [ ${git_checkout_status} -eq 0 ]; then
+	yarn_status=55
+	yarn_counter=0
+	echo running yarn command
+	while [ ${yarn_status} != 0 ]; do
+		sleep 1
+		if [ ${yarn_counter} -lt 2 ]; then
+			yarn
+			yarn_status=$?
+			yarn_counter=$[ $yarn_counter + 1 ]
+		else
+			echo yarn command failed, stopping script
+			exit 3
+		fi
+	done
+else
+	echo command git checkout failed, stopping script
+	exit 102
+fi
 
 echo ======================================== yarn studio:browser build command
 if [ ${yarn_status} -eq 0 ]; then
@@ -169,6 +165,10 @@ else
 	echo command yarn studio:browser build failed, stopping script
 	exit 103
 fi
+
+#echo =========================== get bundles
+#cube bundle --install studio-prototype
+#cube bundle --update
 
 if [ ${yarn_build_status} -eq 0 ]; then
 	#exec &> >(tee -a ${WORKSPACE}/LOGFILES/launch_cube2.log)
