@@ -126,7 +126,7 @@ else
 fi
 
 echo ======================================== checkout for IDE branch
-pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/ide
+pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/cube-ide
 	git checkout ${JOB_IDE_BRANCH_TO_BUILD}
 	git_checkout_status=$?
 	if [ ${git_checkout_status} -eq 0 ]; then
