@@ -116,18 +116,27 @@ git checkout ${JOB_BRANCH_TO_BUILD}
 git log -n 1
 popd
 
-#echo ======================================== checkout for IDE branch
-#pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/ide
-#	git checkout ${JOB_IDE_BRANCH_TO_BUILD}
-#	git_checkout_status=$?
-#	if [ ${git_checkout_status} -eq 0 ]; then
-#		echo git checkout ${JOB_IDE_BRANCH_TO_BUILD} succeeded
-#		git log -n 1
-#	else
-#		echo git checkout command failed, stopping script
-#		exit 4
-#	fi
-#popd
+echo ======================================== cloning IDE repo
+git_clone_status=`git clone https://github.com/PRG-Cube/cube-ide.git` ;
+if [ ${git_clone_status} -eq 0]; then
+	echo git clone https://github.com/PRG-Cube/cube-ide.git succeeded
+else
+	echo git clone https://github.com/PRG-Cube/cube-ide.git failed, stopping script
+	exit 1003
+fi
+
+echo ======================================== checkout for IDE branch
+pushd ${WORKSPACE}/CUBE2_BUILD_DIRECTORY/repos/ide
+	git checkout ${JOB_IDE_BRANCH_TO_BUILD}
+	git_checkout_status=$?
+	if [ ${git_checkout_status} -eq 0 ]; then
+		echo git checkout ${JOB_IDE_BRANCH_TO_BUILD} succeeded
+		git log -n 1
+	else
+		echo git checkout command failed, stopping script
+		exit 1004
+	fi
+popd
 
 echo =========================== get bundles
 cube bundle --install studio-prototype
