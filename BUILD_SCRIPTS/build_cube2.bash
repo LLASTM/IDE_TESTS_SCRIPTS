@@ -119,7 +119,8 @@ git log -n 1
 popd
 
 echo ======================================== cloning IDE repo
-git_clone_status=`git clone https://github.com/PRG-Cube/cube-ide.git` ;
+git clone https://github.com/PRG-Cube/cube-ide.git
+git_clone_status=$?
 if [ ${git_clone_status} -eq 0 ]; then
 	echo git clone https://github.com/PRG-Cube/cube-ide.git succeeded
 else
