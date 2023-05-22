@@ -17,12 +17,16 @@ import {
     clickButton,
     clickInputAtRightOfText,
     clickPencilIconAtRightOfText,
-    clickTextBelowText,
+    // clickTextBelowText,
     clickFolderIcon,
     } from "../../../test-tools/e2e/features/support/steps";
 
 Given('user creates application project {string} with board {string}', async function (this: CubeWorld, proj_name:string, device_name:string) {
     await openFinder();
+
+    await this.page.locator('text=Synchronize').waitFor({state:"visible"});
+    await this.page.locator('text=Synchronize').click();
+    await new Promise( resolve => setTimeout(resolve, + 10 * 1000) );
 
     await this.page.locator('button:has-text("Board")').first().click();
 
@@ -30,8 +34,10 @@ Given('user creates application project {string} with board {string}', async fun
     await typeText(device_name);
     await pressKey('Enter');
 
-    await clickTextBelowText(device_name, 'Product(s) found:');
-
+    // await clickTextBelowText(device_name, 'Product(s) found:');
+    const locatorText=`a:has-text("${device_name}")`;
+    await this.page.locator(locatorText).click();
+    
     await clickButton('Start a project');
     await clickInputAtRightOfText('Project name:');
     await typeText(proj_name);

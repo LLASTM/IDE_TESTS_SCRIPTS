@@ -7,16 +7,16 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @STUDIOVERSION
-Feature: get cubestudio version using About menu and add it to test report
+@IDE @IDE:others @IDE:others:no_board @IDEDEBUG
 
-  Background:
+Feature: report list of expansion boards found in Finder
+
+Background:
     Given user opens CubeStudio workspace in "./features/resources/sample-files1"
-
-  Scenario:
-    Then user clears notifications list
-    Then user opens About menu
-    Then user gets cube studio version
-    Then user adds a screenshot to test report
-    Then user closes About menu
     
+    Given user clicks Finder icon
+    Given user builds list of "Expansion Board"
+    Given user clicks Finder icon
+    
+Scenario:
+    Then user adds "Expansion Board" list to test report

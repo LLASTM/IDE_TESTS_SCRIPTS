@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-207
+@IDE @IDE:git:ui @T1IDE-207 @T1IDE
 Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools using CLI and GUI,
           so that I easily can work with my project.
           clone IDE fake repository into workspace using UI
@@ -15,14 +15,17 @@ Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools usin
     Given user opens CubeStudio workspace in "./features/resources"
 
   Scenario:
-    Then user goes to SCM view
+
+    Then user clicks Source Control icon
     Then user adds a screenshot to test report
+
     Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
     Then user adds a screenshot to test report
     
-    Then user goes to explorer view
-    Then user searches for "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
+    Then user clicks explorer icon
+    Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
     Then user adds a screenshot to test report
 
 
+    
     

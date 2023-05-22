@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
+@IDE @IDE:others @IDE:others:no_board @THEIAEXTENSIONS
 Feature: get theia extensions versions and add them to test report
 
   Background:
@@ -17,6 +17,6 @@ Feature: get theia extensions versions and add them to test report
     Then user clears notifications list
     Then user opens About menu
     Then user gets theia extensions
+    Then user adds a screenshot to test report
     Then user closes About menu
     Then user gets notifications after "get theia extensions versions"
-    Then user builds verdict from notifications

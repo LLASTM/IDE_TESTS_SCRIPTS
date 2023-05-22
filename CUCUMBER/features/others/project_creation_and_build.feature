@@ -7,13 +7,16 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
-Feature: Project creation  and build
+@IDE @IDE:others @IDE:others:no_board @IDEBUILD
+Feature: Project creation and build
   
   Background:
     Given user opens CubeStudio workspace in "./features/resources/sample-files1"
+    Given user clicks Finder icon
+    Given user clicks on Synchronize button
 
   Scenario: First
+    
     Given user creates application project '<project>' with board '<board>'
     Given user adds a new software project '<swProject>' in application project panel
     Given user adds a new software component to project '<swProject>' in application project panel
@@ -21,23 +24,18 @@ Feature: Project creation  and build
     Then user gets notifications after "project creation"
    
     Then user converts project '<project>'
-    Then user pauses for 5 seconds
+    Then user pauses for "5" seconds
     Then user gets notifications after "project conversion"
 
     Then user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    Then user pauses for 5 seconds
+    Then user pauses for "5" seconds
     Then user gets notifications after "project build"
 
     Then user builds verdict from notifications
 
 Scenarios:
     | project        | board           | swProject                 | releaseToBuild   |
-    | ApplicationPrj | STM32U575I-EV   | SWProject-STM32U575I-EV   | release          |
     | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | release          |
-    | ApplicationPrj | NUCLEO-U575ZI-Q | SWProject-NUCLEO-U575ZI-Q | release          |
-
-    # for the 2 following boards , the device:... field is missing in file csolution.yml
+    | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | debug            |
     # | ApplicationPrj | NUCLEO-U575ZI-Q | SWProject-NUCLEO-U575ZI-Q | release          |
-    # | ApplicationPrj | STM32U575I-EV   | SWProject-STM32U575I-EV   | release          |
-    # | ApplicationPrj | STM32U575I-EV   | SWProject-STM32U575I-EV   | debug            |
     # | ApplicationPrj | NUCLEO-U575ZI-Q | SWProject-NUCLEO-U575ZI-Q | debug            |

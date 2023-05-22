@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-215
+@IDE @IDE:git:ui @T1IDE-215 @T1IDE
 Feature:  As an end-user, I want to see a history for a file using CLI and GUI, 
           so that I can see what has happened
 
@@ -19,30 +19,30 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Given user opens CubeStudio workspace in "./features/resources"
 
   Scenario:
-    Then user goes to SCM view
+    Then user clicks Source Control icon
     Then user adds a screenshot to test report
     Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
     Then user adds a screenshot to test report
     
-    Then user goes to explorer view
-    Then user searches for "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
+    Then user clicks explorer icon
+    Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
     Then user adds a screenshot to test report
 
-    Then user expands project directories
+    Then user expands fake repo project directories
     Then user adds a screenshot to test report
 
-    Then user goes to SCM view
+    Then user clicks Source Control icon
     Then user adds a screenshot to test report
-    Then user searches for commit "Initial commit"
+    Then user searches for commit "Initial commit" in History view
     
     # commit #1
-    Then user goes to explorer view
+    Then user clicks explorer icon
     Then user patches file textFile01.txt
     Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
-    Then user goes to SCM view
+    Then user clicks Source Control icon
     Then user clicks on staging all changes button
     Then user clicks on commit signed off button
     Then user enters commit message "commit #1"
@@ -51,16 +51,15 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user goes to History view
     Then user adds a screenshot to test report
     
-
     # commit #2
-    Then user goes to explorer view
-    Then user expands project directories
+    Then user clicks explorer icon
+    Then user expands fake repo project directories
     Then user patches file textFile01.txt
     Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
-    Then user goes to SCM view
+    Then user clicks Source Control icon
     Then user clicks on staging all changes button
     Then user clicks on commit signed off button
     Then user enters commit message "commit #2"
@@ -70,14 +69,14 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user adds a screenshot to test report
     
     # commit #3
-    Then user goes to explorer view
-    Then user expands project directories
+    Then user clicks explorer icon
+    Then user expands fake repo project directories
     Then user patches file textFile01.txt
     Then user saves all files
     Then user closes editor
     Then user adds a screenshot to test report
 
-    Then user goes to SCM view
+    Then user clicks Source Control icon
     Then user clicks on staging all changes button
     Then user clicks on commit signed off button
     Then user enters commit message "commit #3"
@@ -88,6 +87,3 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
 
     # 3 commits + initial commit
     Then user expects to find "4" commits in History view
-
-
-

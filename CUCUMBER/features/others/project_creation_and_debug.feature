@@ -12,6 +12,8 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
   
   Background:
     Given user opens CubeStudio workspace in "./features/resources/sample-files1"
+    Given user clicks Finder icon
+    Given user clicks on Synchronize button
 
   Scenario: First
     Given user creates application project '<project>' with board '<board>'
@@ -20,27 +22,27 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     Then user clears notifications list
     Then user gets notifications after "project creation"
     
-    Then user opens file main.c of sw project '<swProject>' of application '<project>'
-    Then user patches file main.c
+    Then testuser opens file main.c of sw project '<swProject>' of application '<project>'
+    Then testuser patches file main.c
     Then user adds a screenshot to test report
-    Then user adds breakpoints to file main.c
+    Then testuser adds breakpoints to file main.c
     Then user adds a screenshot to test report
     Then user saves all files
 
     Then user converts project '<project>'
-    Then user pauses for 5 seconds
+    Then user pauses for "5" seconds
     Then user gets notifications after "project conversion"
-    Then user gets conversion log messages
+    Then user gets conversion log messages from console
     Then user sets a conversion verdict
 
     Then user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    Then user pauses for 5 seconds
+    Then user pauses for "5" seconds
     Then user adds a screenshot to test report
-    Then user gets build log messages
-    Then user sets a build verdict
+    Then user gets build log messages from console
+    Then user sets a build verdict from console traces
     Then user gets notifications after "project build"
 
-    Then user add debugger console
+    Then user adds debugger console
     Then user adds a screenshot to test report
 
     Then user selects debug context for application '<project>', sw project '<swProject>' and '<releaseToBuild>' version
@@ -51,9 +53,9 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
 
     Then user saves all files
     Then user adds a screenshot to test report
-
+  
     Then user starts debugger
-    Then user pauses for 5 seconds
+    Then user pauses for "5" seconds
     Then user gets notifications after "starting debugger"
 
     Then user performs '<loops>' loops on breakpoints
