@@ -7,11 +7,12 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @STUDIOVERSION
+@IDE @IDE:others @IDE:others:no_board
 Feature: get cubestudio version using About menu and add it to test report
 
   Background:
-    Given user opens CubeStudio workspace in "./features/resources/sample-files1"
+    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
+    Given user sets viewport size to "4K"
 
   Scenario:
     Then user clears notifications list

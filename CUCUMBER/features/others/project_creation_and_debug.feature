@@ -11,7 +11,8 @@
 Feature: Project creation for board B-U585I-IOT02A, builds its debug configuration and step over a breakpoint added in an infinite loop
   
   Background:
-    Given user opens CubeStudio workspace in "./features/resources/sample-files1"
+    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
+    Given user sets viewport size to "4K"
     Given user clicks Finder icon
     Given user clicks on Synchronize button
 
@@ -58,7 +59,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     Then user pauses for "5" seconds
     Then user gets notifications after "starting debugger"
 
-    Then user performs '<loops>' loops on breakpoints
+    Then testuser performs '<loops>' loops on breakpoints
     Then user gets notifications after "performing loops"
 
     Then user builds verdict from notifications

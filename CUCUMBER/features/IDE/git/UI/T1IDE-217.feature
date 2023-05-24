@@ -12,7 +12,8 @@ Feature:  As an end-user, I want to stage a file for commit using CLI and GUI,
           so that I can work in the way I prefer.
 
   Background:
-    Given user opens CubeStudio workspace in "./features/resources"
+    Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
+    Given user sets viewport size to "4K"
 
   Scenario:
     Then user clicks Source Control icon
@@ -24,7 +25,7 @@ Feature:  As an end-user, I want to stage a file for commit using CLI and GUI,
     Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
     Then user adds a screenshot to test report
 
-    Then user expands fake repo project directories
+    Then testuser expands fake repo project directories
     Then user adds a screenshot to test report
     Then user creates a set of "5" new files
     Then user adds a screenshot to test report

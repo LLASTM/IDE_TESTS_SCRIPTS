@@ -7,13 +7,13 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @IDEDEBUG
-
+@IDE @IDE:others @IDE:others:no_board
 Feature: report list of Parts found in Finder
 
 Background:
-    Given user opens CubeStudio workspace in "./features/resources/sample-files1"
-    
+    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
+    Given user sets viewport size to "4K"
+
     Given user clicks Finder icon
     Given user builds list of "Part"
     Given user clicks Finder icon

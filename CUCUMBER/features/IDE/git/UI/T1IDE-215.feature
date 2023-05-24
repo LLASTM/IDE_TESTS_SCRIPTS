@@ -16,7 +16,8 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
                       get each commit message using UI from History view
 
   Background:
-    Given user opens CubeStudio workspace in "./features/resources"
+    Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
+    Given user sets viewport size to "4K"
 
   Scenario:
     Then user clicks Source Control icon
@@ -28,7 +29,7 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
     Then user adds a screenshot to test report
 
-    Then user expands fake repo project directories
+    Then testuser expands fake repo project directories
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
@@ -37,9 +38,10 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     
     # commit #1
     Then user clicks explorer icon
-    Then user patches file textFile01.txt
+    Then testuser patches file textFile01.txt
     Then user saves all files
-    Then user closes editor
+    Then testuser closes editor
+    Then testuser closes fake directory
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
@@ -53,10 +55,11 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     
     # commit #2
     Then user clicks explorer icon
-    Then user expands fake repo project directories
-    Then user patches file textFile01.txt
+    Then testuser expands fake repo project directories
+    Then testuser patches file textFile01.txt
     Then user saves all files
-    Then user closes editor
+    Then testuser closes editor
+    Then testuser closes fake directory
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
@@ -70,10 +73,11 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     
     # commit #3
     Then user clicks explorer icon
-    Then user expands fake repo project directories
-    Then user patches file textFile01.txt
+    Then testuser expands fake repo project directories
+    Then testuser patches file textFile01.txt
     Then user saves all files
-    Then user closes editor
+    Then testuser closes editor
+    Then testuser closes fake directory
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon

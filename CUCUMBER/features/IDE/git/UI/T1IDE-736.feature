@@ -6,27 +6,21 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-207 @T1IDE
-Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools using CLI and GUI,
-          so that I easily can work with my project.
-          clone IDE fake repository into workspace using UI
+@IDE @IDE:git:ui @T1IDE-736 @T1IDE
+Feature:  As a squad leader, I want to get a running integration test on community GIT repo
+          initialization feature so that I can support squad quality commitment
 
   Background:
     Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
     Given user sets viewport size to "4K"
 
   Scenario:
-
     Then user clicks Source Control icon
+    Then testuser performs git repo init command
+    Then testuser adds files to staging area
+    Then testuser checks that 2 files are in the staging area
     Then user adds a screenshot to test report
-
-    Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
-    Then user adds a screenshot to test report
-    
-    Then user clicks explorer icon
-    Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
-    Then user adds a screenshot to test report
-
-
-    
-    
+    # Then user commits changes
+    # Then user adds a screenshot to test report
+    # Then user adds a commit message
+    # Then user adds a screenshot to test report

@@ -7,11 +7,12 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @IDEBUILD
+@IDE @IDE:others @IDE:others:no_board
 Feature: Project creation and build
   
   Background:
-    Given user opens CubeStudio workspace in "./features/resources/sample-files1"
+    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
+    Given user sets viewport size to "4K"
     Given user clicks Finder icon
     Given user clicks on Synchronize button
 
