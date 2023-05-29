@@ -1132,7 +1132,7 @@ async function userGetsListOfItems(products:string) {
     const itemsList: Array<string> = [];
     itemsList.push('List of ' + products + ' found in Finder');
 
-    let locatorText=`button:has-text("${products}")`;
+    const locatorText=`button:has-text("${products}")`;
     await page.locator(locatorText).first().click();
 
     await page.locator("text=Product(s) found:").first().waitFor({state: "visible"});
@@ -1144,16 +1144,40 @@ async function userGetsListOfItems(products:string) {
     let nextPageButtonIsVisible=false;
     let counter=0;
 
+    const data: Array<Array<string>>=[];
+
     if (numberOfProducts !== 0)
     {
+        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+    
+        const tableLocatorText='table.MuiTable-root';
+        const tableHeadLocatorText= tableLocatorText + '>> thead.MuiTableHead-root';
+        const headersLocatorText = tableHeadLocatorText+ '>> th.MuiTableCell-root';
+
+        const tableheadersList=page.locator(headersLocatorText);
+        const numberOfHeaders = await tableheadersList.count();
+        console.log('Found ' + numberOfHeaders + ' headers in current page');
+
+        const headersList: Array<string> = [];
+        for(let index=0;index<numberOfHeaders;index++)
+        {
+                const currentHeaderItem =  tableheadersList.nth(index);
+            
+                const headerName=await currentHeaderItem.textContent();
+                if (headerName) { headersList.push(headerName); }
+                // console.log(headerName);
+        }
+        // console.table(headersList);
+        data.push(headersList);
+
         do
         {
             await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
             await page.locator("text=Product(s) found:").waitFor({state: "visible"});
 
-            locatorText='td > a.MuiLink-root';
-
-            const currentPageListOfProducts=page.locator(locatorText);
+            
+            const dataLocatorText= tableLocatorText + '>> tbody.MuiTableBody-root >> tr.MuiTableRow-root';
+            const currentPageListOfProducts=page.locator(dataLocatorText);
 
             numberOfProducts = await currentPageListOfProducts.count();
             IDEtrace('DEBUG','Found ' + numberOfProducts + ' products in current page');
@@ -1161,8 +1185,23 @@ async function userGetsListOfItems(products:string) {
             for(let index=0;index<numberOfProducts;index++)
             {
                 const currentItem =  currentPageListOfProducts.nth(index);
-                const itemName=await currentItem.textContent();
-                if (itemName) { if (!itemsList.includes(itemName)) { itemsList.push(itemName);} }
+                
+                const locator = 'td.MuiTableCell-root';
+                const locitems=currentItem.locator(locator);
+
+                const numberOfFields=await locitems.count();
+                // console.log('Found ' + numberOfFields + ' fields');
+
+                const dataList: Array<string> = [];
+                 
+                for(let field=1;field<numberOfFields;field++)
+                {
+                    const currentField=currentItem.locator(locator).nth(field);
+                    const currentItemText=await currentField.textContent();
+                    if (currentItemText) { dataList.push(currentItemText); }
+                }
+                 
+                if ( !data.includes(dataList)) { data.push(dataList); }  
             }
 
             const nextPageButton=page.locator('div.MuiTablePagination-actions >> button[aria-label="Go to next page"] ');
@@ -1176,9 +1215,12 @@ async function userGetsListOfItems(products:string) {
             {
                 counter++;
             }
-        } while (counter != 2);
+        } while (counter != 1);
+        //IDEtraceTable(data);
     }
-    return itemsList;
+    
+    //return itemsList;
+    return [];
 }
 
 // This function fills the adequate list depending on "products" string
@@ -1574,10 +1616,10 @@ Then('testuser checks that 2 files are in the staging area',async function (this
     expect.soft(staggedFiles).toBe(2);
 });
 
-const ActivateIDETraces=false;
+const ActivateIDETraces=true;
 const report_IDE_ERROR_traces=true;
 const report_IDE_WARNING_traces=false;
-const report_IDE_DEBUG_traces=true;
+const report_IDE_DEBUG_traces=false;
 const report_IDE_INFO_traces=false;
 
 function IDEtrace(traceLevel:string, traceMessage:string) {
@@ -1589,7 +1631,7 @@ function IDEtrace(traceLevel:string, traceMessage:string) {
         if (traceLevel==="DEBUG")   { if (report_IDE_DEBUG_traces)   { console.debug(traceMessage);} }
     }
 }
-function IDEtraceTable(table: Array<string>) {
+function IDEtraceTable(table: Array<Array<string>>=[]) {
     if (ActivateIDETraces)
     {
         console.table(table);
@@ -1610,9 +1652,10 @@ Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async functi
         {
             this.page.setViewportSize({ width: 3840, height: 2160 });
         }
+        IDEtrace('DEBUG','viewport size set to [' + viewPortSize + ']');
     }
     else
     {
-        IDEtrace('WARNING','select mode [' + viewPortSize + '] is unknown');
+        IDEtrace('WARNING','selected mode [' + viewPortSize + '] is unknown');
     }
 });
