@@ -11,16 +11,23 @@ Feature:  As a squad leader, I want to get a running integration test on communi
           initialization feature so that I can support squad quality commitment
 
   Background:
-    Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user sets viewport size to '4K'
 
   Scenario:
-    Then user clicks Source Control icon
-    Then testuser performs git repo init command
-    Then testuser adds files to staging area
-    Then testuser checks that 2 files are in the staging area
-    Then user adds a screenshot to test report
-    # Then user commits changes
-    # Then user adds a screenshot to test report
-    # Then user adds a commit message
-    # Then user adds a screenshot to test report
+    When user clicks Source Control icon
+    
+    #When user clicks object containing text '+'
+    When user performs git repo init command
+    
+    #When user clicks object containing text '...'
+    #When user pauses for '2' seconds
+    #When user selects menu 'Changes/Stage All Changes'
+    #When user pauses for '2' seconds
+    When user adds all files to staging area
+
+    Then testuser checks that '2' files are in the staging area
+
+    When user adds a screenshot to test report
+
+   

@@ -12,21 +12,16 @@ Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools usin
           clone IDE fake repository into workspace using UI
 
   Background:
-    Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user sets viewport size to '4K'
 
   Scenario:
 
-    Then user clicks Source Control icon
-    Then user adds a screenshot to test report
-
-    Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
-    Then user adds a screenshot to test report
+    When user clicks Source Control icon
+    When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
+    When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
+    When user pauses for '8' seconds
     
-    Then user clicks explorer icon
-    Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
-    Then user adds a screenshot to test report
-
-
-    
-    
+    When user clicks explorer icon
+    Then user searches for string 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' in current page
+    When user adds a screenshot to test report

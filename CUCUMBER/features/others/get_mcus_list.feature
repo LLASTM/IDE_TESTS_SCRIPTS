@@ -11,12 +11,12 @@
 Feature: report list of Mcus found in Finder
 
 Background:
-    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user sets viewport size to '4K'
 
     Given user clicks Finder icon
-    Given user builds list of "MCU"
+    Given user builds list of 'MCU'
     Given user clicks Finder icon
     
 Scenario:
-    Then user adds "MCU" list to test report
+    When user adds 'MCU' list to test report

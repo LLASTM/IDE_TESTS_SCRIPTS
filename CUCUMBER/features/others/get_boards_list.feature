@@ -11,12 +11,12 @@
 Feature: report list of boards found in Finder
 
 Background:
-    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user sets viewport size to '4K'
 
     Given user clicks Finder icon
-    Given user builds list of "Board"
+    Given user builds list of 'Board'
     Given user clicks Finder icon
     
 Scenario:
-    Then user adds "Board" list to test report
+    When user adds 'Board' list to test report

@@ -11,58 +11,66 @@
 Feature: Project creation for board B-U585I-IOT02A, builds its debug configuration and step over a breakpoint added in an infinite loop
   
   Background:
-    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user sets viewport size to '4K'
     Given user clicks Finder icon
-    Given user clicks on Synchronize button
+    Given user clicks button 'Synchronize'
+    Given user pauses for '10' seconds
 
   Scenario: First
     Given user creates application project '<project>' with board '<board>'
     Given user adds a new software project '<swProject>' in application project panel
     Given user adds a new software component to project '<swProject>' in application project panel
-    Then user clears notifications list
-    Then user gets notifications after "project creation"
+    When user clears notifications list
+    When user gets notifications after 'project creation'
     
-    Then testuser opens file main.c of sw project '<swProject>' of application '<project>'
-    Then testuser patches file main.c
-    Then user adds a screenshot to test report
-    Then testuser adds breakpoints to file main.c
-    Then user adds a screenshot to test report
-    Then user saves all files
+    When user clicks explorer icon
+    When testuser opens file main.c of sw project '<swProject>' of application '<project>'
+    When testuser patches file main.c
+    When user adds a screenshot to test report
 
-    Then user converts project '<project>'
-    Then user pauses for "5" seconds
-    Then user gets notifications after "project conversion"
-    Then user gets conversion log messages from console
-    Then user sets a conversion verdict
+    When testuser clicks on line with incremented i
+    When user selects menu 'Run/Toggle Breakpoint'
 
-    Then user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    Then user pauses for "5" seconds
-    Then user adds a screenshot to test report
-    Then user gets build log messages from console
-    Then user sets a build verdict from console traces
-    Then user gets notifications after "project build"
+    When user adds a screenshot to test report
+    When user selects menu 'File/Save All'
 
-    Then user adds debugger console
-    Then user adds a screenshot to test report
+    When user selects menu 'Terminal/Run Build Task'
+    When user converts project '<project>'
+    When user pauses for '5' seconds
+    When user gets notifications after 'project conversion'
+    When user gets conversion log messages from console
+    When user sets a conversion verdict
 
-    Then user selects debug context for application '<project>', sw project '<swProject>' and '<releaseToBuild>' version
-    Then user adds a screenshot to test report
+    When user selects menu 'Terminal/Run Build Task'
+    When user builds project '<project>' '<swProject>' '<releaseToBuild>'
+    When user pauses for '5' seconds
+    When user adds a screenshot to test report
+    When user gets build log messages from console
+    When user sets a build verdict from console traces
+    When user gets notifications after 'project build'
 
-    Then user creates a debug configuration
-    Then user adds a screenshot to test report
+    When user selects menu 'View/Debug Console'
+    When user adds a screenshot to test report
 
-    Then user saves all files
-    Then user adds a screenshot to test report
+    When user selects debug context for application '<project>', sw project '<swProject>' and '<releaseToBuild>' version
+    When user adds a screenshot to test report
+
+    When user selects menu 'Run/Start Debugging'
+    When user selects launch configuration 'Cube (PoC): Generic Context Based STM32 Launch'
+    When user adds a screenshot to test report
+
+    When user selects menu 'File/Save All'
+    When user adds a screenshot to test report
   
-    Then user starts debugger
-    Then user pauses for "5" seconds
-    Then user gets notifications after "starting debugger"
+    When user selects menu 'Run/Start Debugging'
+    When user pauses for '10' seconds
+    When user gets notifications after 'starting debugger'
 
-    Then testuser performs '<loops>' loops on breakpoints
-    Then user gets notifications after "performing loops"
+    When testuser performs '<loops>' loops on breakpoints
+    When user gets notifications after 'performing loops'
 
-    Then user builds verdict from notifications
+    When user builds verdict from notifications
 
 Scenarios:
     | project        | board           | swProject                 | releaseToBuild   | loops |

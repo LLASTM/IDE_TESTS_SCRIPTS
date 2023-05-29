@@ -7,16 +7,15 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
-Feature: report list of expansion boards found in Finder
+@IDE @IDE:others @IDE:others:no_board @IDEDEBUG
+Feature: Creation and build of all projects for all MCU/Board
 
 Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
     Given user sets viewport size to '4K'
-
-    Given user clicks Finder icon
-    Given user builds list of 'Expansion Board'
-    Given user clicks Finder icon
-    
+  
 Scenario:
-    When user adds 'Expansion Board' list to test report
+    When user clicks Finder icon
+    When user builds list of 'MCU'
+    When user builds list of 'Board'
+    When user builds all projects for 'Board'

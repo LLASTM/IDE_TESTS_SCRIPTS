@@ -11,12 +11,12 @@
 Feature: report list of Parts found in Finder
 
 Background:
-    Given user opens CubeStudio workspace in "../initial_workspaces/wsp01"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user sets viewport size to '4K'
 
     Given user clicks Finder icon
-    Given user builds list of "Part"
+    Given user builds list of 'Part'
     Given user clicks Finder icon
     
 Scenario:
-    Then user adds "Part" list to test report
+    When user adds 'Part' list to test report

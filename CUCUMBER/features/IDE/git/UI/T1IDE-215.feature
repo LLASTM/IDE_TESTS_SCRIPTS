@@ -16,78 +16,117 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
                       get each commit message using UI from History view
 
   Background:
-    Given user opens CubeStudio workspace in "../../../initial_workspaces/wsp00"
-    Given user sets viewport size to "4K"
+    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user sets viewport size to '4K'
 
   Scenario:
-    Then user clicks Source Control icon
-    Then user adds a screenshot to test report
-    Then user uses palette command to clone repository "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY"
-    Then user adds a screenshot to test report
+    When user clicks Source Control icon
+    When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
+    When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
+    When user pauses for '8' seconds
+
+    When user clicks explorer icon
     
-    Then user clicks explorer icon
-    Then user searches for string "https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY" in current page
-    Then user adds a screenshot to test report
-
-    Then testuser expands fake repo project directories
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'textFile01.txt'
+    #When testuser expands fake repo project directories
+   
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user adds a screenshot to test report
-    Then user searches for commit "Initial commit" in History view
+    Then user searches for commit 'Initial commit' in History view
     
     # commit #1
-    Then user clicks explorer icon
+    When user clicks explorer icon
     Then testuser patches file textFile01.txt
-    Then user saves all files
-    Then testuser closes editor
-    Then testuser closes fake directory
+
+    When user selects menu 'File/Save All'
+    #When user saves all files
+
+    Then user selects menu 'File/Close Editor'
+    #Then user closes editor
+
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+    #Then testuser closes fake directory
+
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
     Then user clicks on commit signed off button
-    Then user enters commit message "commit #1"
+    Then user enters commit message 'commit #1'
     Then user adds a screenshot to test report
 
-    Then user goes to History view
+    Then user selects menu 'View/History'
+    #Then user goes to History view
+
     Then user adds a screenshot to test report
     
     # commit #2
-    Then user clicks explorer icon
-    Then testuser expands fake repo project directories
+    When user clicks explorer icon
+
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'textFile01.txt'
+    #When testuser expands fake repo project directories
+
     Then testuser patches file textFile01.txt
-    Then user saves all files
-    Then testuser closes editor
-    Then testuser closes fake directory
+    
+    Then user selects menu 'File/Save All'
+
+    Then user selects menu 'File/Close Editor'
+
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
     Then user clicks on commit signed off button
-    Then user enters commit message "commit #2"
+    Then user enters commit message 'commit #2'
     Then user adds a screenshot to test report
 
-    Then user goes to History view
+    Then user selects menu 'View/History'
+
     Then user adds a screenshot to test report
     
     # commit #3
-    Then user clicks explorer icon
-    Then testuser expands fake repo project directories
-    Then testuser patches file textFile01.txt
-    Then user saves all files
-    Then testuser closes editor
-    Then testuser closes fake directory
-    Then user adds a screenshot to test report
+    When user clicks explorer icon
 
-    Then user clicks Source Control icon
-    Then user clicks on staging all changes button
-    Then user clicks on commit signed off button
-    Then user enters commit message "commit #3"
-    Then user adds a screenshot to test report
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'textFile01.txt'
 
-    Then user goes to History view
-    Then user adds a screenshot to test report
+    When testuser patches file textFile01.txt
+    When user selects menu 'File/Save All'
+    When user selects menu 'File/Close Editor'
 
+    When user clicks object containing text 'Files'
+    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
+    When user adds a screenshot to test report
+    When user clicks Source Control icon
+
+    #When user clicks object containing text '...'
+    #When user pauses for '2' seconds
+    #When user selects menu 'Changes/Stage All Changes'
+    #When user pauses for '2' seconds
+    When user clicks on staging all changes button
+
+    #When user clicks object containing text '...'
+    #When user pauses for '2' seconds
+    #When user selects menu 'Commit/Commit (Signed Off)'
+    #When user pauses for '2' seconds
+    #When user clicks object containing text 'Message'
+    When user clicks on commit signed off button
+
+    When user enters commit message 'commit #3'
+    When user adds a screenshot to test report
+
+    When user selects menu 'View/History'
+    
     # 3 commits + initial commit
-    Then user expects to find "4" commits in History view
+    Then user expects to find '4' commits in History view
