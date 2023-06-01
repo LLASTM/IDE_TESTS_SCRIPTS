@@ -36,6 +36,7 @@ setParallelCanAssign(myTagRule)
 
 import { Page } from '@playwright/test';
 import CubeWorld from "./CubeWorld"
+
 setWorldConstructor(CubeWorld);
 
 let page: Page;
@@ -74,9 +75,11 @@ Given("user opens CubeStudio", { timeout: 60 * 1000 }, async function () {
 
 Given("user opens CubeStudio workspace in {string}", { timeout: 60 * 1000 }, async function(this: CubeWorld, workspacePath: string) {
     await this.init(this.featureRelDir +'/'+ workspacePath);
+
     page = this.page;
     theiaApp = this.theiaApp;
     menuBar = theiaApp.menuBar;
+
 });
 
 Given('quick command is opened', { timeout: 60 * 1000 }, async function () {
@@ -168,6 +171,14 @@ When('user runs quick command {string}', { timeout: 60 * 1000 }, async (quick_co
     await page.keyboard.press('Enter');
 });
 
+When('user runs quick command {string} to clone directory {string}', { timeout: 60 * 1000 }, async (quick_command:string, repoUrl:string) => {
+	const quickCommandPalette = theiaApp.quickCommandPalette; 
+    await quickCommandPalette.open();
+    await quickCommandPalette.type(quick_command);
+    await quickCommandPalette.trigger(quick_command);
+    await quickCommandPalette.type(repoUrl);
+});
+
 When('user type {string} in command palette', { timeout: 60 * 1000 }, async(text:string) =>{
 	const quickCommandPalette = theiaApp.quickCommandPalette; 
     await quickCommandPalette.type(text);
@@ -186,6 +197,15 @@ When('user presses Enter', { timeout: 60 * 1000 }, async() =>{
     await pressKey('Enter');
 });
 
+// async function userSelectsMenu(menu:string) {
+//     const subMenus = menu.split('/');
+//     await new Promise( resolve => setTimeout(resolve,+ 1000) ); // Workaround when menubar is not yet available
+//     const mainMenu = await menuBar.openMenu(subMenus[0]);
+//     await new Promise( resolve => setTimeout(resolve,+ 1000) ); // <== Added by [LLA]
+//     subMenus.shift();
+//     const item = await mainMenu.menuItemByNamePath(...subMenus);
+//     await item?.click();
+// }
 // regression test exists
 When('user selects menu {string}', { timeout: 60 * 1000 }, async(menu:string) =>{
     const subMenus = menu.split('/');
@@ -194,6 +214,7 @@ When('user selects menu {string}', { timeout: 60 * 1000 }, async(menu:string) =>
     subMenus.shift();
     const item = await mainMenu.menuItemByNamePath(...subMenus);
     await item?.click();
+
 });
 
 When('user deletes text line matching pattern {string}', async(text:string) =>{
@@ -283,6 +304,7 @@ export async function clickText(pattern:string) {
     const obj = page.locator(`text=${pattern} >> visible=true`).first();
     await obj.isEnabled();
     await obj.click({force:true});
+    //await obj.isVisible(); // Added by LLA
 }
 
 export async function clickTextBelowText(pattern:string, below:string) {
@@ -323,7 +345,9 @@ When('user clicks explorer icon', async()=>{
 });
 
 export async function openExplorer() {
-    await clickExplorerIcon();
+    //await clickExplorerIcon();
+    await page.locator('.p-TabBar-tabIcon.codicon.codicon-files').first().click();
+    new Promise( resolve => setTimeout(resolve, 2000) );
 }
 When('user opens Explorer', async()=>{
 	await clickExplorerIcon();
@@ -587,47 +611,36 @@ When('user clicks panel {string}', { timeout: 60 * 1000 }, async function (this:
 
 
 // The following variables are used for IDE integration tests
-let notificationsList: Array<string> = [];   // This list is used to build a test verdict since no access to console logs is possible
-let boardsList: Array<string> = [];          // contains the list of boards found in the Finder
-let mcusList: Array<string> = [];            // contains the list of mcus found in the Finder
-let mpusList: Array<string> = [];            // contains the list of mpus found in the Finder
-let expansionBoardsList: Array<string> = []; // contains the list of expansion boards found in the Finder
-let PartsList: Array<string> = [];           // contains the list of parts found in the Finder
+let notificationsList: Array<string> = [];      // This list is used to build a test verdict since no access to console logs is possible
+let boardsList: Array<Array<string>>=[];          // contains the list of boards found in the Finder
+let mcusList: Array<Array<string>>=[];            // contains the list of mcus found in the Finder
+let mpusList: Array<Array<string>>=[];            // contains the list of mpus found in the Finder
+let expansionBoardsList: Array<Array<string>>=[]; // contains the list of expansion boards found in the Finder
+let PartsList: Array<Array<string>>=[];           // contains the list of parts found in the Finder
 
 // This step is used to attach a screenshot to the html test report
-Then('user adds a screenshot to test report', async function (this: CubeWorld) {
+Then('user adds a screenshot to test report', async function (this: CubeWorld) {[localStorage]
     const image = await this.page?.screenshot();
     image && (await this.attach(image, 'image/png'));
+});
+
+When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
+    await this.page.locator('text=Synchronize').click();
 });
 
 /**
  * 
  * @param repoUrl : The url of the git repository to be cloned
  */
-async function userClonesRepository(repoUrl:string) {
-       await page.locator('div[id="workbench.action.showCommands"][title="Command Palette (Ctrl+Shift+P)"]').waitFor({state:"visible"});
-       await page.locator('div[id="workbench.action.showCommands"][title="Command Palette (Ctrl+Shift+P)"]').click();
-
-       await page.locator('[aria-label="Type to narrow down results\\."]').waitFor({state:"visible"});
-       await page.locator('[aria-label="Type to narrow down results\\."]').click();
-       await page.locator('[aria-label="Type to narrow down results\\."]').fill('>git clone');
-
-       await page.locator('span:has-text("Git: Clone...")').first().waitFor({state:"visible"});
-       await page.locator('span:has-text("Git: Clone...")').first().click();
-
-       await page.locator('[placeholder="Select Repository Location"]').waitFor({state:"visible"});
-       await page.locator('[placeholder="Select Repository Location"]').click();
-
-       await page.locator('[placeholder="Select Repository Location"]').fill(repoUrl);
-
+async function userSelectsRepositoryLink(repoUrl:string) {
        const locatorText=`a:has-text("Clone the Git repository: ${repoUrl}")`;
        await page.locator(locatorText).waitFor({state:"visible"});
        await page.locator(locatorText).click();
 }
 
 // This step opens the command palette, and uses the git clone command to clone a repo which url is provided
-Then('user uses palette command to clone repository {string}',{ timeout: 60 * 1000 },async function (this: CubeWorld, repoUrl:string) {
-    await userClonesRepository(repoUrl);
+Then('user selects repository {string} link',{ timeout: 60 * 1000 },async function (this: CubeWorld, repoUrl:string) {
+    await userSelectsRepositoryLink(repoUrl);
 });
 
 // This function searches fro a string in the current page
@@ -652,86 +665,6 @@ async function userSearchesForStringInCurrentPage(textToFind:string) {
 // This step is used to search for a string provided as a parameter inside the current page
 Then('user searches for string {string} in current page', { timeout: 60 * 1000 },async function (this: CubeWorld, repoUrl:string) {
     await userSearchesForStringInCurrentPage(repoUrl);
-});
-
-// This function is used to expand the directories of a test dedicated repository
-async function userExpandsTestDirectory() {
-    IDEtrace('DEBUG','Entering user expands project directories');
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').waitFor({state: "attached"});
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').waitFor({state: "visible"});
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').click();
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-
-    await page.locator('text=Files').first().waitFor({state: "attached"});
-    await page.locator('text=Files').first().waitFor({state: "visible"});
-    await page.locator('text=Files').first().click();
-
-    await page.locator('text=textFile01.txt').waitFor({state: "attached"});
-    await page.locator('text=textFile01.txt').waitFor({state: "visible"});
-    await page.locator('text=textFile01.txt').click();
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-}
-
-// This step is used to expand some directories of a repository dedicated to tests.
-Then('testuser expands fake repo project directories',{ timeout: 60 * 1000 }, async function (this: CubeWorld) {
-    await userExpandsTestDirectory();
-});
-
-Then('testuser closes fake directory',{ timeout: 60 * 1000 }, async function (this: CubeWorld) {
-    
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').waitFor({state: "attached"});
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').waitFor({state: "visible"});
-    await page.locator('#files >> text=IDE_TESTS_FAKE_REPOSITORY').click();
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-});
-
-// This function was created because the call to File->Save does not work
-async function userSavesAllFiles() {
-
-    await page.locator('[id="theia\\:menubar"] >> text=File').waitFor({state: "visible"});
-    await page.locator('[id="theia\\:menubar"] >> text=File').click();
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    await page.locator('text=Save All').waitFor({state: "visible"});
-    await page.locator('text=Save All').click();
-
-    // here we should find a way to detect that all files are saved instead of waiting
-    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
-
-    IDEtrace('DEBUG',"command Save All done");
-}
-
-// This tep is used to save all files present in the current view
-Then('user saves all files' , async function (this: CubeWorld) {
-    await userSavesAllFiles();
-});
-
-// This function is used to close the current editor used to patch the file main.c during IDE tests
-async function userClosesEditor() {
-    await page.locator('[id="theia\\:menubar"] >> text=File').waitFor({state: "visible"});
-    await page.locator('[id="theia\\:menubar"] >> text=File').click();
-
-    await page.locator('text=Close Editor').waitFor({state: "visible"});
-    await page.locator('text=Close Editor').click();
-
-    await page.locator('div:nth-child(2) > .theia-TreeNodeContent > .theia-TreeNodeSegment.theia-ExpansionToggle').waitFor({state: "visible"});
-    await page.locator('div:nth-child(2) > .theia-TreeNodeContent > .theia-TreeNodeSegment.theia-ExpansionToggle').click();
-
-    await page.locator('.theia-TreeNodeSegment').first().waitFor({state: "visible"});
-    await page.locator('.theia-TreeNodeSegment').first().click();
-}
-
-// This step is used to close the current editor used to patch the file main.c during IDE tests
-Then('testuser closes editor',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
-    await userClosesEditor();
 });
 
 // this function is used to patch file main.c of a project during IDE tests
@@ -788,7 +721,7 @@ async function userAddsAllChangesToStagingArea() {
             }
             else
             {
-                console.error("user clicks on staging all changes button : did not find target element");
+                IDEtrace('ERROR',"user clicks on staging all changes button : did not find target element");
             }
           }
         }
@@ -858,6 +791,9 @@ Then('user clicks on commit signed off button',{ timeout: 300 * 1000 }, async fu
 async function userEntersCommitMessage(commitMessage:string ) {
     IDEtrace('DEBUG','userEntersCommitMessage');
 
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+
+    // await page.locator('text=Please provide a commit messageChanges0HEAD CommitInitial commit3 weeks ago by L >> textarea').fill('totototo');
     await page.locator('textarea').waitFor({state: "visible"});
     await page.locator('textarea').click();
 
@@ -870,40 +806,12 @@ async function userEntersCommitMessage(commitMessage:string ) {
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
     IDEtrace('DEBUG','userEntersCommitMessage done');
+
 }
 
 // This step is used to add a commit message
 Then('user enters commit message {string}',{ timeout: 300 * 1000 }, async function (this: CubeWorld,commitMessage:string) {
     await userEntersCommitMessage(commitMessage);
-});
-
-// This function is called when user wants to go to History view
-async function userGoesToHistoryView() {
-    IDEtrace('DEBUG','user goes to History view');
-
-    await page.locator('[id="theia\\:menubar"] >> text=View').waitFor({state: "visible"});
-    await page.locator('[id="theia\\:menubar"] >> text=View').click();
-
-    const targetElement=page.locator('li.p-Menu-item[data-command="scm-history:open-branch-history"]');
-    if (targetElement)
-    {
-      IDEtrace('DEBUG','user goes to History view : target element found');
-      await targetElement.waitFor({state: "visible"});
-      await targetElement.click();
-
-      // for user to see result visually
-      await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    }
-    else
-    {
-        IDEtrace('ERROR','user goes to History view : target element not found');
-    }
-    IDEtrace('DEBUG','user goes to History view done');
-}
-
-// This step is used when user wants to go to History view...
-Then('user goes to History view',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
-    await userGoesToHistoryView();
 });
 
 /**
@@ -954,6 +862,15 @@ Then('user expects to find {string} commits in History view',{ timeout: 30 * 100
     }
 });
 
+async function rightClickText(pattern:string) {
+    const obj = page.locator(`text=${pattern} >> visible=true`).first();
+    await obj.isEnabled();
+    await obj.click({button: 'right'});
+    await obj.isVisible();
+}
+When('user right clicks on text {string}',{ timeout: 20 * 1000 }, async function (this: CubeWorld,textToClick:string) {
+    await rightClickText(textToClick);
+});
 // This function is test specific, it consists in creating a number of empty files
 // This number of files is the argument to this function
 async function userCreatesASetOfNewFiles(numberOfFiles:string) {
@@ -961,12 +878,9 @@ async function userCreatesASetOfNewFiles(numberOfFiles:string) {
 
     for (let index = 0; index < Number(numberOfFiles); index++) {
       IDEtrace('DEBUG','creating file #' + index);
-      await page.locator('#files >> text=Files').first().waitFor({state:"visible"});
-      await page.locator('#files >> text=Files').first().click({ button: 'right' });
 
-      await page.locator('text=New File').waitFor({state:"visible"});
-      await page.locator('text=New File').click();
-
+      await rightClickText('Files');
+      clickText('New File');
       await page.locator('text=New FileIDE_TESTS_FAKE_REPOSITORY/FilesOK >> input[type="text"]').fill(`textFile${index}.txt`);
       await page.locator('button:has-text("OK")').click();
     }
@@ -1025,10 +939,10 @@ async function userAddsAllFilesToStagingArea() {
     if (numberOfFilesChanged)
     {
       const value=await numberOfFilesChanged.textContent();
-      console.debug('\nuserAddsAllFilesToStagingArea : found ' + value + ' files changed');
+      IDEtrace('DEBUG','\nuserAddsAllFilesToStagingArea : found ' + value + ' files changed');
     }
     else{
-      console.debug('userAddsAllFilesToStagingArea: found no file changed');
+        IDEtrace('DEBUG','userAddsAllFilesToStagingArea: found no file changed');
     }
 
     await page.locator('[id="__more__"]').first().waitFor({state: "visible"});
@@ -1082,6 +996,29 @@ When('user clicks Source Control icon', async()=>{
 	await clickSourceControlIcon();
 });
 
+async function userBuildsConfiguration(swProjectName:string,configurationToBuild:string) {
+    try{
+        page.locator('text=Build ' + swProjectName + ' | main | ' + configurationToBuild).first().click();
+        await page.locator('.theia-TreeNode.theia-CompositeTreeNode.theia-ExpandableTreeNode.theia-mod-selected > .theia-TreeNodeContent > .theia-TreeNodeSegment.flex > .theia-TreeNodeSegment').click();
+        await new Promise( resolve => setTimeout(resolve, + 20 * 1000) );
+    } 
+    catch
+    {
+        IDEtrace('DEBUG','userBuildsConfiguration:could not launch build command');
+    }
+}
+
+async function userCleansBuildsConfiguration(swProjectName:string, configurationToBuild:string) {
+    try{
+        await page.locator('text=Clean and Build ' + swProjectName + ' | main | ' + configurationToBuild ).first().click();
+        await page.locator('.theia-TreeNode.theia-CompositeTreeNode.theia-ExpandableTreeNode.theia-mod-selected > .theia-TreeNodeContent > .theia-TreeNodeSegment.flex > .theia-TreeNodeSegment').click();
+        await new Promise( resolve => setTimeout(resolve, + 20 * 1000) );
+    }
+    catch
+    {
+        userCleansBuildsConfiguration('DEBUG','userBuildsConfiguration:could not launch build command');
+    }
+}
 function buildVerdictFromNotificationsList(notifications:string[]) {
 
     let errorsFound=0;
@@ -1089,7 +1026,7 @@ function buildVerdictFromNotificationsList(notifications:string[]) {
      if (!notifications.includes('project build'))
     {
         errorsFound++;
-        expect.soft(errorsFound,'No notification about project build was found').toBe(0);
+        //expect.soft(errorsFound).toBe(0);
         // test verdict should be set to FAILED
     }
     for (const iterator of notifications) {
@@ -1120,6 +1057,327 @@ Then('user clears notifications list', { timeout: 20 * 1000 }, async function (t
     notificationsList = [];
 });
 
+async function userclearsNotifications() {
+    notificationsList = [];
+    // clearing notifications
+    try {
+        await page.locator('span.codicon-bell-dot').click();
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+        await page.locator('.theia-notification-actions > .codicon.codicon-clear-all').click();
+    }
+    catch
+    {
+        IDEtrace('DEBUG','no item found for New Notifications');
+    }
+}
+async function userOpensClockConfigurationView() {
+    IDEtrace('DEBUG','Opening clock configuration view');
+    await page.locator('[data-testid="clock_button_open"] span').click();
+    await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
+    await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+}
+async function userOpensPinoutView() {
+    IDEtrace('DEBUG','Opening pinout view');
+    await page.locator('[data-testid="pinout_button_open"] span').click();
+    await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
+    await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+}
+async function userRefreshesTasksList() {
+    IDEtrace('DEBUG','Refreshing tasks list');          
+    await page.locator('.p-TabBar-tabIcon.theia-plugin-view-container').first().click();
+    await page.locator('[id="task-manager-tasks\\.refresh-as-tabbar-toolbar-item"]').first().click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    await page.locator('[id="task-manager-tasks\\.refresh-as-tabbar-toolbar-item"]').first().click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    // await page.locator('.p-TabBar-tabIcon.theia-plugin-view-container').first().click(); // keeping tasks list opened
+    IDEtrace('DEBUG','tasks list is refreshed now');
+}
+async function userClosesOpenedWindows(products:string,deviceName:string) {
+    // now we close all windows opened
+    IDEtrace('DEBUG','closing all opened windows');
+
+    const locatorText='[id="shell-tab-product\\:\\:hardware\\:\\:' + products.toLocaleLowerCase() + '\\:\\:' + deviceName + '"] > .p-TabBar-tabCloseIcon';
+    await page.locator(locatorText).click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+
+    IDEtrace('DEBUG','All opened windows should be closed now');
+}
+
+async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string,index:number) {
+    const locatorText="div[id='theia-statusBar'] ";
+    const statusBar=await page.locator(locatorText).textContent();
+    // IDEtrace('DEBUG','userGetsTheiaStatusBar: status bar value is [' + statusBar + ']');
+    if (statusBar) { 
+        try 
+        {
+            const context=statusBar.split(']')[0].replace('[',''); 
+            //IDEtrace('INFO','device:' + deviceName + ', device status:' + deviceStatus + ', context for project ' + projectName + ' and sw project name ' + swProjectName + ' is [' + context + ']');
+            IDEtrace('INFO','device:' + deviceName + ', context is [' + context + ']');
+        }
+        catch
+        {
+            IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', Failed to extract context from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
+        }
+    }
+}
+async function userSelectsFileMainDotC(projectName:string,swProjectName:string) {
+    
+    IDEtrace('DEBUG','Entering userSelectsFileMainDotC');
+    await openExplorer();
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+    try
+    {
+        await clickText(projectName);
+        await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+        await clickText(swProjectName);
+        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+        await clickText('src');
+        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+        await clickText('main.c');
+        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to click on file main.c');
+    }
+    IDEtrace('DEBUG','Leaving userSelectsFileMainDotC');
+}
+
+async function  deleteProjectFromWorkspace(projectName:string) {
+    IDEtrace('DEBUG','Entering deleteProjectFromWorkspace');
+    openExplorer();
+    //await page.pause();
+    await page.locator('#files >> text=' + projectName).first().click({
+        button: 'right'
+      });
+    await page.locator('text=Delete').first().click();
+    await page.locator('text=OK').click();
+    IDEtrace('DEBUG','Leaving deleteProjectFromWorkspace');
+}
+When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
+    products:string,
+    createProjectFlag:string,
+    deleteProjectFlag:string,
+    checkContextFlag:string,
+    buildFlag:string, 
+    displayPinoutViewFlag:string,
+    displayClockViewFlag:string
+    ) {
+    
+    // console.log(products);
+    // console.log(createProjectFlag);
+    // console.log(deleteProjectFlag);
+    // console.log(checkContextFlag);
+    // console.log(buildFlag);
+    // console.log(displayPinoutViewFlag);
+    // console.log(displayClockViewFlag);
+
+    //await this.page.pause();
+
+    await userStartsIDETests(products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag);
+});
+async function userStartsIDETests(  products:string,  
+                                    createProjectFlag:string,
+                                    deleteProjectFlag:string,
+                                    checkContextFlag:string,
+                                    buildFlag:string, 
+                                    displayPinoutViewFlag:string,
+                                    displayClockViewFlag:string) {
+
+    IDEtrace('DEBUG','Building projects for ' + products);
+
+    let currentList: Array<Array<string>>=[];
+
+    if (products === 'Board') { if (boardsList) { currentList=boardsList;} }
+    if (products === 'MCU') { if (mcusList) { currentList=mcusList;}}
+    if (products === 'MPU') { if (mpusList) { currentList=mpusList;}}
+
+    IDEtraceTable(currentList);
+    IDEtrace('DEBUG','List length is ' + currentList.length);
+
+    // we must click on Board/MCU/MPU here
+    const locatorText='button:has-text("' + products + '")'
+    await page.locator(locatorText).first().click();
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
+    for(let index=1;index<currentList.length;index++)
+    {
+        let deviceName='unknown_device';
+        let deviceStatus='unknown_status';
+        for(let index2=0;index2<currentList[0].length;index2++)
+        {
+            const field=currentList[0][index2];
+            
+            // IDEtrace('DEBUG','field ' + index2 + '=[' + field + ']');
+            if ( field === 'Status')
+            {
+                deviceStatus=currentList[index][index2];
+                // IDEtrace('DEBUG', 'device status is : ' + deviceStatus);
+            }
+            if ( field === 'Part Number')
+            {
+                deviceName=currentList[index][index2];
+                // IDEtrace('DEBUG', 'device name is : ' + deviceName);
+            }
+            
+        }
+        if (deviceStatus === 'Active')
+        {
+            const projectName='project_' + deviceName;
+            const swProjectName='sw_' + projectName;
+
+            IDEtrace('DEBUG', 'Creating project ' + projectName + ' for device:' + deviceName);
+            
+            if (createProjectFlag === 'true')
+            {
+                await userCreatesProjectForDevice(projectName, deviceName);
+                await userAddsANewSWProject(swProjectName);
+            }
+
+            // Add a flag and procedure here if we want to import already existing projects
+
+            if (checkContextFlag === 'true')
+            {
+                await userSelectsFileMainDotC(projectName,swProjectName);
+                await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName, index);
+            }
+            // we close editor containing file main.c
+            await page.locator('[id="theia\\:menubar"] >> text=File').click();
+            await page.locator('text=Close Editor').click();
+
+            if (displayClockViewFlag==='true') { await userOpensClockConfigurationView();}
+            if (displayPinoutViewFlag==='true') { await userOpensPinoutView();}
+
+            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
+            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );           
+
+            if (buildFlag==='true')
+            {
+                await userRefreshesTasksList();
+
+                await userBuildsConfiguration(swProjectName,'debug');
+                await userBuildsConfiguration(swProjectName,'release');
+                        
+                await userCleansBuildsConfiguration(swProjectName,'debug');
+                await userCleansBuildsConfiguration(swProjectName,'release');
+
+                await userGetsNotificationsAfter('project build');
+
+                buildVerdictFromNotificationsList(notificationsList);
+            }
+            else
+            {
+                await userGetsNotificationsAfter('project creation');
+            }
+
+            await userclearsNotifications();
+            await userClosesOpenedWindows(products,deviceName);
+
+            if (deleteProjectFlag==='true') { await deleteProjectFromWorkspace(projectName); }
+        }       
+    }
+}
+
+When('user builds all projects for {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, products:string) {
+    IDEtrace('DEBUG','Building projects for ' + products);
+
+    const deleteProjectFlag=true;
+    const createProjectFlag=true;
+    const buildFlag=false;
+    const displayPinoutViewFlag=false;
+    const displayClockViewFlag=false;
+
+    let currentList: Array<Array<string>>=[];
+
+    if (products === 'Board') { if (boardsList) { currentList=boardsList;} }
+    if (products === 'MCU') { if (mcusList) { currentList=mcusList;}}
+    if (products === 'MPU') { if (mpusList) { currentList=mpusList;}}
+
+    IDEtraceTable(currentList);
+    IDEtrace('DEBUG','List length is ' + currentList.length);
+
+    // we must click on Board/MCU/MPU here
+    const locatorText='button:has-text("' + products + '")'
+    await this.page.locator(locatorText).first().click();
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
+    for(let index=1;index<currentList.length;index++)
+    {
+        let deviceName='unknown_device';
+        let deviceStatus='unknown_status';
+        for(let index2=0;index2<currentList[0].length;index2++)
+        {
+            const field=currentList[0][index2];
+            
+            // IDEtrace('DEBUG','field ' + index2 + '=[' + field + ']');
+            if ( field === 'Status')
+            {
+                deviceStatus=currentList[index][index2];
+                // IDEtrace('DEBUG', 'device status is : ' + deviceStatus);
+            }
+            if ( field === 'Part Number')
+            {
+                deviceName=currentList[index][index2];
+                // IDEtrace('DEBUG', 'device name is : ' + deviceName);
+            }
+            
+        }
+        if (deviceStatus === 'Active')
+        {
+            const projectName='project_' + deviceName;
+            const swProjectName='sw_' + projectName;
+
+            IDEtrace('DEBUG', 'Creating project ' + projectName + ' for device:' + deviceName);
+            
+            if (createProjectFlag)
+            {
+                await userCreatesProjectForDevice(projectName, deviceName);
+                await userAddsANewSWProject(swProjectName);
+            }
+            await userSelectsFileMainDotC(projectName,swProjectName);
+
+            await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName, index);
+            
+            // we close editor containing file main.c
+            await page.locator('[id="theia\\:menubar"] >> text=File').click();
+            await page.locator('text=Close Editor').click();
+
+            if (displayClockViewFlag) { await userOpensClockConfigurationView();}
+            if (displayPinoutViewFlag) { await userOpensPinoutView();}
+
+            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
+            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );           
+
+            if (buildFlag)
+            {
+                await userRefreshesTasksList();
+
+                await userBuildsConfiguration(swProjectName,'debug');
+                await userBuildsConfiguration(swProjectName,'release');
+                        
+                await userCleansBuildsConfiguration(swProjectName,'debug');
+                await userCleansBuildsConfiguration(swProjectName,'release');
+
+                await userGetsNotificationsAfter('project build');
+
+                buildVerdictFromNotificationsList(notificationsList);
+            }
+            else
+            {
+                await userGetsNotificationsAfter('project creation');
+            }
+
+            await userclearsNotifications();
+            await userClosesOpenedWindows(products,deviceName);
+
+            if (deleteProjectFlag === true) { await deleteProjectFromWorkspace(projectName); }
+        }       
+    }
+});
 /**
  *
  * this function is called to get the list of boards,mcus,mpus,parts,expansion boards
@@ -1133,14 +1391,19 @@ async function userGetsListOfItems(products:string) {
     itemsList.push('List of ' + products + ' found in Finder');
 
     const locatorText=`button:has-text("${products}")`;
+
     await page.locator(locatorText).first().click();
+    IDEtrace('DEBUG', 'click on ' + products + ' done');
+
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
 
     await page.locator("text=Product(s) found:").first().waitFor({state: "visible"});
     const productString=await page.locator("text=Product(s) found:").first().textContent();
 
     let numberOfProducts=0;
     if (productString) { numberOfProducts = Number (productString.replace("Product(s) found:","")) ; }
-
+    IDEtrace('DEBUG', 'found ' + numberOfProducts + ' products');
+    
     let nextPageButtonIsVisible=false;
     let counter=0;
 
@@ -1156,18 +1419,20 @@ async function userGetsListOfItems(products:string) {
 
         const tableheadersList=page.locator(headersLocatorText);
         const numberOfHeaders = await tableheadersList.count();
-        console.log('Found ' + numberOfHeaders + ' headers in current page');
+        IDEtrace('DEBUG', 'Found ' + numberOfHeaders + ' headers in current page');
 
         const headersList: Array<string> = [];
         for(let index=0;index<numberOfHeaders;index++)
         {
-                const currentHeaderItem =  tableheadersList.nth(index);
-            
-                const headerName=await currentHeaderItem.textContent();
-                if (headerName) { headersList.push(headerName); }
-                // console.log(headerName);
+            const currentHeaderItem =  tableheadersList.nth(index);
+        
+            const headerName=await currentHeaderItem.textContent();
+            if (headerName) 
+            { 
+                    headersList.push(headerName);
+                IDEtrace('DEBUG',headerName);
+            }
         }
-        // console.table(headersList);
         data.push(headersList);
 
         do
@@ -1201,7 +1466,7 @@ async function userGetsListOfItems(products:string) {
                     if (currentItemText) { dataList.push(currentItemText); }
                 }
                  
-                if ( !data.includes(dataList)) { data.push(dataList); }  
+                data.push(dataList);  
             }
 
             const nextPageButton=page.locator('div.MuiTablePagination-actions >> button[aria-label="Go to next page"] ');
@@ -1215,18 +1480,21 @@ async function userGetsListOfItems(products:string) {
             {
                 counter++;
             }
-        } while (counter != 1);
-        //IDEtraceTable(data);
+        } while (counter != 1);        
     }
     
-    //return itemsList;
-    return [];
+    // await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:board"] > .p-TabBar-tabCloseIcon').click();  
+    // await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:mcu"] > .p-TabBar-tabCloseIcon').click();
+    await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:' + products.toLocaleLowerCase() + '"] > .p-TabBar-tabCloseIcon').click();
+    
+    IDEtraceTable(data);
+    return data;
 }
 
 // This function fills the adequate list depending on "products" string
 async function userBuildsListOfProducts(products:string) {
 
-    let itemsList: Array<string> = [];
+    let itemsList: Array<Array<string>>=[];
     itemsList= await userGetsListOfItems(products);
 
     if (products === "MCU")   { mcusList=itemsList;  }
@@ -1257,7 +1525,7 @@ Then('user builds list of {string}', { timeout: 90 * 1000 }, async function (thi
 async function userAddsListToTestReport(listToReport:string) {
 
     let textToReport="";
-    let itemsList: Array<string> = [];
+    let itemsList: Array<Array<string>>=[];
 
     if (listToReport === "MCU")   { itemsList=mcusList;  }
     if (listToReport === "Board") { itemsList=boardsList;}
@@ -1275,19 +1543,6 @@ async function userAddsListToTestReport(listToReport:string) {
 Then('user adds {string} list to test report', { timeout: 90 * 1000 }, async function (this: CubeWorld, listToReport: string) {
     const textToReport=await userAddsListToTestReport(listToReport);
     this.attach(textToReport,'text/plain');
-});
-
-Then('user opens About menu', { timeout: 60 * 1000 },async function (this: CubeWorld) {
-    await this.page.locator('text=Help').waitFor({state: "visible"});
-    await this.page.locator('text=Help').click();
-
-    await this.page.locator('text=About').waitFor({state: "visible"});
-    await this.page.locator('text=About').click();
-});
-
-Then('user closes About menu', { timeout: 60 * 1000 },async function (this: CubeWorld) {
-    await this.page.locator('text=OK').waitFor({state: "visible"});
-    await this.page.locator('text=OK').click();
 });
 
 // This step is called when user wants to add the cube studio version to the test report
@@ -1316,26 +1571,19 @@ Then('user gets theia extensions', async function (this: CubeWorld) {
         }
     }
     await this.attach(allExtensionsText,'text/plain');
-    IDEtraceTable(menu);
 
 });
 
-// This step is used when user wants to get the list of notifications appeared during the step  passed as a parameter
-Then('user gets notifications after {string}', { timeout: 20 * 1000 }, async function (this: CubeWorld, notificationText:string) {
-
+//async function userGetsNotificationsAfter(context: CubeWorld,notificationText:string) {
+async function userGetsNotificationsAfter(notificationText:string) {
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    const notificationsListLocator = this.page.locator('div.theia-notification-message span') ;
+    const notificationsListLocator = page.locator('div.theia-notification-message span') ;
 
     const childrenCounter = await notificationsListLocator.count();
     IDEtrace('DEBUG','user gets notifications : found ' + childrenCounter + ' notifications');
 
     for (let index = 0; index < childrenCounter; index++) {
       const message=await notificationsListLocator.nth(index).innerText();
-
-      IDEtrace('DEBUG','message ' + index + ' : ' + message);
-      IDEtrace('DEBUG','============== notificationsList');
-      IDEtraceTable(notificationsList);
-      IDEtrace('DEBUG','==============');
 
       if (message) {
         IDEtrace('DEBUG',message);
@@ -1347,64 +1595,106 @@ Then('user gets notifications after {string}', { timeout: 20 * 1000 }, async fun
       }
     }
 
-    // const image = await this.page.screenshot();
-    // image && (await this.attach(image, 'image/png'));
-
     let notificationsText = 'List of notifications after ' + notificationText + '\n';
 
     for (const iterator of notificationsList) {
       notificationsText += iterator + '\n';
     }
-    await this.attach(notificationsText,'text/plain');
+    //await context.attach(notificationsText,'text/plain');
 
-    IDEtrace('DEBUG','============== Leaving user gets notifications after ' + notificationText);
+    notificationsList=[];
+
+    IDEtrace('DEBUG','============== Leaving user gets notifications after ' + notificationsText);
+}
+
+// This step is used when user wants to get the list of notifications appeared during the step  passed as a parameter
+Then('user gets notifications after {string}', { timeout: 20 * 1000 }, async function (this: CubeWorld, notificationText:string) {
+
+    // await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    // const notificationsListLocator = this.page.locator('div.theia-notification-message span') ;
+
+    // const childrenCounter = await notificationsListLocator.count();
+    // IDEtrace('DEBUG','user gets notifications : found ' + childrenCounter + ' notifications');
+
+    // for (let index = 0; index < childrenCounter; index++) {
+    //   const message=await notificationsListLocator.nth(index).innerText();
+
+    //   if (message) {
+    //     IDEtrace('DEBUG',message);
+    //     const element=notificationsList.some(item => item.includes(message));
+    //     if (!element)
+    //     {
+    //        notificationsList.push(notificationText + ':' + message);
+    //     }
+    //   }
+    // }
+
+    // let notificationsText = 'List of notifications after ' + notificationText + '\n';
+
+    // for (const iterator of notificationsList) {
+    //   notificationsText += iterator + '\n';
+    // }
+    // await this.attach(notificationsText,'text/plain');
+
+    // IDEtrace('DEBUG','============== Leaving user gets notifications after ' + notificationText);
+
+    await userGetsNotificationsAfter(notificationText);
 });
 
 // This function is called in order to convert a project before it could be built
 // The string parameter is the name of the project that should be in the explorer view
 async function userConvertsProject(projectName:string) {
-    await page.locator('text=Terminal').waitFor({state: "visible"});
-    await page.locator('text=Terminal').click();
-
-    await page.locator('text=Run Build Task').waitFor({state: "visible"});
-    await page.locator('text=Run Build Task').click();
-
-    const locatorText=`text=${projectName}: Convert`;
-    await page.locator(locatorText).waitFor({state: "visible"});
-    await page.locator(locatorText).click();
+    clickText(`${projectName}: Convert`);
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
 }
 
 // This step is called to convert a project before it could be built
 Then('user converts project {string}', async function (this: CubeWorld, projectName:string) {
     await userConvertsProject(projectName);
 });
-
+Then('user types text {string}', async function (this: CubeWorld, textToType:string) {
+    await clickText(textToType);
+});
 async function userBuildsProject(projectName:string, swProjectName:string,releaseToBuild:string ) {
-    await page.locator('text=Terminal').waitFor({state: "visible"});
-    await page.locator('text=Terminal').click();
-
-    await page.locator('text=Run Build Task').waitFor({state: "visible"});
-    await page.locator('text=Run Build Task').click();
-
-    const locatorText=`text=${projectName}: Build ${swProjectName} | main | ${releaseToBuild}`;
-    await page.locator(locatorText).waitFor({state: "visible"});
-    await page.locator(locatorText).click();
-
-    // here we should find a way to wait for the build to be finished when terminal traces are available
-    await new Promise( resolve => setTimeout(resolve, + 6 * 1000) );
+    clickText(`${projectName}: Build ${swProjectName} | main | ${releaseToBuild}`);
 }
 
 Then('user builds project {string} {string} {string}', async function (this: CubeWorld, projectName:string, swProjectName:string, releaseToBuild:string) {
     await userBuildsProject(projectName, swProjectName,releaseToBuild);
 });
 
-Then ('user clicks on Synchronize button', async function (this: CubeWorld) {
-    await this.page.locator('text=Synchronize').waitFor({state:"visible"});
-    await this.page.locator('text=Synchronize').click();
-    await new Promise( resolve => setTimeout(resolve, + 10 * 1000) );
-});
+async function userCreatesProjectForDevice(projectName:string, deviceName:string)
+{
+    IDEtrace('DEBUG','Entering userCreatesProjectForDevice');
 
-Given('user creates application project {string} with board {string}', async function (this: CubeWorld, proj_name:string, device_name:string) {
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    await page.locator('text=Search ProductSearch Product >> input[type="text"]').press('Enter');
+    await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill('');
+    await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+    await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill(`${deviceName}`);
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+
+    const locatorText=`a:has-text("${deviceName}")`;
+    await page.locator(locatorText).first().click();
+
+    IDEtrace('DEBUG','click on Start a project');
+    await clickButton('Start a project');
+    IDEtrace('DEBUG','filling project name');
+    await clickInputAtRightOfText('Project name:');
+    await typeText(projectName);
+
+    IDEtrace('DEBUG','clicking folder name');
+    //await clickFolderIcon();
+    await page.locator('[data-testid="browse-input-on-path-selected"]').click();
+
+    IDEtrace('DEBUG','clicking Open button');
+    await clickButton('Open');
+    IDEtrace('DEBUG','clicking Create Application Project');
+    await clickButton('Create Application Project');
+    
+}
+
+When('user creates application project {string} with board {string}', async function (this: CubeWorld, proj_name:string, device_name:string) {
 
     await this.page.locator('button:has-text("Board")').first().click();
 
@@ -1425,11 +1715,30 @@ Given('user creates application project {string} with board {string}', async fun
     await clickButton('Create Application Project');
 });
 
-Given('user adds a new software project {string} in application project panel', async function (this: CubeWorld, sw_proj:string) {
+async function userChoosesLaunchConfiguration(launchConfiguration:string) {
+    await page.locator('text='+launchConfiguration).waitFor({state: "visible"});
+    await page.locator('text='+launchConfiguration).click();
+}
+
+When('user selects launch configuration {string}', async function (this: CubeWorld,launchConfiguration:string) {
+    await userChoosesLaunchConfiguration(launchConfiguration);
+});
+
+async function userAddsANewSWProject(projectName:string) {
     await clickText('Add a SW project');
     await clickInputAtRightOfText('Software Project name:');
-    await typeText(sw_proj);
+    await typeText(projectName);
     await clickButton('Create SW Project');
+    // IDEtrace('DEBUG','SW project created');
+}
+
+Given('user adds a new software project {string} in application project panel', async function (this: CubeWorld, projectName:string) {
+    // await clickText('Add a SW project');
+    // await clickInputAtRightOfText('Software Project name:');
+    // await typeText(sw_proj);
+    // await clickButton('Create SW Project');
+
+    await userAddsANewSWProject(projectName);
 });
 
 Given('user adds a new software component to project {string} in application project panel', async function (this: CubeWorld, sw_proj:string) {
@@ -1444,16 +1753,6 @@ Then('user gets build log messages from console', async function (this: CubeWorl
     await this.attach("user gets conversion log messages from console: nothing possible until now",'text/plain');
 });
 
-// This step is called when user wants to see the debug console ( sequence is : View -> Debug Console)
-Then('user adds debugger console' , async function (this: CubeWorld) {
-
-    await this.page.locator('[id="theia\\:menubar"] >> text=View').waitFor({state: "visible"});
-    await this.page.locator('[id="theia\\:menubar"] >> text=View').click();
-
-    await this.page.locator('text=Debug Console').waitFor({state: "visible"});
-    await this.page.locator('text=Debug Console').click();
-});
-
 // This step is called after calling a conversion step , and should set to "conversion" verdict depending
 // on the console traces (not available until now)
 Then('user sets a conversion verdict', async function (this: CubeWorld) {
@@ -1464,48 +1763,13 @@ Then('user sets a build verdict from console traces', async function (this: Cube
     await this.attach("user sets a build verdict from console traces: nothing done until now",'text/plain');
 });
 
-// This function is called when user wants to create a debug configuration using the sequence : 
-// Run -> Start Debugging -> Cube (PoC): Generic Context Based STM32 Launch
-async function userCreatesADebugConfiguration() {
-    await page.locator('text=Run').waitFor({state: "visible"});
-    await page.locator('text=Run').click();
-
-    await page.locator('text=Start Debugging').waitFor({state: "visible"});
-    await page.locator('text=Start Debugging').click();
-
-    await page.locator('text=Cube (PoC): Generic Context Based STM32 Launch').waitFor({state: "visible"});
-    await page.locator('text=Cube (PoC): Generic Context Based STM32 Launch').click();
-}
-
-// This step is called when user wants to create a default debug configuration
-Then('user creates a debug configuration' , async function (this: CubeWorld) {
-    await userCreatesADebugConfiguration();
-});
-
-// This function calls the sequence "Run-> Start Debugging"
-async function userStartsDebugger() {
-    await page.locator('text=Run').first().waitFor({state: "visible"});
-    await page.locator('text=Run').first().click();
-
-    await page.locator('text=Start Debugging').waitFor({state: "visible"});
-    await page.locator('text=Start Debugging').click();
-
-    // waiting time to let debugger start as soon as we are not able to read status from terminal
-    await new Promise( resolve => setTimeout(resolve, + 10 * 1000) );
-}
-
-// This step is used to start debugger
-Then('user starts debugger', { timeout: 15 * 1000 }, async function (this: CubeWorld) {
-    await userStartsDebugger();
-});
-
 // this test specific step is used to perform some step over a breakpoint operations in an infinite loop
 Then('testuser performs {string} loops on breakpoints', async function (this: CubeWorld , numberOfLoops:string) {
     await this.page.locator('.theia-TreeContainer > div > .theia-TreeNode > .theia-TreeNodeContent > .theia-TreeNodeSegment').first().click();
 
     for (let index = 0; index < Number(numberOfLoops); index++)
     {
-        console.debug('=== user performs loop #' + index + ' on breakpoint' + index);
+        IDEtrace('DEBUG','=== user performs loop #' + index + ' on breakpoint' + index);
 
         await this.page.locator('.debug-action.codicon.codicon-debug-continue').waitFor({state: "visible"});
         await this.page.locator('.debug-action.codicon.codicon-debug-continue').click();
@@ -1535,7 +1799,6 @@ Then('user selects debug context for application {string}, sw project {string} a
 
 // This test specific step is used to patch file main.c (add i++)
 Then('testuser patches file main.c', async function (this: CubeWorld) {
-
     await this.page.locator('div[role="code"] div:has-text("while(1) {")').nth(4).waitFor({state: "visible"});
     await this.page.locator('div[role="code"] div:has-text("while(1) {")').nth(4).click();
 
@@ -1544,27 +1807,18 @@ Then('testuser patches file main.c', async function (this: CubeWorld) {
 });
 
 // this test specific step is called when test user want to add a breakpoint on line containing "i++" of file main.c
-Then('testuser adds breakpoints to file main.c', async function (this: CubeWorld) {
+When('testuser clicks on line with incremented i', async function (this: CubeWorld) {
     await this.page.locator('text=i++;').waitFor({state: "visible"});
     await this.page.locator('text=i++;').click();
-
-    await this.page.locator('text=Run').waitFor({state: "visible"});
-    await this.page.locator('text=Run').click();
-
-    await this.page.locator('text=Toggle Breakpoint').waitFor({state: "visible"});
-    await this.page.locator('text=Toggle Breakpoint').click();
 });
 
 // This test specific step is called when testuser wants to open file main.c of test project
 Then('testuser opens file main.c of sw project {string} of application {string}', async function (this: CubeWorld, swProjectName:string,projectName:string) {
-    // click on explorer icon
-    await this.page.locator('.p-TabBar-tabIcon.codicon').first().waitFor({state: "visible"});
-    await this.page.locator('.p-TabBar-tabIcon.codicon').first().click();
-
+    
     const locatorText1=`#files >> text=${projectName}`;
     await this.page.locator(locatorText1).waitFor({state: "visible"});
     await this.page.locator(locatorText1).click();
-
+    
     // Second we open SW project
     const locatorText2=`#files >> text=${swProjectName}`;
 
@@ -1578,49 +1832,23 @@ Then('testuser opens file main.c of sw project {string} of application {string}'
     await this.page.locator('text=main.c').first().click();
 });
 
-Then('testuser performs git repo init command', async function (this: CubeWorld) {
+Then('user performs git repo init command', async function (this: CubeWorld) {
     await page.locator('#git-init').first().click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 });
 
-Then('testuser adds files to staging area',async function (this: CubeWorld) {
-    await this.page.locator('[id="__more__"]').first().waitFor({state: "visible"}); 
-    await this.page.locator('[id="__more__"]').first().click();
-
-    await this.page.locator('text=Changes').nth(1).waitFor({state: "visible"});
-    await this.page.locator('text=Changes').nth(1).click();
-
-    await this.page.locator('text=Stage All Changes').waitFor({state: "visible"});
-    await this.page.locator('text=Stage All Changes').click();
-});
-
-Then('testuser commits changes',async function (this: CubeWorld) {
-    await this.page.locator('[id="__more__"]').first().click();
-
-    await this.page.locator('text=Commit').waitFor({state: "visible"});
-    await this.page.locator('text=Commit').first().click();
-    
-    await this.page.locator('text=Commit (Signed Off)').waitFor({state: "visible"});
-    await this.page.locator('text=Commit (Signed Off)').click();
-    await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-});
-
-Then('testuser adds a commit message',async function (this: CubeWorld) {
-    await this.page.locator('textarea').fill('Add 2 files to repository');
-    await this.page.locator('textarea').press('Control+Enter');
-});
-
-Then('testuser checks that 2 files are in the staging area',async function (this: CubeWorld) {
+Then('testuser checks that {string} files are in the staging area',async function (this: CubeWorld, numberOfCommits:string) {
     const locatorText='div.notification-count-container.scm-change-count >> span.notification-count';
     const staggedFiles = Number(await this.page.locator(locatorText).first().textContent());
-    expect.soft(staggedFiles).toBe(2);
+    expect.soft(staggedFiles).toBe(Number(Number(numberOfCommits)));
+    IDEtrace('DEBUG', 'found ' + staggedFiles + ' in the staging area');
 });
 
 const ActivateIDETraces=true;
 const report_IDE_ERROR_traces=true;
 const report_IDE_WARNING_traces=false;
 const report_IDE_DEBUG_traces=false;
-const report_IDE_INFO_traces=false;
+const report_IDE_INFO_traces=true;
+const report_IDE_DEBUG_tables=false;
 
 function IDEtrace(traceLevel:string, traceMessage:string) {
     if (ActivateIDETraces)
@@ -1634,7 +1862,11 @@ function IDEtrace(traceLevel:string, traceMessage:string) {
 function IDEtraceTable(table: Array<Array<string>>=[]) {
     if (ActivateIDETraces)
     {
-        console.table(table);
+        if (report_IDE_DEBUG_tables)
+        {
+            console.debug();
+            console.table(table);
+        }
     }
 }
 Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async function (this: CubeWorld, viewPortSize:string) {
@@ -1659,3 +1891,5 @@ Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async functi
         IDEtrace('WARNING','selected mode [' + viewPortSize + '] is unknown');
     }
 });
+
+

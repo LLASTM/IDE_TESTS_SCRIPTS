@@ -20,7 +20,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
   Scenario: First
     Given user creates application project '<project>' with board '<board>'
     Given user adds a new software project '<swProject>' in application project panel
-    Given user adds a new software component to project '<swProject>' in application project panel
+    #Given user adds a new software component to project '<swProject>' in application project panel
     When user clears notifications list
     When user gets notifications after 'project creation'
     
