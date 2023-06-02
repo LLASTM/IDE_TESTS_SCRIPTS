@@ -12,7 +12,7 @@ Feature: get cubestudio version using About menu and add it to test report
 
   Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clears notifications list

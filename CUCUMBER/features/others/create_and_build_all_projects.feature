@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @toto
+@IDE @IDE:others @toto
 Feature: Creation and build of all projects for all MCU/Board
 
 Background:
@@ -17,12 +17,11 @@ Background:
     
     #Given user synchronizes database
     When user clicks button 'Synchronize' 
-
     Given user pauses for '10' seconds
 
 Scenario:
-    # When user builds list of 'Board'
-    # When user builds all projects for 'Board'
+    #When user builds list of 'Board'
+    #When user builds all projects for 'Board'
     When user builds list of 'MCU'
     #When user builds all projects for 'MCU'
 

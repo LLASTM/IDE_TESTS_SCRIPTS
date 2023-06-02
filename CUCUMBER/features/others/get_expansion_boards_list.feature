@@ -12,7 +12,7 @@ Feature: report list of expansion boards found in Finder
 
 Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
     Given user clicks Finder icon
     Given user builds list of 'Expansion Board'

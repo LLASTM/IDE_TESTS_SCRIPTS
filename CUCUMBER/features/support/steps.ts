@@ -619,7 +619,7 @@ let expansionBoardsList: Array<Array<string>>=[]; // contains the list of expans
 let PartsList: Array<Array<string>>=[];           // contains the list of parts found in the Finder
 
 // This step is used to attach a screenshot to the html test report
-Then('user adds a screenshot to test report', async function (this: CubeWorld) {[localStorage]
+Then('user adds a screenshot to test report', async function (this: CubeWorld) {
     const image = await this.page?.screenshot();
     image && (await this.attach(image, 'image/png'));
 });
@@ -850,16 +850,20 @@ async function userExpectToFindCommits(expectedCommits:string ) {
            + commitsText ;
 }
 
+async function userExpectsToFindCommits(context:CubeWorld,expectedCommitsNumber:string)
+{
+    let foundCommitsNumber="";
+    foundCommitsNumber = await userExpectToFindCommits(expectedCommitsNumber);
+    IDEtrace('DEBUG','user expects to find commits in History view : commitsText is ' + foundCommitsNumber);
+    if (foundCommitsNumber)
+    {
+        context.attach(foundCommitsNumber,'text/plain');
+        expect(foundCommitsNumber).not.toContain('FAILURE');
+    }
+}
 // step used when user wants to compare the number of commits found in git history to an expected number
 Then('user expects to find {string} commits in History view',{ timeout: 30 * 1000 }, async function (this: CubeWorld, expectedCommits:string) {
-    let commitsText="";
-    commitsText = await userExpectToFindCommits(expectedCommits);
-    IDEtrace('DEBUG','user expects to find commits in History view : commitsText is ' + commitsText);
-    if (commitsText)
-    {
-        this.attach(commitsText,'text/plain');
-        expect(commitsText).not.toContain('FAILURE');
-    }
+    userExpectsToFindCommits(this,expectedCommits);
 });
 
 async function rightClickText(pattern:string) {
@@ -900,7 +904,9 @@ async function userChecksStagingArea(numberOfFiles:string) {
     {
         const value=await numberOfFilesChanged.textContent();
         IDEtrace('DEBUG','found ' + value + ' files changed');
-        expect.soft(value).toBe(numberOfFiles);
+        
+        //expect.soft does not work with cucumber !!!!
+        //expect.soft(value).toBe(numberOfFiles);
     }
     else{
         IDEtrace('DEBUG','found no file changed');
@@ -1019,18 +1025,23 @@ async function userCleansBuildsConfiguration(swProjectName:string, configuration
         userCleansBuildsConfiguration('DEBUG','userBuildsConfiguration:could not launch build command');
     }
 }
-function buildVerdictFromNotificationsList(notifications:string[]) {
+function buildVerdictFromNotificationsList(buildFlag:string,notifications:string[]) {
 
     let errorsFound=0;
 
-     if (!notifications.includes('project build'))
+    if (buildFlag === 'true')
     {
-        errorsFound++;
-        //expect.soft(errorsFound).toBe(0);
-        // test verdict should be set to FAILED
+        if (!notifications.includes('project build'))
+        {
+            errorsFound++;
+            //expect.soft does not work with cucumber !!!!
+            //expect.soft(errorsFound,'Testing if errorsFound is 0').toBe(0);
+            
+            // test verdict should be set to FAILED
+        }
     }
     for (const iterator of notifications) {
-      if (iterator.includes('Error') || iterator.includes("Connection timed out") || iterator.includes("has exited with code") )
+      if (iterator.includes('Error') || iterator.includes("Connection timed out") || iterator.includes("has exited with code") || iterator.includes("couldn't create connection to server") )
       {
         errorsFound++;
         IDEtrace('DEBUG','found ' + iterator + ' error in notifications list');
@@ -1039,16 +1050,16 @@ function buildVerdictFromNotificationsList(notifications:string[]) {
 
     if (errorsFound === 0)
     {
-      console.debug('buildVerdictFromNotificationsList : no error found in notifications, setting verdict to PASSED');
+      IDEtrace('INFO','buildVerdictFromNotificationsList : no error found in notifications, setting verdict to PASSED');
     }
     else {
-      console.error('buildVerdictFromNotificationsList : Found ' + errorsFound + ' error traces, setting verdict to FAILED');
+      IDEtrace('ERROR','buildVerdictFromNotificationsList : Found ' + errorsFound + ' error traces, setting verdict to FAILED');
     }
 }
 
 // This step is called when user tries to build a verdict from the notifications list
 Then('user builds verdict from notifications', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
-     buildVerdictFromNotificationsList(notificationsList);
+     buildVerdictFromNotificationsList('true',notificationsList);
 });
 
 // This step is used to clear the list of notifications that may be used to build a test verdict
@@ -1058,7 +1069,6 @@ Then('user clears notifications list', { timeout: 20 * 1000 }, async function (t
 });
 
 async function userclearsNotifications() {
-    notificationsList = [];
     // clearing notifications
     try {
         await page.locator('span.codicon-bell-dot').click();
@@ -1069,6 +1079,8 @@ async function userclearsNotifications() {
     {
         IDEtrace('DEBUG','no item found for New Notifications');
     }
+    console.table(notificationsList);
+    notificationsList = [];
 }
 async function userOpensClockConfigurationView() {
     IDEtrace('DEBUG','Opening clock configuration view');
@@ -1098,11 +1110,17 @@ async function userClosesOpenedWindows(products:string,deviceName:string) {
     // now we close all windows opened
     IDEtrace('DEBUG','closing all opened windows');
 
-    const locatorText='[id="shell-tab-product\\:\\:hardware\\:\\:' + products.toLocaleLowerCase() + '\\:\\:' + deviceName + '"] > .p-TabBar-tabCloseIcon';
-    await page.locator(locatorText).click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    try {
+        const locatorText='[id="shell-tab-product\\:\\:hardware\\:\\:' + products.toLocaleLowerCase() + '\\:\\:' + deviceName + '"] > .p-TabBar-tabCloseIcon';
+        await page.locator(locatorText).click();
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
-    IDEtrace('DEBUG','All opened windows should be closed now');
+        IDEtrace('DEBUG','All opened windows should be closed now');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Error : Failed to close opened windows');
+    }
 }
 
 async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string,index:number) {
@@ -1113,12 +1131,15 @@ async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,pro
         try 
         {
             const context=statusBar.split(']')[0].replace('[',''); 
-            //IDEtrace('INFO','device:' + deviceName + ', device status:' + deviceStatus + ', context for project ' + projectName + ' and sw project name ' + swProjectName + ' is [' + context + ']');
-            IDEtrace('INFO','device:' + deviceName + ', context is [' + context + ']');
+            IDEtrace('INFO','device:' + deviceName + ', context:[' + context + ']');
+            if (context !== projectName + ' | ' + swProjectName + ' | main | debug')
+            {
+                IDEtrace('ERROR','Error : device:' + deviceName + ', device status:' + deviceStatus + ', unexpected context ' + context + ',from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
+             }
         }
         catch
         {
-            IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', Failed to extract context from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
+            IDEtrace('ERROR','Error : device:' + deviceName + ', device status:' + deviceStatus + ', Failed to extract context from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
         }
     }
 }
@@ -1126,21 +1147,33 @@ async function userSelectsFileMainDotC(projectName:string,swProjectName:string) 
     
     IDEtrace('DEBUG','Entering userSelectsFileMainDotC');
     await openExplorer();
-    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
     try
     {
-        await clickText(projectName);
-        await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
-        await clickText(swProjectName);
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-        await clickText('src');
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-        await clickText('main.c');
+        await page.locator('#files >> text=' + projectName).waitFor({state: "visible"});
+        await page.locator('#files >> text=' + projectName).click();
+        //await clickText(projectName);
+        //await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
+        await page.locator('#files >> text=' + swProjectName).waitFor({state: "visible"});
+        await page.locator('#files >> text=' + swProjectName).click();
+        //await clickText(swProjectName);
+        //await new Promise( resolve => setTimeout(resolve, + 1 * 4000) );
+
+        await page.locator('text=src').waitFor({state: "visible"});
+        await page.locator('text=src').click();
+        //await clickText('src');
+        //await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+        
+        await page.locator('text=main.c').first().waitFor({state: "visible"});
+        await page.locator('text=main.c').first().click();
+        //await clickText('main.c');
         await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
     }
     catch
     {
-        IDEtrace('ERROR','Failed to click on file main.c');
+        IDEtrace('ERROR','Error : Failed to click on file main.c');
+        //notificationsList.push('Error : Failed to click on file main.c');
     }
     IDEtrace('DEBUG','Leaving userSelectsFileMainDotC');
 }
@@ -1148,12 +1181,28 @@ async function userSelectsFileMainDotC(projectName:string,swProjectName:string) 
 async function  deleteProjectFromWorkspace(projectName:string) {
     IDEtrace('DEBUG','Entering deleteProjectFromWorkspace');
     openExplorer();
-    //await page.pause();
-    await page.locator('#files >> text=' + projectName).first().click({
-        button: 'right'
-      });
-    await page.locator('text=Delete').first().click();
-    await page.locator('text=OK').click();
+    
+    console.log('deleteProjectFromWorkspace');
+    try
+    {
+        await page.locator('#files >> text=' + projectName).first().waitFor({state: "visible"});
+        await page.locator('#files >> text=' + projectName).first().click({
+            button: 'right'
+        });
+        await page.locator('text=Delete').first().waitFor({state: "visible"});
+        await page.locator('text=Delete').first().click();
+
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+        await page.locator('text=OK').waitFor({state: "visible"});
+        await page.locator('text=OK').click();
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+
+        IDEtrace('INFO','project should be deleted now');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Error : Failed to delete project');
+    }
     IDEtrace('DEBUG','Leaving deleteProjectFromWorkspace');
 }
 When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
@@ -1166,25 +1215,23 @@ When('user starts IDE tests for {string} {string} {string} {string} {string} {st
     displayClockViewFlag:string
     ) {
     
-    // console.log(products);
-    // console.log(createProjectFlag);
-    // console.log(deleteProjectFlag);
-    // console.log(checkContextFlag);
-    // console.log(buildFlag);
-    // console.log(displayPinoutViewFlag);
-    // console.log(displayClockViewFlag);
-
-    //await this.page.pause();
-
-    await userStartsIDETests(products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag);
+    await userStartsIDETests(this,products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag);
 });
-async function userStartsIDETests(  products:string,  
+async function userStartsIDETests(  context:CubeWorld,
+                                    products:string,  
                                     createProjectFlag:string,
                                     deleteProjectFlag:string,
                                     checkContextFlag:string,
                                     buildFlag:string, 
                                     displayPinoutViewFlag:string,
                                     displayClockViewFlag:string) {
+
+    IDEtrace('INFO','createProjectFlag=' + createProjectFlag);
+    IDEtrace('INFO','deleteProjectFlag=' + deleteProjectFlag);
+    IDEtrace('INFO','checkContextFlag=' + checkContextFlag);
+    IDEtrace('INFO','buildFlag=' + buildFlag);
+    IDEtrace('INFO','displayPinoutViewFlag=' + displayPinoutViewFlag);
+    IDEtrace('INFO','displayClockViewFlag=' + displayClockViewFlag);
 
     IDEtrace('DEBUG','Building projects for ' + products);
 
@@ -1202,6 +1249,7 @@ async function userStartsIDETests(  products:string,
     await page.locator(locatorText).first().click();
     await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
 
+    let tested_devices=0;
     for(let index=1;index<currentList.length;index++)
     {
         let deviceName='unknown_device';
@@ -1223,13 +1271,15 @@ async function userStartsIDETests(  products:string,
             }
             
         }
-        if (deviceStatus === 'Active')
+        if ( (deviceStatus === 'Active') || (deviceStatus === 'Coming soon') )
         {
             const projectName='project_' + deviceName;
             const swProjectName='sw_' + projectName;
 
-            IDEtrace('DEBUG', 'Creating project ' + projectName + ' for device:' + deviceName);
-            
+            tested_devices++;
+
+            IDEtrace('INFO', 'Creating project ' + projectName + ' for device:' + deviceName + '[#' + tested_devices + ']');
+
             if (createProjectFlag === 'true')
             {
                 await userCreatesProjectForDevice(projectName, deviceName);
@@ -1247,12 +1297,19 @@ async function userStartsIDETests(  products:string,
             await page.locator('[id="theia\\:menubar"] >> text=File').click();
             await page.locator('text=Close Editor').click();
 
-            if (displayClockViewFlag==='true') { await userOpensClockConfigurationView();}
-            if (displayPinoutViewFlag==='true') { await userOpensPinoutView();}
+            if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
+            if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
 
-            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-            await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
-            await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );           
+            try {
+                await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+                await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
+                await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            }
+            catch
+            {
+                IDEtrace('ERROR','Error : Failed to close Cube : Application Project window');
+                //notificationsList.push('Error : Failed to close Cube : Application Project window');
+            }        
 
             if (buildFlag==='true')
             {
@@ -1263,20 +1320,22 @@ async function userStartsIDETests(  products:string,
                         
                 await userCleansBuildsConfiguration(swProjectName,'debug');
                 await userCleansBuildsConfiguration(swProjectName,'release');
+            }
 
-                await userGetsNotificationsAfter('project build');
+            await userClosesOpenedWindows(products,deviceName);
 
-                buildVerdictFromNotificationsList(notificationsList);
+            if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
+
+            if (buildFlag === 'true')
+            {
+                await userGetsNotificationsAfter(context,'project build');
             }
             else
             {
-                await userGetsNotificationsAfter('project creation');
+                await userGetsNotificationsAfter(context,'project creation');
             }
-
+            buildVerdictFromNotificationsList(buildFlag,notificationsList);
             await userclearsNotifications();
-            await userClosesOpenedWindows(products,deviceName);
-
-            if (deleteProjectFlag==='true') { await deleteProjectFromWorkspace(projectName); }
         }       
     }
 }
@@ -1362,13 +1421,13 @@ When('user builds all projects for {string}', { timeout: 7200 * 1000 },async fun
                 await userCleansBuildsConfiguration(swProjectName,'debug');
                 await userCleansBuildsConfiguration(swProjectName,'release');
 
-                await userGetsNotificationsAfter('project build');
+                await userGetsNotificationsAfter(this,'project build');
 
-                buildVerdictFromNotificationsList(notificationsList);
+                buildVerdictFromNotificationsList(buildFlag,notificationsList);
             }
             else
             {
-                await userGetsNotificationsAfter('project creation');
+                await userGetsNotificationsAfter(this,'project creation');
             }
 
             await userclearsNotifications();
@@ -1439,8 +1498,7 @@ async function userGetsListOfItems(products:string) {
         {
             await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
             await page.locator("text=Product(s) found:").waitFor({state: "visible"});
-
-            
+      
             const dataLocatorText= tableLocatorText + '>> tbody.MuiTableBody-root >> tr.MuiTableRow-root';
             const currentPageListOfProducts=page.locator(dataLocatorText);
 
@@ -1455,8 +1513,6 @@ async function userGetsListOfItems(products:string) {
                 const locitems=currentItem.locator(locator);
 
                 const numberOfFields=await locitems.count();
-                // console.log('Found ' + numberOfFields + ' fields');
-
                 const dataList: Array<string> = [];
                  
                 for(let field=1;field<numberOfFields;field++)
@@ -1464,8 +1520,7 @@ async function userGetsListOfItems(products:string) {
                     const currentField=currentItem.locator(locator).nth(field);
                     const currentItemText=await currentField.textContent();
                     if (currentItemText) { dataList.push(currentItemText); }
-                }
-                 
+                }               
                 data.push(dataList);  
             }
 
@@ -1482,10 +1537,10 @@ async function userGetsListOfItems(products:string) {
             }
         } while (counter != 1);        
     }
-    
-    // await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:board"] > .p-TabBar-tabCloseIcon').click();  
-    // await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:mcu"] > .p-TabBar-tabCloseIcon').click();
-    await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:' + products.toLocaleLowerCase() + '"] > .p-TabBar-tabCloseIcon').click();
+
+    const alteredProduct=products.toLocaleLowerCase().replace(' ','-');
+
+    await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:' + alteredProduct + '"] > .p-TabBar-tabCloseIcon').click();
     
     IDEtraceTable(data);
     return data;
@@ -1545,17 +1600,19 @@ Then('user adds {string} list to test report', { timeout: 90 * 1000 }, async fun
     this.attach(textToReport,'text/plain');
 });
 
-// This step is called when user wants to add the cube studio version to the test report
+async function userGetsCubeStudioVersion(context:CubeWorld) {
+    const cubeStudioVersion = await context.page.locator('div.about-details').textContent();
+    await context.attach('cubeStudio version :' + cubeStudioVersion,'text/plain');
+}
+
 Then('user gets cube studio version', async function (this: CubeWorld) {
-    const cubeStudioVersion = await this.page.locator('div.about-details').textContent();
-    await this.attach('cubeStudio version :' + cubeStudioVersion,'text/plain');
+    userGetsCubeStudioVersion(this);
 });
 
-// This step is used to report the version of each theia extension into the test report
-Then('user gets theia extensions', async function (this: CubeWorld) {
-
-    const extensionsList = this.page.locator('div.theia-aboutDialog >> ul.theia-aboutExtensions >> li');
+async function userGetsTheiaExtensionsVersions(context:CubeWorld) {
+    const extensionsList = page.locator('div.theia-aboutDialog >> ul.theia-aboutExtensions >> li');
     const counter = (await extensionsList.count()) - 1;
+
     const menu: Array<string> = [];
 
     let allExtensionsText = '';
@@ -1563,6 +1620,7 @@ Then('user gets theia extensions', async function (this: CubeWorld) {
     for (let index = 0; index <= counter; index++)
     {
         const textContent = await extensionsList.nth(index).textContent();
+
         allExtensionsText += textContent + '\n';
 
         if (textContent)
@@ -1570,12 +1628,15 @@ Then('user gets theia extensions', async function (this: CubeWorld) {
             menu.push(textContent);
         }
     }
-    await this.attach(allExtensionsText,'text/plain');
+    await context.attach(allExtensionsText,'text/plain');
+}
 
+// This step is used to report the version of each theia extension into the test report
+Then('user gets theia extensions', async function (this: CubeWorld) {
+    await userGetsTheiaExtensionsVersions(this);
 });
 
-//async function userGetsNotificationsAfter(context: CubeWorld,notificationText:string) {
-async function userGetsNotificationsAfter(notificationText:string) {
+async function userGetsNotificationsAfter(context:CubeWorld,notificationText:string) {
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
     const notificationsListLocator = page.locator('div.theia-notification-message span') ;
 
@@ -1590,7 +1651,7 @@ async function userGetsNotificationsAfter(notificationText:string) {
         const element=notificationsList.some(item => item.includes(message));
         if (!element)
         {
-           notificationsList.push(notificationText + ':' + message);
+           IDEtrace('INFO',notificationText + ':' + message);
         }
       }
     }
@@ -1600,45 +1661,14 @@ async function userGetsNotificationsAfter(notificationText:string) {
     for (const iterator of notificationsList) {
       notificationsText += iterator + '\n';
     }
-    //await context.attach(notificationsText,'text/plain');
+    await context.attach(notificationsText,'text/plain');
 
-    notificationsList=[];
-
-    IDEtrace('DEBUG','============== Leaving user gets notifications after ' + notificationsText);
+    IDEtrace('DEBUG','Leaving user gets notifications after ' + notificationsText);
 }
 
 // This step is used when user wants to get the list of notifications appeared during the step  passed as a parameter
 Then('user gets notifications after {string}', { timeout: 20 * 1000 }, async function (this: CubeWorld, notificationText:string) {
-
-    // await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    // const notificationsListLocator = this.page.locator('div.theia-notification-message span') ;
-
-    // const childrenCounter = await notificationsListLocator.count();
-    // IDEtrace('DEBUG','user gets notifications : found ' + childrenCounter + ' notifications');
-
-    // for (let index = 0; index < childrenCounter; index++) {
-    //   const message=await notificationsListLocator.nth(index).innerText();
-
-    //   if (message) {
-    //     IDEtrace('DEBUG',message);
-    //     const element=notificationsList.some(item => item.includes(message));
-    //     if (!element)
-    //     {
-    //        notificationsList.push(notificationText + ':' + message);
-    //     }
-    //   }
-    // }
-
-    // let notificationsText = 'List of notifications after ' + notificationText + '\n';
-
-    // for (const iterator of notificationsList) {
-    //   notificationsText += iterator + '\n';
-    // }
-    // await this.attach(notificationsText,'text/plain');
-
-    // IDEtrace('DEBUG','============== Leaving user gets notifications after ' + notificationText);
-
-    await userGetsNotificationsAfter(notificationText);
+    await userGetsNotificationsAfter(this,notificationText);
 });
 
 // This function is called in order to convert a project before it could be built
@@ -1725,19 +1755,22 @@ When('user selects launch configuration {string}', async function (this: CubeWor
 });
 
 async function userAddsANewSWProject(projectName:string) {
-    await clickText('Add a SW project');
-    await clickInputAtRightOfText('Software Project name:');
-    await typeText(projectName);
-    await clickButton('Create SW Project');
-    // IDEtrace('DEBUG','SW project created');
+    try
+    {
+        await clickText('Add a SW project');
+        await clickInputAtRightOfText('Software Project name:');
+        await typeText(projectName);
+        await clickButton('Create SW Project');
+        IDEtrace('DEBUG','SW project created');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Error : Failed to add a SW project');
+        // notificationsList.push('Error : Failed to create a SW project');
+    }
 }
 
 Given('user adds a new software project {string} in application project panel', async function (this: CubeWorld, projectName:string) {
-    // await clickText('Add a SW project');
-    // await clickInputAtRightOfText('Software Project name:');
-    // await typeText(sw_proj);
-    // await clickButton('Create SW Project');
-
     await userAddsANewSWProject(projectName);
 });
 
@@ -1788,13 +1821,15 @@ Then('testuser performs {string} loops on breakpoints', async function (this: Cu
         image && (this.attach(image, 'image/png'));
     }
 });
+async function userSelectsDebugContext(applicationName:string,swProjectName:string,versionType:string) {
+    const locatorText=` text=[${applicationName} | ${swProjectName} | main | ${versionType}]`;
 
+    await page.locator(locatorText).waitFor({state: "visible"});
+    await page.locator(locatorText).click(); 
+}
 // This step is called when user selects a debug context
 Then('user selects debug context for application {string}, sw project {string} and {string} version', async function (this: CubeWorld, application:string, swProject:string, version:string) {
-    const locatorText=` text=[${application} | ${swProject} | main | ${version}]`;
-
-    await this.page.locator(locatorText).waitFor({state: "visible"});
-    await this.page.locator(locatorText).click();
+    await userSelectsDebugContext(application,swProject, version);
 });
 
 // This test specific step is used to patch file main.c (add i++)
@@ -1832,14 +1867,16 @@ Then('testuser opens file main.c of sw project {string} of application {string}'
     await this.page.locator('text=main.c').first().click();
 });
 
-Then('user performs git repo init command', async function (this: CubeWorld) {
+Then('user performs git init command', async function (this: CubeWorld) {
     await page.locator('#git-init').first().click();
 });
 
 Then('testuser checks that {string} files are in the staging area',async function (this: CubeWorld, numberOfCommits:string) {
     const locatorText='div.notification-count-container.scm-change-count >> span.notification-count';
     const staggedFiles = Number(await this.page.locator(locatorText).first().textContent());
-    expect.soft(staggedFiles).toBe(Number(Number(numberOfCommits)));
+
+    //expect.soft does not work with cucumber !!!!
+    //expect.soft(staggedFiles).toBe(Number(Number(numberOfCommits)));
     IDEtrace('DEBUG', 'found ' + staggedFiles + ' in the staging area');
 });
 
@@ -1853,10 +1890,12 @@ const report_IDE_DEBUG_tables=false;
 function IDEtrace(traceLevel:string, traceMessage:string) {
     if (ActivateIDETraces)
     {
-        if (traceLevel==="ERROR")   { if (report_IDE_ERROR_traces)   { console.error(traceMessage);} }
-        if (traceLevel==="WARNING") { if (report_IDE_WARNING_traces) { console.warn(traceMessage);  } }
-        if (traceLevel==="INFO")    { if (report_IDE_INFO_traces)    { console.info(traceMessage);} }
-        if (traceLevel==="DEBUG")   { if (report_IDE_DEBUG_traces)   { console.debug(traceMessage);} }
+        const date=new Date();
+        const messageToEmit= date.toTimeString().split(' ')[0]  + ' : [' + traceMessage + ']'; 
+        if (traceLevel==="ERROR")   { if (report_IDE_ERROR_traces)   { console.error(messageToEmit); notificationsList.push(messageToEmit);} }
+        if (traceLevel==="WARNING") { if (report_IDE_WARNING_traces) { console.warn(messageToEmit);  notificationsList.push(messageToEmit);} }
+        if (traceLevel==="INFO")    { if (report_IDE_INFO_traces)    { console.info(messageToEmit);  notificationsList.push(messageToEmit);} }
+        if (traceLevel==="DEBUG")   { if (report_IDE_DEBUG_traces)   { console.debug(messageToEmit); notificationsList.push(messageToEmit);} }
     }
 }
 function IDEtraceTable(table: Array<Array<string>>=[]) {

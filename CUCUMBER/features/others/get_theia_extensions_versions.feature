@@ -7,12 +7,12 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
+@IDE @IDE:others @IDE:others:no_board @tutu
 Feature: get theia extensions versions and add them to test report
 
   Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clears notifications list

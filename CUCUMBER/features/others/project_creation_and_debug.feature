@@ -12,7 +12,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
   
   Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
     Given user clicks button 'Synchronize'
     Given user pauses for '10' seconds

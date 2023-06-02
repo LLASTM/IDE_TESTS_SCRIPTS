@@ -17,7 +17,7 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
 
   Background:
     Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clicks Source Control icon
@@ -30,7 +30,6 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
     When user clicks object containing text 'Files'
     When user clicks object containing text 'textFile01.txt'
-    #When testuser expands fake repo project directories
    
     Then user adds a screenshot to test report
 
@@ -43,14 +42,11 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then testuser patches file textFile01.txt
 
     When user selects menu 'File/Save All'
-    #When user saves all files
 
     Then user selects menu 'File/Close Editor'
-    #Then user closes editor
 
     When user clicks object containing text 'Files'
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    #Then testuser closes fake directory
 
     Then user adds a screenshot to test report
 
@@ -61,7 +57,6 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user adds a screenshot to test report
 
     Then user selects menu 'View/History'
-    #Then user goes to History view
 
     Then user adds a screenshot to test report
     
@@ -71,7 +66,6 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
     When user clicks object containing text 'Files'
     When user clicks object containing text 'textFile01.txt'
-    #When testuser expands fake repo project directories
 
     Then testuser patches file textFile01.txt
     

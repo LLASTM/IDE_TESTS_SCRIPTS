@@ -13,7 +13,7 @@ Feature:  As an end-user, I want to stage a file for commit using CLI and GUI,
 
   Background:
     Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clicks Source Control icon

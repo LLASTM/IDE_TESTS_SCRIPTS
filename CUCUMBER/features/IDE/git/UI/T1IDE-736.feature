@@ -12,13 +12,13 @@ Feature:  As a squad leader, I want to get a running integration test on communi
 
   Background:
     Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clicks Source Control icon
     
     #When user clicks object containing text '+'
-    When user performs git repo init command
+    When user performs git init command
     
     #When user clicks object containing text '...'
     #When user pauses for '2' seconds

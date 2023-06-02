@@ -13,7 +13,7 @@ Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools usin
 
   Background:
     Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
-    Given user sets viewport size to '4K'
+    Given user sets viewport size to 'FullHD'
 
   Scenario:
 
