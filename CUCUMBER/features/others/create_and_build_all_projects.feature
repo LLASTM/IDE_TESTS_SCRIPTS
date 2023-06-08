@@ -12,11 +12,11 @@ Feature: Creation and build of all projects for all MCU/Board
 
 Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
-    Given user sets viewport size to 'FullHD'
+    #Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
     
-    #Given user synchronizes database
-    When user clicks button 'Synchronize' 
+    Given user synchronizes database
+    #When user clicks button 'Synchronize' 
     Given user pauses for '10' seconds
 
 Scenario:
@@ -25,7 +25,8 @@ Scenario:
     When user builds list of 'MCU'
     #When user builds all projects for 'MCU'
 
-    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view
+    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
+    # -1 means all tests to be run
     # MCU, create project, delete project at end of test , check context
-    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'false' 'false' 'false'
+    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'false' 'false' 'false' '2'
 

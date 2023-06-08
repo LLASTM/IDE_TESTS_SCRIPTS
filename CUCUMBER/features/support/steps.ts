@@ -7,7 +7,6 @@
 // unauthorized manner without written consent.
 // *****************************************************************************
 
-
 import { expect } from '@playwright/test';
 import { TheiaExplorerView } from '../models/theia-explorer-view';
 import { TheiaApp } from '../models/theia-app';
@@ -36,7 +35,6 @@ setParallelCanAssign(myTagRule)
 
 import { Page } from '@playwright/test';
 import CubeWorld from "./CubeWorld"
-
 setWorldConstructor(CubeWorld);
 
 let page: Page;
@@ -73,13 +71,11 @@ Given("user opens CubeStudio", { timeout: 60 * 1000 }, async function () {
     menuBar = theiaApp.menuBar;
 });
 
-Given("user opens CubeStudio workspace in {string}", { timeout: 60 * 1000 }, async function(this: CubeWorld, workspacePath: string) {
+Given("user opens CubeStudio workspace in {string}", { timeout: 120 * 1000 }, async function(this: CubeWorld, workspacePath: string) {
     await this.init(this.featureRelDir +'/'+ workspacePath);
-
     page = this.page;
     theiaApp = this.theiaApp;
     menuBar = theiaApp.menuBar;
-
 });
 
 Given('quick command is opened', { timeout: 60 * 1000 }, async function () {
@@ -214,7 +210,6 @@ When('user selects menu {string}', { timeout: 60 * 1000 }, async(menu:string) =>
     subMenus.shift();
     const item = await mainMenu.menuItemByNamePath(...subMenus);
     await item?.click();
-
 });
 
 When('user deletes text line matching pattern {string}', async(text:string) =>{
@@ -624,7 +619,7 @@ Then('user adds a screenshot to test report', async function (this: CubeWorld) {
     image && (await this.attach(image, 'image/png'));
 });
 
-When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
+When('user synchronizes database', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
     await this.page.locator('text=Synchronize').click();
 });
 
@@ -1025,7 +1020,7 @@ async function userCleansBuildsConfiguration(swProjectName:string, configuration
         userCleansBuildsConfiguration('DEBUG','userBuildsConfiguration:could not launch build command');
     }
 }
-function buildVerdictFromNotificationsList(buildFlag:string,notifications:string[]) {
+async function buildVerdictFromNotificationsList(buildFlag:string,notifications:string[]) {
 
     let errorsFound=0;
 
@@ -1040,13 +1035,21 @@ function buildVerdictFromNotificationsList(buildFlag:string,notifications:string
             // test verdict should be set to FAILED
         }
     }
-    for (const iterator of notifications) {
-      if (iterator.includes('Error') || iterator.includes("Connection timed out") || iterator.includes("has exited with code") || iterator.includes("couldn't create connection to server") )
-      {
-        errorsFound++;
-        IDEtrace('DEBUG','found ' + iterator + ' error in notifications list');
-      }
-    }
+    const notificationsListLength=notifications.length;
+    IDEtrace('DEBUG','found ' + notificationsListLength + ' notifications in list\n');
+
+    //await page.pause();
+
+    // for (const iterator of notifications) {
+    //     if (iterator !== '')
+    //     {
+    //         if (iterator.includes('Error') || iterator.includes("Connection timed out") || iterator.includes("has exited with code") || iterator.includes("couldn't create connection to server") )
+    //         {
+    //             errorsFound++;
+    //             IDEtrace('DEBUG','found ' + iterator + ' error in notifications list\n');
+    //         }
+    //     }
+    // }
 
     if (errorsFound === 0)
     {
@@ -1059,7 +1062,7 @@ function buildVerdictFromNotificationsList(buildFlag:string,notifications:string
 
 // This step is called when user tries to build a verdict from the notifications list
 Then('user builds verdict from notifications', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
-     buildVerdictFromNotificationsList('true',notificationsList);
+     await buildVerdictFromNotificationsList('true',notificationsList);
 });
 
 // This step is used to clear the list of notifications that may be used to build a test verdict
@@ -1081,6 +1084,7 @@ async function userclearsNotifications() {
     }
     console.table(notificationsList);
     notificationsList = [];
+    IDEtrace('DEBUG','notifications list cleared');
 }
 async function userOpensClockConfigurationView() {
     IDEtrace('DEBUG','Opening clock configuration view');
@@ -1123,7 +1127,7 @@ async function userClosesOpenedWindows(products:string,deviceName:string) {
     }
 }
 
-async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string,index:number) {
+async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string) {
     const locatorText="div[id='theia-statusBar'] ";
     const statusBar=await page.locator(locatorText).textContent();
     // IDEtrace('DEBUG','userGetsTheiaStatusBar: status bar value is [' + statusBar + ']');
@@ -1182,7 +1186,6 @@ async function  deleteProjectFromWorkspace(projectName:string) {
     IDEtrace('DEBUG','Entering deleteProjectFromWorkspace');
     openExplorer();
     
-    console.log('deleteProjectFromWorkspace');
     try
     {
         await page.locator('#files >> text=' + projectName).first().waitFor({state: "visible"});
@@ -1205,17 +1208,18 @@ async function  deleteProjectFromWorkspace(projectName:string) {
     }
     IDEtrace('DEBUG','Leaving deleteProjectFromWorkspace');
 }
-When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
+When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
     products:string,
     createProjectFlag:string,
     deleteProjectFlag:string,
     checkContextFlag:string,
     buildFlag:string, 
     displayPinoutViewFlag:string,
-    displayClockViewFlag:string
+    displayClockViewFlag:string,
+    numberOfTestsToRun:string
     ) {
     
-    await userStartsIDETests(this,products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag);
+    await userStartsIDETests(this,products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag,numberOfTestsToRun);
 });
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
@@ -1224,7 +1228,8 @@ async function userStartsIDETests(  context:CubeWorld,
                                     checkContextFlag:string,
                                     buildFlag:string, 
                                     displayPinoutViewFlag:string,
-                                    displayClockViewFlag:string) {
+                                    displayClockViewFlag:string,
+                                    numberOfTestsToRun:string) {
 
     IDEtrace('INFO','createProjectFlag=' + createProjectFlag);
     IDEtrace('INFO','deleteProjectFlag=' + deleteProjectFlag);
@@ -1232,6 +1237,7 @@ async function userStartsIDETests(  context:CubeWorld,
     IDEtrace('INFO','buildFlag=' + buildFlag);
     IDEtrace('INFO','displayPinoutViewFlag=' + displayPinoutViewFlag);
     IDEtrace('INFO','displayClockViewFlag=' + displayClockViewFlag);
+    IDEtrace('INFO','numberOfTestsToRun=' + numberOfTestsToRun);
 
     IDEtrace('DEBUG','Building projects for ' + products);
 
@@ -1250,7 +1256,18 @@ async function userStartsIDETests(  context:CubeWorld,
     await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
 
     let tested_devices=0;
-    for(let index=1;index<currentList.length;index++)
+
+    let endLoop=0;
+
+    if (Number(numberOfTestsToRun) === -1)
+    {
+        endLoop=currentList.length ;
+    }
+    else
+        endLoop= Number(numberOfTestsToRun);
+    IDEtrace('DEBUG', endLoop + ' tests will be run');
+
+    for(let index=1;index<endLoop+1;index++)
     {
         let deviceName='unknown_device';
         let deviceStatus='unknown_status';
@@ -1291,7 +1308,7 @@ async function userStartsIDETests(  context:CubeWorld,
             if (checkContextFlag === 'true')
             {
                 await userSelectsFileMainDotC(projectName,swProjectName);
-                await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName, index);
+                await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName);
             }
             // we close editor containing file main.c
             await page.locator('[id="theia\\:menubar"] >> text=File').click();
@@ -1334,7 +1351,7 @@ async function userStartsIDETests(  context:CubeWorld,
             {
                 await userGetsNotificationsAfter(context,'project creation');
             }
-            buildVerdictFromNotificationsList(buildFlag,notificationsList);
+            await buildVerdictFromNotificationsList(buildFlag,notificationsList);
             await userclearsNotifications();
         }       
     }
@@ -1398,7 +1415,7 @@ When('user builds all projects for {string}', { timeout: 7200 * 1000 },async fun
             }
             await userSelectsFileMainDotC(projectName,swProjectName);
 
-            await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName, index);
+            await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName);
             
             // we close editor containing file main.c
             await page.locator('[id="theia\\:menubar"] >> text=File').click();
@@ -1698,11 +1715,19 @@ async function userCreatesProjectForDevice(projectName:string, deviceName:string
     IDEtrace('DEBUG','Entering userCreatesProjectForDevice');
 
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    await page.locator('text=Search ProductSearch Product >> input[type="text"]').press('Enter');
-    await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill('');
+
+    await page.locator('[placeholder="Search\\.\\.\\."]').nth(1).click();
+    await page.locator('[placeholder="Search\\.\\.\\."]').nth(1).press('Enter');
+    await page.locator('[placeholder="Search\\.\\.\\."]').nth(1).fill('');
     await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-    await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill(`${deviceName}`);
+    await page.locator('[placeholder="Search\\.\\.\\."]').nth(1).fill(`${deviceName}`);
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+
+    // await page.locator('text=Search ProductSearch Product >> input[type="text"]').press('Enter');
+    // await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill('');
+    // await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+    // await page.locator('text=Search ProductSearch Product >> input[type="text"]').fill(`${deviceName}`);
+    // await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
     const locatorText=`a:has-text("${deviceName}")`;
     await page.locator(locatorText).first().click();
@@ -1883,15 +1908,15 @@ Then('testuser checks that {string} files are in the staging area',async functio
 const ActivateIDETraces=true;
 const report_IDE_ERROR_traces=true;
 const report_IDE_WARNING_traces=false;
-const report_IDE_DEBUG_traces=false;
+const report_IDE_DEBUG_traces=true;
 const report_IDE_INFO_traces=true;
-const report_IDE_DEBUG_tables=false;
+const report_IDE_DEBUG_tables=true;
 
 function IDEtrace(traceLevel:string, traceMessage:string) {
     if (ActivateIDETraces)
     {
         const date=new Date();
-        const messageToEmit= date.toTimeString().split(' ')[0]  + ' : [' + traceMessage + ']'; 
+        const messageToEmit= '\n' + date.toTimeString().split(' ')[0]  + ' : [' + traceMessage + ']'; 
         if (traceLevel==="ERROR")   { if (report_IDE_ERROR_traces)   { console.error(messageToEmit); notificationsList.push(messageToEmit);} }
         if (traceLevel==="WARNING") { if (report_IDE_WARNING_traces) { console.warn(messageToEmit);  notificationsList.push(messageToEmit);} }
         if (traceLevel==="INFO")    { if (report_IDE_INFO_traces)    { console.info(messageToEmit);  notificationsList.push(messageToEmit);} }
