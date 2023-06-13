@@ -267,6 +267,7 @@ setParallelCanAssign(myTagRule)
 
 import { Page } from '@playwright/test';
 import CubeWorld from "./CubeWorld"
+
 setWorldConstructor(CubeWorld);
 
 let page: Page;
@@ -1120,7 +1121,7 @@ async function rightClickText(pattern:string) {
     await obj.click({button: 'right'});
     await obj.isVisible();
 }
-When('user stops program for debug',async function (this: CubeWorld) {
+When('user stops program for debug',{ timeout: 300 * 1000 },async function (this: CubeWorld) {
     await this.page.pause();
 });
 When('user right clicks on text {string}',{ timeout: 10 * 1000 }, async function (this: CubeWorld,textToClick:string) {
@@ -2159,3 +2160,31 @@ When('user runs quick command {string} to clone directory {string}', { timeout: 
     await quickCommandPalette.trigger(quick_command);
     await quickCommandPalette.type(repoUrl);
 });
+
+When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
+
+    IDEtrace('DEBUG','Unstaging all staged changes');
+
+    await page.locator('[id="__more__"]').first().waitFor({state: "visible"});
+    await page.locator('[id="__more__"]').first().click();
+
+    await page.locator('text=Changes').nth(2).waitFor({state: "visible"});
+    await page.locator('text=Changes').nth(2).click();
+
+    await page.locator('text=Unstage All').click();
+    IDEtrace('DEBUG','Unstaging all staged changes done');
+
+});
+When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async (expectedUnchanged:string) => {
+
+    IDEtrace('DEBUG','user checks that there are a given number of unstaged changes');
+    const locatorText='div.theia-scm-inline-actions-container >> div.status';
+    const unstagedFiles=await page.locator(locatorText).count();
+    IDEtrace('DEBUG','Found ' + unstagedFiles + ' unstaged changes');
+    IDEtrace('DEBUG','Expected ' + expectedUnchanged + ' unstaged changes');
+
+    expect(unstagedFiles).toEqual(Number(expectedUnchanged));
+
+    IDEtrace('DEBUG','user checks that there are a given number of unstaged changes done')
+});
+
