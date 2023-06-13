@@ -57,7 +57,6 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user adds a screenshot to test report
 
     Then user selects menu 'View/History'
-
     Then user adds a screenshot to test report
     
     # commit #2
@@ -68,24 +67,23 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user clicks object containing text 'textFile01.txt'
 
     Then testuser patches file textFile01.txt
-    
     Then user selects menu 'File/Save All'
-
+    When user pauses for 6 seconds
     Then user selects menu 'File/Close Editor'
 
     When user clicks object containing text 'Files'
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
+    When user pauses for 6 seconds
     Then user clicks on commit signed off button
+    #When user pauses for 6 seconds
     Then user enters commit message 'commit #2'
     Then user adds a screenshot to test report
 
     Then user selects menu 'View/History'
-
     Then user adds a screenshot to test report
     
     # commit #3
@@ -95,32 +93,28 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user clicks object containing text 'Files'
     When user clicks object containing text 'textFile01.txt'
 
-    When testuser patches file textFile01.txt
-    When user selects menu 'File/Save All'
-    When user selects menu 'File/Close Editor'
+    Then testuser patches file textFile01.txt
+    Then user selects menu 'File/Save All'
+    When user pauses for 6 seconds
+    Then user selects menu 'File/Close Editor'
 
     When user clicks object containing text 'Files'
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    When user adds a screenshot to test report
-    When user clicks Source Control icon
+    Then user adds a screenshot to test report
+    
+    Then user clicks Source Control icon
+    Then user clicks on staging all changes button
+    When user pauses for 6 seconds
+    Then user clicks on commit signed off button
+    #When user pauses for 6 seconds
+    Then user enters commit message 'commit #3'
+    When user pauses for 6 seconds
+    Then user adds a screenshot to test report
 
-    #When user clicks object containing text '...'
-    #When user pauses for '2' seconds
-    #When user selects menu 'Changes/Stage All Changes'
-    #When user pauses for '2' seconds
-    When user clicks on staging all changes button
-
-    #When user clicks object containing text '...'
-    #When user pauses for '2' seconds
-    #When user selects menu 'Commit/Commit (Signed Off)'
-    #When user pauses for '2' seconds
-    #When user clicks object containing text 'Message'
-    When user clicks on commit signed off button
-
-    When user enters commit message 'commit #3'
-    When user adds a screenshot to test report
-
-    When user selects menu 'View/History'
+    Then user selects menu 'View/History'
+    When user stops program for debug
+    When user pauses for 6 seconds
+    Then user adds a screenshot to test report
     
     # 3 commits + initial commit
     Then user expects to find '4' commits in History view

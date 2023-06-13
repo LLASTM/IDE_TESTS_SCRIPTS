@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @toto
+@IDE @IDE:others @robustness
 Feature: Creation and build of all projects for all MCU/Board
 
 Background:
@@ -17,16 +17,16 @@ Background:
     
     Given user synchronizes database
     #When user clicks button 'Synchronize' 
-    Given user pauses for '10' seconds
+    Given user pauses for 10 seconds
 
 Scenario:
-    #When user builds list of 'Board'
-    #When user builds all projects for 'Board'
-    When user builds list of 'MCU'
-    #When user builds all projects for 'MCU'
-
+    
+		When user builds list of 'MCU'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
     # -1 means all tests to be run
-    # MCU, create project, delete project at end of test , check context
-    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'false' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'true' 'false' 'false' '50'
+
+    #When user builds list of 'Board'
+    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
+    #When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '2'
 

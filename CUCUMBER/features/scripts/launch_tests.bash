@@ -38,7 +38,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	
 	mkdir -p $HOME/tests_artifacts
 	# launch all tests coming from cube-ide repo
-	yarn e2e:tests:custom @toto --remote-server localhost:3000
+	yarn e2e:tests:custom @robustness --remote-server localhost:3000
 
 	traces_directory=$HOME/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
 	cp -rf repos/test-tools/e2e/traces ${traces_directory}
