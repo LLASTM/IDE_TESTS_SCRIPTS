@@ -14,5 +14,5 @@
 #./launch_test.bash @T1IDE 1
 #./launch_test.bash @robustness 1
 
-./launch_test.bash "@T1IDE or @IDE-BuildFew" 1
+./launch_test.bash "@T1IDE or @IDE-BuildFewBoard or @IDE-BuildFewMCU" 1
 
