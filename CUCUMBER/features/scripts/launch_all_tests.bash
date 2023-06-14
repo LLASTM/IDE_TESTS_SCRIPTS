@@ -11,6 +11,8 @@
 #       @IDE @IDE:git:ui @T1IDE-222 @T1IDE      ../IDE/git/UI/T1IDE-222.feature
 #       @IDE @IDE:git:ui @T1IDE-736 @T1IDE      ../IDE/git/UI/T1IDE-736.feature*
 
-./launch_tests @T1IDE 1
-./launch_tests @robustness
+#./launch_test.bash @T1IDE 1
+#./launch_test.bash @robustness 1
+
+./launch_test.bash "@T1IDE or @robustness" 1
 

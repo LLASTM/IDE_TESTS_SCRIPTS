@@ -13,8 +13,11 @@
 # the tag to be used for tests in tag_to_use
 # the number of loops the tests are launched in numberOfLoops
 
-tag_to_use=$1
+tags_to_use=$1
 numberOfLoops=$2
+
+echo launch_test.bash : tags to use=${tags_to_use}
+echo launch_test.bash : number of loops to run=${numberOfLoops}
 
 echo 1 - launch_tests.bash : creating some directories used for tests
 
@@ -43,7 +46,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	
 	mkdir -p $HOME/tests_artifacts
 	# launch all tests coming from cube-ide repo
-	yarn e2e:tests:custom ${tag_to_use} --remote-server localhost:3000
+	yarn e2e:tests:custom "${tags_to_use}" --remote-server localhost:3000
 
 	traces_directory=$HOME/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
 	cp -rf repos/test-tools/e2e/traces ${traces_directory}
