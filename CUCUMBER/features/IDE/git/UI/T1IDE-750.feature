@@ -16,7 +16,7 @@ Feature: Creation and build of 1 project for Board U5
 		- Open main.c file being part of a Cube2.0 software project. You should see context widget updated
 
 Background:
-    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
     Given user clears notifications list
     Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
