@@ -24,7 +24,7 @@ Feature: As an end-user, I want to unstage a file for commit using CLI and GUI, 
     When user clicks Source Control icon
     When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
-    When user pauses for '8' seconds
+    When user pauses for 8 seconds
 
     When user clicks explorer icon
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'

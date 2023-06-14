@@ -23,7 +23,7 @@ Feature: As an end-user, I want to create new branches using CLI and GUI, so tha
     When user clicks Source Control icon
     When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
-    When user pauses for '8' seconds
+    When user pauses for 8 seconds
 
     When user creates git branch 'git_branch_00'
     

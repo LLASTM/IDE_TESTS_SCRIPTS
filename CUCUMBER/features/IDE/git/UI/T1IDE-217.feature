@@ -19,7 +19,7 @@ Feature:  As an end-user, I want to stage a file for commit using CLI and GUI,
     When user clicks Source Control icon
     When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
-    When user pauses for '8' seconds
+    When user pauses for 8 seconds
     
     When user clicks explorer icon
     Then user searches for string 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' in current page
@@ -34,10 +34,10 @@ Feature:  As an end-user, I want to stage a file for commit using CLI and GUI,
 
     # When user right clicks on text 'Files'
     # When user clicks object containing text 'New File'
-    # When user pauses for '4' seconds
+    # When user pauses for 4 seconds
     # When user clicks object containing text 'Untitled.txt'
     # When user types text 'textFile1.txt'
-    # When user pauses for '4' seconds
+    # When user pauses for 4 seconds
     # When user clicks button 'OK'
     When user creates a set of '5' new files
     

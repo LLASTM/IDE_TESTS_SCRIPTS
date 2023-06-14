@@ -15,7 +15,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
     Given user clicks button 'Synchronize'
-    Given user pauses for '10' seconds
+    Given user pauses for 10 seconds
 
   Scenario: First
     Given user creates application project '<project>' with board '<board>'
@@ -37,14 +37,14 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
 
     When user selects menu 'Terminal/Run Build Task'
     When user converts project '<project>'
-    When user pauses for '5' seconds
+    When user pauses for 5 seconds
     When user gets notifications after 'project conversion'
     When user gets conversion log messages from console
     When user sets a conversion verdict
 
     When user selects menu 'Terminal/Run Build Task'
     When user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    When user pauses for '5' seconds
+    When user pauses for 5 seconds
     When user adds a screenshot to test report
     When user gets build log messages from console
     When user sets a build verdict from console traces
@@ -64,7 +64,7 @@ Feature: Project creation for board B-U585I-IOT02A, builds its debug configurati
     When user adds a screenshot to test report
   
     When user selects menu 'Run/Start Debugging'
-    When user pauses for '10' seconds
+    When user pauses for 10 seconds
     When user gets notifications after 'starting debugger'
 
     When testuser performs '<loops>' loops on breakpoints

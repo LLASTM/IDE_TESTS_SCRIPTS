@@ -16,7 +16,7 @@ Feature: Project creation and build
     Given user clicks Finder icon
     
     Given user clicks button 'Synchronize'
-    Given user pauses for '10' seconds
+    Given user pauses for 10 seconds
 
   Scenario: First
     
@@ -28,12 +28,12 @@ Feature: Project creation and build
    
     When user selects menu 'Terminal/Run Build Task'
     When user converts project '<project>'
-    When user pauses for '10' seconds
+    When user pauses for 10 seconds
     When user gets notifications after 'project conversion'
 
     When user selects menu 'Terminal/Run Build Task' 
     When user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    When user pauses for '10' seconds
+    When user pauses for 10 seconds
     When user gets notifications after 'project build'
 
     When user builds verdict from notifications

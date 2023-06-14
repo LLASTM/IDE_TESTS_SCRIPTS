@@ -20,7 +20,7 @@ Feature:  As an end-user I want to clone my GIT project into Cube 2.0 tools usin
     When user clicks Source Control icon
     When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
-    When user pauses for '8' seconds
+    When user pauses for 8 seconds
     
     When user clicks explorer icon
     Then user searches for string 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' in current page

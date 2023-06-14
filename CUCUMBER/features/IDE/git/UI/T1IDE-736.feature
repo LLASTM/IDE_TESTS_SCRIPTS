@@ -21,9 +21,9 @@ Feature:  As a squad leader, I want to get a running integration test on communi
     When user performs git init command
     
     #When user clicks object containing text '...'
-    #When user pauses for '2' seconds
+    #When user pauses for 2 seconds
     #When user selects menu 'Changes/Stage All Changes'
-    #When user pauses for '2' seconds
+    #When user pauses for 2 seconds
     When user adds all files to staging area
 
     Then testuser checks that '2' files are in the staging area
