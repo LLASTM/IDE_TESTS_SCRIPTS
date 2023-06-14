@@ -7,38 +7,26 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
-Feature: Project creation and build
-  
-  Background:
+@IDE @IDE:others @IDE-BuildFew
+Feature: Creation and build of all projects for all MCU/Board
+
+Background:
     Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
     Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
     
-    Given user clicks button 'Synchronize'
+    Given user synchronizes database
+    #When user clicks button 'Synchronize' 
     Given user pauses for 10 seconds
 
-  Scenario: First
+Scenario:
+
+    When user builds list of 'Board'
+    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
+    When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '2'
     
-    Given user creates application project '<project>' with board '<board>'
-    Given user adds a new software project '<swProject>' in application project panel
-    #Given user adds a new software component to project '<swProject>' in application project panel
-    Given user clears notifications list
-    Given user gets notifications after 'project creation'
-   
-    When user selects menu 'Terminal/Run Build Task'
-    When user converts project '<project>'
-    When user pauses for 10 seconds
-    When user gets notifications after 'project conversion'
+    When user builds list of 'MCU'
+    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
+    # -1 means all tests to be run
+    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'true' 'false' 'false' '2'
 
-    When user selects menu 'Terminal/Run Build Task' 
-    When user builds project '<project>' '<swProject>' '<releaseToBuild>'
-    When user pauses for 10 seconds
-    When user gets notifications after 'project build'
-
-    When user builds verdict from notifications
-
-Scenarios:
-    | project        | board           | swProject                 | releaseToBuild   |
-    | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | release          |
-    | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | debug            |
