@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE-BuildFew
+@IDE @IDE:others @IDE-BuildFewBoard
 Feature: Creation and build of all projects for all MCU/Board
 
 Background:
@@ -26,9 +26,8 @@ Scenario:
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
     When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '2'
     
-    When user clears notifications list
-    When user builds list of 'MCU'
+    #When user builds list of 'MCU'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
     # -1 means all tests to be run
-    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'true' 'false' 'false' '2'
+    #When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'true' 'false' 'false' '2'
 
