@@ -112,7 +112,6 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     Then user adds a screenshot to test report
 
     Then user selects menu 'View/History'
-    When user stops program for debug
     When user pauses for 6 seconds
     Then user adds a screenshot to test report
     
