@@ -6,10 +6,15 @@
 #
 # CubeSTudio is supposed to be already started (if not, run : yarn studio:browser start&)
 #
-# input parameter to this script : $1, the number of loops to perform
+# input parameter to this script : 	$1, the tag to use for tests
+#					$2, the number of loops to perform
 
-# The following variable stores the number of loops the tests are launched.
-numberOfLoops=$1
+# The following variables store :
+# the tag to be used for tests in tag_to_use
+# the number of loops the tests are launched in numberOfLoops
+
+tag_to_use=$1
+numberOfLoops=$2
 
 echo 1 - launch_tests.bash : creating some directories used for tests
 
@@ -38,7 +43,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	
 	mkdir -p $HOME/tests_artifacts
 	# launch all tests coming from cube-ide repo
-	yarn e2e:tests:custom @T1IDE-222 --remote-server localhost:3000
+	yarn e2e:tests:custom ${tag_to_use} --remote-server localhost:3000
 
 	traces_directory=$HOME/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
 	cp -rf repos/test-tools/e2e/traces ${traces_directory}
@@ -47,7 +52,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	loopCounter=$[ ${loopCounter} + 1]
 done
 
-# other tags available to customize IDE tests
+# tags available to customize IDE tests
 #
 #	@IDE:git:ui		: all IDE tests using UI
 #	@T1IDE			: all T1IDE jira related tests
