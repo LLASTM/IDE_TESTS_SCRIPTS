@@ -14,7 +14,7 @@ import { TheiaAboutDialog } from '../models/theia-about-dialog';
 import { TheiaMenuBar } from '../models/theia-main-menu';
 import { TheiaQuickCommandPalette } from '../models/theia-quick-command-palette';
 import { TheiaTextEditor } from '../models/theia-text-editor';
-import { CsUiFactory } from './CsUiElement';
+import { CsUiFactory, setUserReactionTime } from './CsUiElement';
 
 import { defineParameterType } from '@cucumber/cucumber'
 
@@ -179,6 +179,14 @@ defineParameterType({
 })
 
 defineParameterType({
+    name: 'app_project_name',
+    regexp: [/'([^']*)'/, /"([^"]*)"/],
+    transformer: function (singleQ, doubleQ) {
+        return singleQ ? singleQ : doubleQ
+    }
+})
+
+defineParameterType({
     name: 'preference_string',
     regexp: [/'([^']*)'/, /"([^"]*)"/],
     transformer: function (singleQ, doubleQ) {
@@ -248,6 +256,13 @@ defineParameterType({
     transformer: s => s
 })
 
+defineParameterType({
+    name: 'user_reaction_time_ms',
+    regexp: /[0-9]+/,
+    transformer: s => s
+})
+
+
 import {
     Before,
     After,
@@ -260,15 +275,15 @@ import {
     setDefaultTimeout
 } from '@cucumber/cucumber';
 
-setDefaultTimeout(10 * 1000);
+setDefaultTimeout(60 * 1000);
 const { atMostOnePicklePerTag } = parallelCanAssignHelpers
 const myTagRule = atMostOnePicklePerTag(["@config"]);
 setParallelCanAssign(myTagRule)
 
 import { Page } from '@playwright/test';
 import CubeWorld from "./CubeWorld"
-
 setWorldConstructor(CubeWorld);
+let cw_instance:CubeWorld;
 
 let page: Page;
 let theiaApp: TheiaApp;
@@ -287,6 +302,7 @@ export async function pressKey (key: string) {
 Before({ timeout: 60 * 1000 }, async function(this: CubeWorld, scenario) {
     const path = require('path');
     this.featureRelDir = path.parse(scenario.gherkinDocument.uri).dir;
+    cw_instance = this;
 })
 
 After({ timeout: 60 * 1000 }, async function(this: CubeWorld, scenario){
@@ -297,49 +313,67 @@ After({ timeout: 60 * 1000 }, async function(this: CubeWorld, scenario){
 })
 
 // regression test exists
+export async function openCubeStudio() {
+	//await cw_instance.init()
+    page = cw_instance.page;
+    theiaApp = cw_instance.theiaApp;
+    menuBar = theiaApp.menuBar;
+}
 Given("user opens CubeStudio", { timeout: 60 * 1000 }, async function () {
-	await this.init();
-    page = this.page;
-    theiaApp = this.theiaApp;
-    menuBar = theiaApp.menuBar;
+    await openCubeStudio();
 });
 
-
+export async function openCubeStudioInWorkspace(workspacePath: string) {
+    await cw_instance.init(cw_instance.featureRelDir +'/'+ workspacePath);
+    page = cw_instance.page;
+    theiaApp = cw_instance.theiaApp;
+    menuBar = theiaApp.menuBar;
+}
 Given("user opens CubeStudio workspace in {workspace_path}", { timeout: 120 * 1000 }, async function(this: CubeWorld, workspacePath: string) {
-    await this.init(this.featureRelDir +'/'+ workspacePath);
-    page = this.page;
-    theiaApp = this.theiaApp;
-    menuBar = theiaApp.menuBar;
+    await openCubeStudioInWorkspace(workspacePath);
 });
 
-Given('quick command is opened', { timeout: 60 * 1000 }, async function () {
+export async function openQuickCommand() {
     quickCommand = theiaApp.quickCommandPalette;
     await quickCommand.open();
+}
+Given('quick command is opened', { timeout: 60 * 1000 }, async function () {
+    await openQuickCommand();
 });
+
+export async function openFile(file_name:string) {
+    cw_instance.scenarioData.textEditor = await theiaApp.openEditor(file_name, TheiaTextEditor);
+}
 
 When('user opens file {file_path}', async function (this: CubeWorld, file_name:string) {
-    this.scenarioData.textEditor = await theiaApp.openEditor(file_name, TheiaTextEditor);
+    await openFile(file_name);
 });
 
-When('user closes file {file_path}', async(file_name:string) =>{
+export async function closeFile(ile_name:string) {
     await textEditor.close();
+}
+When('user closes file {file_path}', async(file_name:string) =>{
+    await closeFile(file_name);
 });
 
-When('user selects tab {tab_name}', async function (this: CubeWorld, tabNumber:string) {
+export async function selectTab(tabNumber:string) {
     // select tab
     const tabNumberInt: number = +tabNumber;
     const mainPanelClass = 'theia-main-content-panel';
-    const tabs = await this.page.$$(`#${mainPanelClass} .theia-tabBar-tab-row li.p-TabBar-tab`);
+    const tabs = await cw_instance.page.$$(`#${mainPanelClass} .theia-tabBar-tab-row li.p-TabBar-tab`);
     console.log(tabs.length);
     const selectedWidget = tabs[tabNumberInt - 1];
     await selectedWidget.click();
-    this.scenarioData.selectedWidget = selectedWidget;
+    cw_instance.scenarioData.selectedWidget = selectedWidget;
 
     // load the corresponding object model
-    await this.getActiveTab();
+    await cw_instance.getActiveTab();
+}
+When('user selects tab {tab_name}', async function (this: CubeWorld, tabNumber:string) {
+    await selectTab(tabNumber);
 });
 
-When('user selects tab {tab_name} in {panel_name} panel', async function (this: CubeWorld, tabNumber:string, panel:string) {
+export async function selectTabFromPanel(tabNumber:string, panel:string) {
     // select tab
     const tabNumberInt: number = +tabNumber;
     const mainPanelClass = 'theia-main-content-panel';
@@ -347,63 +381,83 @@ When('user selects tab {tab_name} in {panel_name} panel', async function (this: 
     let panelClass = mainPanelClass;
     if(panel === 'bottom') panelClass = bottomPanelClass;
 
-    const tabs = await this.page.$$(`#${panelClass} .theia-tabBar-tab-row li.p-TabBar-tab`);
+    const tabs = await cw_instance.page.$$(`#${panelClass} .theia-tabBar-tab-row li.p-TabBar-tab`);
     console.log(tabs.length);
     const selectedWidget = tabs[tabNumberInt - 1];
     await selectedWidget.click();
-    this.scenarioData.selectedWidget = selectedWidget;
+    cw_instance.scenarioData.selectedWidget = selectedWidget;
 
     // load the corresponding object model
-    await this.getActiveTab();
+    await cw_instance.getActiveTab();    
+}
+When('user selects tab {tab_name} in {panel_name} panel', async function (this: CubeWorld, tabNumber:string, panel:string) {
+    await selectTabFromPanel(tabNumber, panel);
 });
 
-When('user close tab', async function (this: CubeWorld) {
-    const closeIcon = await this.scenarioData.selectedWidget?.waitForSelector('div.p-TabBar-tabCloseIcon');
+export async function closeTab() {
+    const closeIcon = await cw_instance.scenarioData.selectedWidget?.waitForSelector('div.p-TabBar-tabCloseIcon');
     await closeIcon?.click();
     await new Promise( resolve => setTimeout(resolve, + 6 * 1000) );
+}
+
+When('user close tab', async function (this: CubeWorld) {
+    await closeTab();
 })
 
+// FIXME
 Then('tab should be closed', async() =>{
 });
 
+// FIXME
 Then('file {file_path} should be closed', async(file_name:string) =>{
 });
 
+// FIXME
 Then('should be visible and active after opening', async function (this:CubeWorld) {
     expect(await this.scenarioData.textEditor.isTabVisible()).toBe(true);
     expect(await this.scenarioData.textEditor.isDisplayed()).toBe(true);
     expect(await this.scenarioData.textEditor.isActive()).toBe(true);
 })
 
+export async function closeTextEditor() {
+    textEditor.close();    
+}
 When('user closes text editor', async() =>{
-        textEditor.close();
+    closeTextEditor();
 });
 
-Then('text editor should not be visible', async()=>{
+export async function textEditorShouldNotBeVisible() {
 	expect(await textEditor.isTabVisible()).toBe(false);
+}
+Then('text editor should not be visible', async()=>{
+    await textEditorShouldNotBeVisible();
 });
 
-
+export async function textEditorLineShouldBe(line_nr:string, text:string) {
+    expect(await textEditor.textContentOfLineByLineNumber(+line_nr)).toBe(text);
+}
 Then('text editor line {word} should be {editor_line}', async(line_nr:string, text:string)=>{
-        expect(await textEditor.textContentOfLineByLineNumber(+line_nr)).toBe(text);
+    await textEditorLineShouldBe(line_nr, text);
 });
 
+export async function textEditorLineMatchingPatternShouldBe(pattern:string, text:string) {
+    expect(await textEditor.textContentOfLineContainingText(pattern)).toBe(text);
+}
 Then('text editor line matching pattern {editor_pattern} should be {string}', async(pattern:string, text:string)=>{
-        expect(await textEditor.textContentOfLineContainingText(pattern)).toBe(text);
+    await textEditorLineMatchingPatternShouldBe(pattern, text);
 });
 
 When('user runs quick command {quick_command}', { timeout: 60 * 1000 }, async (quick_command:string) => {
-	const quickCommandPalette = theiaApp.quickCommandPalette; 
-    await quickCommandPalette.open();
-    await quickCommandPalette.type(quick_command);
-    await quickCommandPalette.trigger(quick_command);
-    await quickCommandPalette.type('.yml');
-    await page.keyboard.press('Enter');
+    runQuickCommand(quick_command);
 });
 
-When('user type {quick_command} in command palette', { timeout: 60 * 1000 }, async(text:string) =>{
-	const quickCommandPalette = theiaApp.quickCommandPalette; 
-    await quickCommandPalette.type(text);
+export async function runQuickCommand(command:string) {
+    await selectMenu('View/Command Palette...');
+    await typeText(command);
+    pressKey('Enter');
+}
+When('user type {quick_command} in command palette', { timeout: 60 * 1000 }, async(command:string) =>{
+    runQuickCommand(command);
 });
 
 When('user hits key {key}', { timeout: 60 * 1000 }, async(key:string) =>{
@@ -419,61 +473,77 @@ When('user presses Enter', { timeout: 60 * 1000 }, async() =>{
     await pressKey('Enter');
 });
 
-// async function userSelectsMenu(menu:string) {
-//     const subMenus = menu.split('/');
-//     await new Promise( resolve => setTimeout(resolve,+ 1000) ); // Workaround when menubar is not yet available
-//     const mainMenu = await menuBar.openMenu(subMenus[0]);
-//     await new Promise( resolve => setTimeout(resolve,+ 1000) ); // <== Added by [LLA]
-//     subMenus.shift();
-//     const item = await mainMenu.menuItemByNamePath(...subMenus);
-//     await item?.click();
-// }
 // regression test exists
-When('user selects menu {menu_path}', { timeout: 60 * 1000 }, async(menu:string) =>{
+export async function selectMenu(menu:string) {
     const subMenus = menu.split('/');
     await new Promise( resolve => setTimeout(resolve,+ 1000) ); // Workaround when menubar is not yet available
     const mainMenu = await menuBar.openMenu(subMenus[0]);
     subMenus.shift();
     const item = await mainMenu.menuItemByNamePath(...subMenus);
     await item?.click();
+}
+
+When('user selects menu {menu_path}', { timeout: 60 * 1000 }, async(menu:string) =>{
+    await selectMenu(menu);
 });
 
-When('user deletes text line matching pattern {editor_pattern}', async(text:string) =>{
-        await textEditor.deleteLineContainingText(text);
+export async function deleteTextLineMatchingPattern(pattern:string) {
+    await textEditor.deleteLineContainingText(pattern);
+}
+When('user deletes text line matching pattern {editor_pattern}', async(pattern:string) =>{
+    await deleteTextLineMatchingPattern(pattern);
 });
 
-When('user deletes text line number {editor_line_number}', async(line_nr:string) =>{
-        await textEditor.deleteLineByLineNumber(+line_nr);
+export async function deleteTextLineNumber(line_nr:number) {
+    await textEditor.deleteLineByLineNumber(line_nr);
+}
+When('user deletes text line number {editor_line_number}', async(line_nr:number) =>{
+    await deleteTextLineNumber(line_nr);
 });
 
-When('user replaces text line {editor_line_number} with {editor_line}', async(line_nr:string, text:string) =>{
-        await textEditor.replaceLineWithLineNumber(text, +line_nr);
+export async function replaceTextLineNumber(line_nr:number, text:string) {
+    await textEditor.replaceLineWithLineNumber(text, line_nr);
+}
+When('user replaces text line {editor_line_number} with {editor_line}', async(line_nr:number, text:string) =>{
+    await replaceTextLineNumber(line_nr, text);
 });
 
+export async function replaceTextMatchingPattern(pattern:string, text:string) {
+    await textEditor.replaceLineContainingText(text, pattern);
+}
 When('user replaces line matching pattern {editor_pattern} with {editor_line}', async(pattern:string, text:string) =>{
-        await textEditor.replaceLineContainingText(text, pattern);
+    replaceTextMatchingPattern(pattern, text);
 });
 
-
+export async function addTextAfterMatchingPattern(text:string, pattern:string) {
+    await textEditor.addTextToNewLineAfterLineContainingText(pattern, text);
+}
 When('user adds text {editor_line} to new line after line matching pattern {editor_pattern}', async(text:string, pattern:string) =>{
-        await textEditor.addTextToNewLineAfterLineContainingText(pattern, text);
+    await addTextAfterMatchingPattern(text, pattern);
 });
 
-
+export async function textEditorIsDirty() {
+    expect(await textEditor.isDirty()).toBe(true);
+}
 Then('text editor should be dirty', async()=>{
-        expect(await textEditor.isDirty()).toBe(true);
+    await textEditorIsDirty();
 });
 
-
+export async function textEditorIsNotDirty() {
+await textEditorIsNotDirty();
+}
 Then('text editor should not be dirty', async()=>{
         expect(await textEditor.isDirty()).toBe(false);
 });
 
-
+export async function textEditorSave() {
+    await textEditor.save();
+}
 When('user saves text', async()=>{
-        await textEditor.save();
+    await textEditorSave();
 });
 
+// FIXME About dialog
 let aboutDialog: TheiaAboutDialog;
 
 Then('About dialog should popup', async()=>{
@@ -489,38 +559,34 @@ Then('About dialog should disappear', async()=>{
 	expect(await aboutDialog.isVisible()).toBe(false);
 });
 
+// FIXME
 Then('explorer view should popup', async()=>{
 	const explorerView = new TheiaExplorerView(theiaApp);
     expect(await explorerView.isDisplayed()).toBe(true);
 });
 
-Given('user pauses for {string} seconds', { timeout: 60 * 1000 }, async(delay:string)=>{
-   await new Promise( resolve => setTimeout(resolve, + Number(delay) * 1000) );
+Given('user pauses for {seconds_cnt} seconds', { timeout: 60 * 1000 }, async(delay:number)=>{
+    await sleep_ms(delay*1000);
 });
 
-Given('user pauses for {seconds_cnt} seconds', { timeout: 60 * 1000 }, async(delay:string)=>{
-    await new Promise( resolve => setTimeout(resolve, + Number(delay) * 1000) );
-});
-
-Given('user get content of line {editor_line_number}', { timeout: 60 * 1000 }, async(line:string)=>{
-    const text = await textEditor.textContentOfLineByLineNumber(Number(line));
-    console.log("@@@@@@@@@@ Line content");
+export async function textGetContentOfLine(line_nr:number) {
+    const text = await textEditor.textContentOfLineByLineNumber(line_nr);
     console.log(text);
+}
+Given('user get content of line {editor_line_number}', { timeout: 60 * 1000 }, async(line_nr:number)=>{
+    await textGetContentOfLine(line_nr);
 });
 
-Given('user replace content of line {editor_line_number} with {editor_line}', { timeout: 60 * 1000 }, async function(this:CubeWorld, line:string, content: string) {
-    await this.scenarioData.textEditor.replaceLineWithLineNumber(content, Number(line));
-    this.page.keyboard.press('Enter')
-    this.page.keyboard.press('Backspace')
-    this.page.keyboard.press('Backspace')
-    this.page.keyboard.press('Backspace')
-    await this.scenarioData.textEditor.save();
+Given('user replace content of line {editor_line_number} with {editor_line}', { timeout: 60 * 1000 }, async function(this:CubeWorld, line_nr:number, content: string) {
+    await replaceTextLineNumber(line_nr, content);
 });
 
+// FIXME
 Given('content of line should be correct', { timeout: 60 * 1000 }, async()=>{
 	
 });
 
+// FIXME
 Given('content of line should be replaced', { timeout: 60 * 1000 }, async()=>{
 	
 });
@@ -529,7 +595,6 @@ export async function clickText(pattern:string) {
     const obj = page.locator(`text=${pattern} >> visible=true`).first();
     await obj.isEnabled();
     await obj.click({force:true});
-    //await obj.isVisible(); // Added by LLA
 }
 
 export async function clickTextBelowText(pattern:string, below:string) {
@@ -537,7 +602,7 @@ export async function clickTextBelowText(pattern:string, below:string) {
     await page.locator(`text=${pattern} >> visible=true`).click();
 }
 
-When ('user clicks object containing text {string} below text {string}', { timeout: 60 * 1000 }, async(pattern:string, below:string)=>{
+When ('user clicks object containing text {ui_obj_text} below text {ui_obj_text}', { timeout: 60 * 1000 }, async(pattern:string, below:string)=>{
     clickTextBelowText(pattern, below);
 });
 
@@ -554,12 +619,19 @@ When('user types {typed_in_text}', { timeout: 60 * 1000 }, async(text:string) =>
     await typeText(text);
 });
 
-When('user clicks input box', async()=>{
-	await page.locator('#quick-input-container > div > div.quick-input-header > div.quick-input-and-message > div.quick-input-filter > div.quick-input-box > div > div > input').click();
+
+export async function clickInputBox(name:string) {
+    await (await CsUiFactory.newListOfCsInput(page)).getbyname(name).unique().locator.click();
+}
+When('user clicks input box {input_name}', async(name:string)=>{
+    await clickInputBox(name);
 });
 
+export async function splitEditorIcon() {
+    await page.locator('#workbench\.action\.splitEditorRight').click();
+}
 When('user clicks split editor icon', async()=>{
-	await page.locator('#workbench\.action\.splitEditorRight').click();
+	await splitEditorIcon();
 });
 
 async function clickExplorerIcon() {
@@ -571,14 +643,12 @@ When('user clicks explorer icon', async()=>{
 
 export async function openExplorer() {
     await clickExplorerIcon();
-    //await page.locator('.p-TabBar-tabIcon.codicon.codicon-files').first().click();
-    // Promise( resolve => setTimeout(resolve, 2000) );
 }
 When('user opens Explorer', async()=>{
 	await clickExplorerIcon();
 });
 
-async function clickFinderIcon() {
+export async function clickFinderIcon() {
     await page.locator("div.p-TabBar-tabIcon.codicon.cubeicon.cubeicon-finder").first().click();
 }
 
@@ -595,7 +665,8 @@ When('user clicks Search icon', async()=>{
 });
 
 export async function openFinder() {
-    await clickFinderIcon();
+    // Better than clicking on Finder icon which switches on and off the Finder pane
+    await runQuickCommand('Finder: open');
 }
 
 export async function openSearchPanel() {
@@ -606,29 +677,31 @@ When('user opens Finder', async()=>{
 	await openFinder();
 });
 
-When('user clicks tab {tab_name}', { timeout: 60 * 1000 }, async(text:string) =>{
-    await page.locator(':nth-match(div.p-TabBar-tabLabel:has-text("'+text+'"),1)').click();
-    console.log(text);
+export async function getTab(name:string, position:number) {
+    return page.locator(':nth-match(div.p-TabBar-tabLabel:has-text("'+name+'"),'+position.toString()+')');
+}
+When('user clicks tab {tab_name}', { timeout: 60 * 1000 }, async(name:string) =>{
+    await (await getTab(name, 1)).click();
 });
 
-When('user clicks tab {tab_name} 2nd position', { timeout: 60 * 1000 }, async(text:string) =>{
-    await page.locator(':nth-match(div.p-TabBar-tabLabel:has-text("'+text+'"),2)').click();
-    console.log(text);
+When('user clicks tab {tab_name} 2nd position', { timeout: 60 * 1000 }, async(name:string) =>{
+    await (await getTab(name,2)).click();
 });
 
-When('user hovers tab {tab_name}', { timeout: 60 * 1000 }, async(text:string) =>{
-        await page.locator(':nth-match(div.p-TabBar-tabLabel:has-text("'+text+'"),1)').hover();
-        console.log(text);
+When('user hovers tab {tab_name}', { timeout: 60 * 1000 }, async(name:string) =>{
+    await (await getTab(name,1)).hover();
 });
 
-When('user drags object to position {x_coord_px} {y_coord_px}', { timeout: 60 * 1000 }, async(x:string, y:string)=>{
+// FIXME (should use dragAndDrop())
+When('user drags object to position {x_coord_px} {y_coord_px}', { timeout: 60 * 1000 }, async(x:number, y:number)=>{
 	page.mouse.down();
-    new Promise( resolve => setTimeout(resolve, 5000) );
-    page.mouse.move(+x,+y);
-    new Promise( resolve => setTimeout(resolve, 5000) );
+    await sleep_ms(5000);
+    page.mouse.move(x,y);
+    await sleep_ms(5000);
     page.mouse.up();
 });
 
+// FIXME
 When('user drags tab {tab_name} to panel offset {x_offset_px} {y_offset_px}', { timeout: 60 * 1000 }, async(text:string, x:string, y:string)=>{
     const tab_to_drag = await page.locator(':nth-match(div.p-TabBar-tabLabel:has-text("'+text+'"),2)');
     await tab_to_drag.click();
@@ -637,44 +710,62 @@ When('user drags tab {tab_name} to panel offset {x_offset_px} {y_offset_px}', { 
     await page.mouse.up();
 });
 
-When('user closes tab {tab_name}', { timeout: 60 * 1000 }, async function (this: CubeWorld, tab:string) {
+// FIXME: duplicate?
+export async function closeTab2(tab_name:string) {
     const mainPanelClass = 'theia-main-content-panel';
-    const element = this.page.locator(`#${mainPanelClass} .p-TabBar li`, {hasText: tab});
+    const element = cw_instance.page.locator(`#${mainPanelClass} .p-TabBar li`, {hasText: tab_name});
     const closeIcon = element.locator(`div[title=Close]`);
     await closeIcon.click();
+}
+When('user closes tab {tab_name}', { timeout: 60 * 1000 }, async function (this: CubeWorld, tab_name:string) {
+    await closeTab2(tab_name);
 });
 
-When('user scrolls down {y_offset_px} pixels', async(pixels:string) =>{
-    await page.mouse.wheel(0,-pixels);
+export async function mouseWheel(pixels:number) {
+    await page.mouse.wheel(0,pixels);
+}
+When('user scrolls down {y_offset_px} pixels', async(pixels:number) =>{
+    await mouseWheel(-pixels);
 });
 
-When('user moves mouse down {y_offset_px} pixels', async(pixels:string) =>{
-    await page.mouse.wheel(0,-pixels);
+When('user moves mouse down {y_offset_px} pixels', async(pixels:number) =>{
+    await mouseWheel(-pixels);
 });
 
+// FIXME
 When('user clicks config panel text {string}', { timeout: 60 * 1000 }, async(pattern:string)=>{
     // await page.frameLocator('iframe').locator('text='+pattern).click();
     // const config_panel = page.frame({url: });
     return;
 });
 
+// FIXME
 Then('editor should be split to right', async() => {
     // expect(3).toBe(4);
 })
 
-When('user use html selector {html_selector}', { timeout: 60 * 1000 }, async function (this: CubeWorld, selector:string) {
+export async function selectDomWithHtmlSelector(selector:string) {
     const elementHtml = await page.$eval(selector, el => el.outerHTML);
-    this.scenarioData.selector = selector;
-    this.scenarioData.elementHtml = elementHtml;
+    cw_instance.scenarioData.selector = selector;
+    cw_instance.scenarioData.elementHtml = elementHtml;
+}
+When('user use html selector {html_selector}', { timeout: 60 * 1000 }, async function (this: CubeWorld, selector:string) {
+    await selectDomWithHtmlSelector(selector);
 });
 
+export async function elementShouldHaveClass(className:string) {
+    const classAttr = await cw_instance.scenarioData.element.getAttribute('class');
+    expect(classAttr).toBe(className);
+}
 Then('element should have class {html_class}', { timeout: 60 * 1000 }, async function (this: CubeWorld, className:string) {
-    const classAttr = await this.scenarioData.element.getAttribute('class');
-    await expect(classAttr).toBe(className);
+    await elementShouldHaveClass(className);
 });
 
+export async function elementShouldBe(htmlElement:string) {
+    expect(cw_instance.scenarioData.elementHtml).toBe(htmlElement);
+}
 Then('element should be {html_element}', { timeout: 60 * 1000 }, async function (this: CubeWorld, htmlElement:string) {
-    await expect(this.scenarioData.elementHtml).toBe(htmlElement);
+    await elementShouldBe(htmlElement);
 });
 
 async function count_visible_text (cw: CubeWorld, expected_text:string) : Promise<number> {
@@ -774,9 +865,6 @@ When('user clicks pencil icon at right of text {ui_obj_text}', { timeout: 60 * 1
 export async function clickInputBoxWithText(text:string) {
     await page.locator('input[placeholder="'+text+'"]').click();
 }
-When('user clicks input box {input_name}', { timeout: 60 * 1000 }, async function (this: CubeWorld, text:string) {
-    await (await CsUiFactory.newListOfCsInput(this.page)).getbyname(text).unique().locator.click();
-});
 
 export async function clickFolderIcon() {
     await page.locator('.codicon-folder').click();
@@ -785,6 +873,7 @@ When('user clicks folder icon', { timeout: 60 * 1000 }, async function (this: Cu
     await clickFolderIcon();
 });
 
+// FIXME: this should be more generic (left/right/top/bottom)
 When('user select the left tab in bottom panel', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
     const listofTabs = await CsUiFactory.newListOfCsUiElements(this.page, ['#theia-bottom-content-panel .p-TabBar-tab']);
     const leftTab = listofTabs.left().locator;
@@ -828,6 +917,10 @@ When('user selects context menu from {string} item {string}', { timeout: 60 * 10
     const contextMenuInstance = ContextMenues.getbyname(contextMenu).unique();
     await contextMenuInstance.click();
     await contextMenuInstance.selectItem(contextMenuItem);
+});
+
+Given("user reaction time is {user_reaction_time_ms} ms", { timeout: 60 * 1000 }, async function (delay: number) {
+	setUserReactionTime(delay);
 });
 
 // The following variables are used for IDE integration tests
