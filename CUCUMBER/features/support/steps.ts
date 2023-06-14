@@ -2175,7 +2175,7 @@ When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
     IDEtrace('DEBUG','Unstaging all staged changes done');
 
 });
-When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async (expectedUnchanged:string) => {
+When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async function (this: CubeWorld,expectedUnchanged:string) {
 
     IDEtrace('DEBUG','user checks that there are a given number of unstaged changes');
     const locatorText='div.theia-scm-inline-actions-container >> div.status';
@@ -2188,3 +2188,71 @@ When('user checks that there are {string} unstaged changes', { timeout: 60 * 100
     IDEtrace('DEBUG','user checks that there are a given number of unstaged changes done')
 });
 
+
+When('user creates git branch {string}', { timeout: 120 * 1000 }, async function(this: CubeWorld, gitBranchName:string) {
+
+    IDEtrace('DEBUG','user creates git branch ' + gitBranchName);
+    await page.locator('span:has-text("main")').click(); // click on main on bottom left part of screen
+    await page.locator('text=Create new branch...').click();
+    await page.locator('[placeholder="Branch name"]').fill(gitBranchName);
+    await page.locator('text=' + gitBranchName).click();
+    await new Promise( resolve => setTimeout(resolve,+ 4000) );
+
+    // we check that the git branch name is reported in the status bar 
+    try
+    {
+        await page.locator('text=[NO CONTEXT] ' + gitBranchName + ' 0 0').click();
+        IDEtrace('DEBUG','git branch ' + gitBranchName + ' was found in theia status bar');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to find branch ' + gitBranchName + ' in theia status bar');
+    }
+    await new Promise( resolve => setTimeout(resolve,+ 4000) );
+    try // this to see if the branch appears in list of branches
+    {
+        await page.locator('[aria-label="\\$\\(codicon-source-control\\) ' + gitBranchName + '\\, IDE_TESTS_FAKE_REPOSITORY \\(Git\\) - ' + gitBranchName + '"] >> text=' + gitBranchName).click();
+        await new Promise( resolve => setTimeout(resolve,+ 4000) );
+        IDEtrace('DEBUG','click to get list of branches is OK');
+    }
+    catch
+    {
+        IDEtrace('ERROR','failed to display list of branches');
+    }
+
+    // we try to go back to main branch
+    try
+    {
+        await page.locator('[aria-label="main\\, 6c57901"] span:has-text("main")').first().click(); // click on theia status bar
+        await page.locator('[aria-label="\\$\\(codicon-source-control\\) main\\, IDE_TESTS_FAKE_REPOSITORY \\(Git\\) - main"] >> text=main').click();
+        await new Promise( resolve => setTimeout(resolve,+ 4000) );
+
+        const image = await this.page?.screenshot();
+        await this.attach(image, 'image/png');
+        IDEtrace('DEBUG','back on main branch is ok');
+    }
+    catch
+    {
+        IDEtrace('ERROR', 'Failed to go back on main branch and then to branch ' + gitBranchName);
+        expect(1).toEqual(0);
+    }
+    
+    try
+    {
+        //await page.pause();
+        // await page.locator('text=git_branch_00').click();
+        await page.locator('text=' + gitBranchName).click();        
+        await new Promise( resolve => setTimeout(resolve,+ 1000) );
+
+        const image = await this.page?.screenshot();
+        await this.attach(image, 'image/png');
+        IDEtrace('DEBUG','back on git branch ' + gitBranchName + ' ok');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to come back on git branch ' + gitBranchName );
+        expect(1).toEqual(0);
+    }
+    
+    IDEtrace('DEBUG','git branch ' + gitBranchName + ' creation done');
+});

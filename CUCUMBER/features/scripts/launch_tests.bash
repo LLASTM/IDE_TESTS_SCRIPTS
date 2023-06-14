@@ -38,7 +38,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	
 	mkdir -p $HOME/tests_artifacts
 	# launch all tests coming from cube-ide repo
-	yarn e2e:tests:custom @robustness --remote-server localhost:3000
+	yarn e2e:tests:custom @T1IDE-222 --remote-server localhost:3000
 
 	traces_directory=$HOME/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
 	cp -rf repos/test-tools/e2e/traces ${traces_directory}
@@ -51,10 +51,12 @@ done
 #
 #	@IDE:git:ui		: all IDE tests using UI
 #	@T1IDE			: all T1IDE jira related tests
-#	@T1IDE-207		: jira #207 test
-#	@T1IDE-215		: jira #215 test
-#	@T1IDE-217		: jira #217 test
-#	@T1IDE-736		: jira #736 test
+#	@IDE @IDE:git:ui @T1IDE-207 @T1IDE	../IDE/git/UI/T1IDE-207.feature
+#	@IDE:git:ui @T1IDE-215 @T1IDE		../IDE/git/UI/T1IDE-215.feature
+#	@IDE @IDE:git:ui @T1IDE-217 @T1IDE	../IDE/git/UI/T1IDE-217.feature
+#	@IDE @IDE:git:ui @T1IDE-218 @T1IDE	../IDE/git/UI/T1IDE-218.feature
+#	@IDE @IDE:git:ui @T1IDE-222 @T1IDE	../IDE/git/UI/T1IDE-222.feature
+#	@IDE @IDE:git:ui @T1IDE-736 @T1IDE	../IDE/git/UI/T1IDE-736.feature
 
 # other tags available for tests non directly linked to IDE
 # @IDE:others				: other tests , both using board and no board
