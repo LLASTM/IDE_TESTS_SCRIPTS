@@ -42,5 +42,3 @@ Scenarios:
     | project        | board           | swProject                 | releaseToBuild   |
     | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | release          |
     | ApplicationPrj | B-U585I-IOT02A  | SWProject-B-U585I-IOT02A  | debug            |
-    # | ApplicationPrj | NUCLEO-U575ZI-Q | SWProject-NUCLEO-U575ZI-Q | release          |
-    # | ApplicationPrj | NUCLEO-U575ZI-Q | SWProject-NUCLEO-U575ZI-Q | debug            |
