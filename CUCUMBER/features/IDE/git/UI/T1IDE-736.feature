@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-736 @T1IDE
+@IDE @IDE:git:ui @T1IDE-736 @T1IDE @T1IDE-UI
 Feature:  As a squad leader, I want to get a running integration test on community GIT repo
           initialization feature so that I can support squad quality commitment
 

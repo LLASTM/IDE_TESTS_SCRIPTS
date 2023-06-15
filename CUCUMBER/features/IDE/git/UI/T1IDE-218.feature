@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-218 @T1IDE
+@IDE @IDE:git:ui @T1IDE-218 @T1IDE @T1IDE-UI
 Feature: As an end-user, I want to unstage a file for commit using CLI and GUI, so that I can work in the way I prefer.
 
     After cloning repository :

@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @T1IDE-750
+@IDE @IDE:others @T1IDE-750 @T1IDE-UI
 Feature: Creation and build of 1 project for Board U5
 	How to:
 		- Start from nothing.
