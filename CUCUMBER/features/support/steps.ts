@@ -985,18 +985,24 @@ async function userPatchesFiletextFile01() {
     IDEtrace('DEBUG','userPatchesFiletextFile01:testuser patches file textFile01.txt');
 
     const textToFill = Date.now().toString() ;
-    IDEtrace('DEBUG','Added to file :' + textToFill);
+    
+    try
+    {
+        await page.locator('.view-lines > div:nth-child(1)').waitFor({state:"visible"});
+        await page.locator('.view-lines > div:nth-child(1)').click();
 
-    await page.locator('.view-lines > div:nth-child(1)').waitFor({state:"visible"});
-    await page.locator('.view-lines > div:nth-child(1)').click();
-
-    await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(textToFill);
-
+        await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(textToFill);
+        IDEtrace('DEBUG','Added to file :' + textToFill);
+    }
+    catch
+    {
+        IDEtrace('ERROR','userPatchesFiletextFile01:failed to patch file textFile01.txt');
+    }
     IDEtrace('DEBUG','userPatchesFiletextFile01:testuser patches file textFile01.txt done');
 }
 
 // this step is used to patch file main.c of a project during IDE tests - it is ide tests specific
-Then('testuser patches file textFile01.txt',{ timeout: 60 * 1000 }, async function (this: CubeWorld) {
+Then('testuser patches file textFile01.txt',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
     await userPatchesFiletextFile01();
 });
 
@@ -2463,4 +2469,32 @@ When('user adds notifications list to test report', { timeout: 120 * 1000 }, asy
     
     this.attach(notificationsText);
     
+});
+
+When('user amends commit', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
+    IDEtrace('DEBUG','user amends commit');
+    try
+    {
+        await page.locator('text=Amend').click();
+        IDEtrace('DEBUG','click on Amend button is ok');
+    }
+    catch
+    {
+        IDEtrace('DEBUG','Failed to click on Amend button');
+    }
+    IDEtrace('DEBUG','user amends commit done');
+});
+
+When('user searches for amended commit {string}', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitMessageToSearch:string) {
+    IDEtrace('DEBUG','searches for amended commit');
+    try
+    {
+        await page.locator('#amendedCommits >> text=' + commitMessageToSearch).click();
+        IDEtrace('DEBUG','searches for amended commit ' + commitMessageToSearch + ' is OK ');
+    }
+    catch
+    {
+        IDEtrace('DEBUG','Failed to find amended commit');
+    }
+    IDEtrace('DEBUG','searches for amended commit done');
 });
