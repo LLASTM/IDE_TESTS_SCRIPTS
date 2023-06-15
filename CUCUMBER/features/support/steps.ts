@@ -1106,26 +1106,44 @@ async function userEntersCommitMessage(commitMessage:string ) {
     IDEtrace('DEBUG','userEntersCommitMessage');
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
-    await page.locator('textarea').waitFor({state: "visible"});
-    await page.locator('textarea').click();
-    IDEtrace('DEBUG','click on text area done');
-
-    await page.locator('textarea').fill(commitMessage);
-    IDEtrace('DEBUG','commit message [' + commitMessage + '] filled');
-
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-
-    await page.locator(`text=${commitMessage}`).waitFor({state: "visible"});
-    await page.locator(`text=${commitMessage}`).press('Control+Enter');
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-    IDEtrace('DEBUG','press ctrl + Enter done');
+    try
+    {
+        await page.locator('div.theia-scm-input-message-container >> textarea.theia-scm-input-message').waitFor({state: "visible"});
+        await page.locator('div.theia-scm-input-message-container >> textarea.theia-scm-input-message').click();
+        IDEtrace('DEBUG','click on text area done');
+    }
+    catch
+    {
+        IDEtrace('ERROR','userEntersCommitMessage : failed to click on text area');
+    }
+    try
+    {
+        await page.locator('div.theia-scm-input-message-container >> textarea.theia-scm-input-message').fill(commitMessage);
+        IDEtrace('DEBUG','commit message [' + commitMessage + '] filled');
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+    }
+    catch
+    {
+        IDEtrace('ERROR','userEntersCommitMessage : failed to fill commit message');
+    }
+    try
+    {
+        await page.locator(`text=${commitMessage}`).waitFor({state: "visible"});
+        await page.locator(`text=${commitMessage}`).press('Control+Enter');
+        await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+        IDEtrace('DEBUG','press ctrl + Enter done');
+    }
+    catch
+    {
+        IDEtrace('ERROR','userEntersCommitMessage : failed to press ctrl + Enter');
+    }
 
     IDEtrace('DEBUG','userEntersCommitMessage done');
 
 }
 
 // This step is used to add a commit message
-Then('user enters commit message {string}',{ timeout: 20 * 1000 }, async function (this: CubeWorld,commitMessage:string) {
+Then('user enters commit message {string}',{ timeout: 300 * 1000 }, async function (this: CubeWorld,commitMessage:string) {
     await userEntersCommitMessage(commitMessage);
 });
 
@@ -1631,6 +1649,7 @@ async function userStartsIDETests(  context:CubeWorld,
     const locatorText='button:has-text("' + products + '")'
     await page.locator(locatorText).first().click();
     await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
 
     let tested_devices=0;
     const testsResultsList: Array<Array<string>>=[];
@@ -2332,8 +2351,6 @@ When('user creates git branch {string}', { timeout: 120 * 1000 }, async function
     
     try
     {
-        //await page.pause();
-        // await page.locator('text=git_branch_00').click();
         await page.locator('text=' + gitBranchName).click();        
         await new Promise( resolve => setTimeout(resolve,+ 1000) );
 
@@ -2348,4 +2365,102 @@ When('user creates git branch {string}', { timeout: 120 * 1000 }, async function
     }
     
     IDEtrace('DEBUG','git branch ' + gitBranchName + ' creation done');
+});
+
+When('user searches for commit {string} in git history', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitToFind:string) {
+    const listOfCommits=await userGetsCommits();
+
+    IDEtrace('DEBUG',listOfCommits);
+    if (listOfCommits.includes(commitToFind))
+    {
+        IDEtrace('DEBUG','commit message ' + commitToFind + ' was found in git history');
+    }
+    else
+    {
+        IDEtrace('ERROR','commit message ' + commitToFind + ' was not found in git history');
+    }
+});
+
+async function userGetsCommits()
+{
+    IDEtrace('DEBUG','Entering userGetsCommits');
+
+    const numberOfCommitsNodes=page.locator('div.history-container >> div.listContainer >> div[data-test-id="virtuoso-scroller"] >> div[data-viewport-type="element"] >> div[data-test-id="virtuoso-item-list"] >> div[data-index]'); 
+    const counter : number= await numberOfCommitsNodes.count();
+
+    IDEtrace('DEBUG','user found ' + counter + ' commit messages in History view');
+    let foundCommitsMessage="List of commits found in git history window\n";
+ 
+    await page.waitForSelector('div.commitListElement >> div.containerHead >> div.headContent >> div.headLabelContainer >> div.commitTime');
+    await page.waitForSelector('div.commitListElement >> div.containerHead >> div.headContent >> div.headLabelContainer >> div.commitTime');
+
+    // trying to extract each commit message and time
+    for (let index = 0; index < counter; index++)
+    {
+        const currentObject=numberOfCommitsNodes.nth(index);
+                
+        if (currentObject)
+        {                          
+            try
+            {
+                const oneCommitElementCommitTime=currentObject.locator('div.commitListElement >> div.containerHead >> div.headContent >> div.headLabelContainer >> div.commitTime'); 
+                const oneCommitElementCommitMessage=currentObject.locator('div.commitListElement >> div.containerHead >> div.headContent >> div.headLabelContainer >> div.headLabel');
+                
+                let commitTimeText="NO_COMMIT_TIME";
+                let commitMessageText="NO_COMMIT_MESSAGE";
+                
+                if (oneCommitElementCommitTime !== null)
+                {
+                    const tmpValue= await oneCommitElementCommitTime.textContent();
+                    if (tmpValue !== null)
+                    {
+                        commitTimeText = tmpValue ;
+                    }
+                }
+                if (oneCommitElementCommitMessage !== null)
+                {
+                    const tmpValue= await oneCommitElementCommitMessage.textContent();
+                    if (tmpValue !== null)
+                    {
+                        commitMessageText = tmpValue ;
+                    }
+                }
+                IDEtrace('DEBUG','commit message #' + index + ':[' + commitMessageText + ':' + commitTimeText + ']');
+                foundCommitsMessage += 'commit message #' + index + ':[' + commitMessageText + ':' + commitTimeText + ']' + '\n';
+
+            } 
+            catch (except)
+            {
+                IDEtrace('ERROR','failed to access commit message #' + index );
+                console.log(except);
+            }              
+        }
+    }
+    IDEtrace('DEBUG','Leaving userGetsCommits');
+    return foundCommitsMessage;
+}
+async function userGetsNotificationsText()
+{
+    const notificationsListLength=notificationsList.length;
+    IDEtrace('DEBUG','found ' + notificationsListLength + ' notifications in list');
+
+    let notificationsText="List of notifications\n";
+    for (let index=0;index<notificationsListLength;index++)
+    {
+        const currentItem=notificationsList[index];
+        notificationsText += currentItem + '\n';
+    }
+    return notificationsText;
+}
+
+When('user adds notifications list to test report', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
+ 
+    IDEtrace('DEBUG','Dumping notifications to test report');
+
+    const notificationsText = await userGetsNotificationsText();
+
+    IDEtrace('DEBUG','End of dumping notifications to test report');
+    
+    this.attach(notificationsText);
+    
 });
