@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @IDE-boards
+@IDE @IDE:others @IDE:others:no_board @IDE-boards @T1IDE-robustness
 Feature: report list of boards found in Finder
 
 Background:

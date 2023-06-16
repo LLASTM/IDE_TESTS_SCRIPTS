@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board
+@IDE @IDE:others @IDE:others:no_board @T1IDE-robustness
 Feature: report list of Parts found in Finder
 
 Background:

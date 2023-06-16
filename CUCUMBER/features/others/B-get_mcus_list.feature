@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @IDE-mcus
+@IDE @IDE:others @IDE:others:no_board @IDE-mcus @T1IDE-robustness
 Feature: report list of Mcus found in Finder
 
 Background:
