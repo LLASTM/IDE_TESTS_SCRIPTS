@@ -6,7 +6,7 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-221 @T1IDE @T1IDE-UI
+@IDE @IDE:git:ui @T1IDE-221 @T1IDE @T1IDE-UI @T1IDE-robustness
 Feature: As an end-user, I want to create new branches using CLI and GUI, so that I can work on my feature branch.
 
     After cloning repository :
