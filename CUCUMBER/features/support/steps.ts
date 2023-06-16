@@ -2768,6 +2768,7 @@ When('user closes board panel', { timeout: 10 * 1000 }, async function(this: Cub
     try
     {
         await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:board"] > .p-TabBar-tabCloseIcon').click();
+        await new Promise( resolve => setTimeout(resolve,+ 6000) );
         IDEtrace('DEBUG','Board panel should be closed now');
     }
     catch
@@ -2780,6 +2781,7 @@ When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeW
     try
     {
         await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:mcu"] > .p-TabBar-tabCloseIcon').click();
+        await new Promise( resolve => setTimeout(resolve,+ 6000) );
         IDEtrace('DEBUG','MCU panel should be closed now');
     }
     catch
