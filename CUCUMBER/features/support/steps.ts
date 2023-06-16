@@ -923,6 +923,8 @@ Given("user reaction time is {user_reaction_time_ms} ms", { timeout: 60 * 1000 }
 	setUserReactionTime(delay);
 });
 
+// ================================================================================
+
 // The following variables are used for IDE integration tests
 let notificationsList: Array<string> = [];      // This list is used to build a test verdict since no access to console logs is possible
 let boardsList: Array<Array<string>>=[];          // contains the list of boards found in the Finder
@@ -931,15 +933,21 @@ let mpusList: Array<Array<string>>=[];            // contains the list of mpus f
 let expansionBoardsList: Array<Array<string>>=[]; // contains the list of expansion boards found in the Finder
 let PartsList: Array<Array<string>>=[];           // contains the list of parts found in the Finder
 
+// ================================================================================
+
 // This step is used to attach a screenshot to the html test report
 Then('user adds a screenshot to test report', async function (this: CubeWorld) {
     const image = await this.page?.screenshot();
     image && (await this.attach(image, 'image/png'));
 });
 
+// ================================================================================
+
 When('user synchronizes database', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
     await this.page.locator('text=Synchronize').click();
 });
+
+// ================================================================================
 
 /**
  * 
@@ -951,10 +959,14 @@ async function userSelectsRepositoryLink(repoUrl:string) {
        await page.locator(locatorText).click();
 }
 
+// ================================================================================
+
 // This step opens the command palette, and uses the git clone command to clone a repo which url is provided
 Then('user selects repository {string} link',{ timeout: 30 * 1000 },async function (this: CubeWorld, repoUrl:string) {
     await userSelectsRepositoryLink(repoUrl);
 });
+
+// ================================================================================
 
 // This function searches for a string in the current page
 /**
@@ -975,10 +987,14 @@ async function userSearchesForStringInCurrentPage(textToFind:string) {
     }
 }
 
+// ================================================================================
+
 // This step is used to search for a string provided as a parameter inside the current page
 Then('user searches for string {string} in current page', { timeout: 30 * 1000 },async function (this: CubeWorld, repoUrl:string) {
     await userSearchesForStringInCurrentPage(repoUrl);
 });
+
+// ================================================================================
 
 // this function is used to patch file main.c of a project during IDE tests
 async function userPatchesFiletextFile01() {
@@ -1001,10 +1017,14 @@ async function userPatchesFiletextFile01() {
     IDEtrace('DEBUG','userPatchesFiletextFile01:testuser patches file textFile01.txt done');
 }
 
+// ================================================================================
+
 // this step is used to patch file main.c of a project during IDE tests - it is ide tests specific
 Then('testuser patches file textFile01.txt',{ timeout: 300 * 1000 }, async function (this: CubeWorld) {
     await userPatchesFiletextFile01();
 });
+
+// ================================================================================
 
 // This function is used to add all files to the staging area
 async function userAddsAllChangesToStagingArea() {
@@ -1049,10 +1069,14 @@ async function userAddsAllChangesToStagingArea() {
     IDEtrace('DEBUG','staging all changes done');
 }
 
+// ================================================================================
+
 // This step is used to add all files to the staging area
 Then('user clicks on staging all changes button',{ timeout: 90 * 1000 }, async function (this: CubeWorld) {
     await userAddsAllChangesToStagingArea();
 });
+
+// ================================================================================
 
 // This function is called when performing a commit (signed off) operation
 async function userClicksOnCommitSignedOff() {
@@ -1097,10 +1121,14 @@ async function userClicksOnCommitSignedOff() {
     IDEtrace('DEBUG','click on Signed off done');
 }
 
+// ================================================================================
+
 // This step is called when performing a commit (signed off) operation
 Then('user clicks on commit signed off button',{ timeout: 10 * 1000 }, async function (this: CubeWorld) {
     await userClicksOnCommitSignedOff();
 });
+
+// ================================================================================
 
 /**
  * : This is the commit message to be added
@@ -1148,10 +1176,14 @@ async function userEntersCommitMessage(commitMessage:string ) {
 
 }
 
+// ================================================================================
+
 // This step is used to add a commit message
 Then('user enters commit message {string}',{ timeout: 300 * 1000 }, async function (this: CubeWorld,commitMessage:string) {
     await userEntersCommitMessage(commitMessage);
 });
+
+// ================================================================================
 
 async function userExpectsToFindCommits(expectedCommitsNumber:string)
 {
@@ -1226,11 +1258,16 @@ async function userExpectsToFindCommits(expectedCommitsNumber:string)
     return foundCommitsMessage ;
 
 }
+
+// ================================================================================
+
 // step used when user wants to compare the number of commits found in git history to an expected number
 Then('user expects to find {string} commits in History view',{ timeout: 300 * 1000 }, async function (this: CubeWorld, expectedCommits:string) {
     const foundCommitsMessage = await userExpectsToFindCommits(expectedCommits);
     this.attach(foundCommitsMessage);
 });
+
+// ================================================================================
 
 async function rightClickText(pattern:string) {
     const obj = page.locator(`text=${pattern} >> visible=true`).first();
@@ -1238,12 +1275,20 @@ async function rightClickText(pattern:string) {
     await obj.click({button: 'right'});
     await obj.isVisible();
 }
+
+// ================================================================================
+
 When('user stops program for debug',{ timeout: 300 * 1000 },async function (this: CubeWorld) {
     await this.page.pause();
 });
+
+// ================================================================================
+
 When('user right clicks on text {string}',{ timeout: 10 * 1000 }, async function (this: CubeWorld,textToClick:string) {
     await rightClickText(textToClick);
 });
+
+// ================================================================================
 // This function is test specific, it consists in creating a number of empty files
 // This number of files is the argument to this function
 async function userCreatesASetOfNewFiles(numberOfFiles:string) {
@@ -1260,10 +1305,14 @@ async function userCreatesASetOfNewFiles(numberOfFiles:string) {
     IDEtrace('DEBUG','user creates a set of new files done');
 }
 
+// ================================================================================
+
 // This step is used to create a set of files, used for some git related tests
 Then('user creates a set of {string} new files',{ timeout: 60 * 1000 }, async function (this: CubeWorld,numberOfFiles:string) {
     await userCreatesASetOfNewFiles(numberOfFiles);
 });
+
+// ================================================================================
 
 async function userChecksStagingArea(numberOfFiles:string) {
     IDEtrace('DEBUG','user checks that ' + numberOfFiles + ' files are in the staging area');
@@ -1283,9 +1332,13 @@ async function userChecksStagingArea(numberOfFiles:string) {
     IDEtrace('DEBUG','user checks that ' + numberOfFiles + ' files are in the staging area done');
 }
 
+// ================================================================================
+
 Then('user checks that {string} files are in the staging area',{ timeout: 30 * 1000 }, async function (this: CubeWorld,numberOfFiles:string) {
     await userChecksStagingArea(numberOfFiles);
 });
+
+// ================================================================================
 
 async function userSearchesForCommitInHistoryView(commitText:string) {
     const textToFind=`text=${commitText}`;
@@ -1303,9 +1356,13 @@ async function userSearchesForCommitInHistoryView(commitText:string) {
     expect(foundCommit).toBeTruthy();
 }
 
+// ================================================================================
+
 Then('user searches for commit {string} in History view', { timeout: 30 * 1000 },async function (this: CubeWorld, commitText:string) {
     await userSearchesForCommitInHistoryView(commitText);
 });
+
+// ================================================================================
 
 async function userAddsAllFilesToStagingArea() {
     IDEtrace('DEBUG','user adds all files to staging area');
@@ -1359,17 +1416,25 @@ async function userAddsAllFilesToStagingArea() {
     IDEtrace('DEBUG','user adds all files to staging area done');
 }
 
+// ================================================================================
+
 Then('user adds all files to staging area',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
     await userAddsAllFilesToStagingArea();
 });
+
+// ================================================================================
 
 async function clickSourceControlIcon() {
     await page.locator("div.p-TabBar-tabIcon.codicon.codicon-source-control").first().click();
 }
 
+// ================================================================================
+
 When('user clicks Source Control icon', async()=>{
 	await clickSourceControlIcon();
 });
+
+// ================================================================================
 
 async function userBuildsConfiguration(swProjectName:string,configurationToBuild:string) {
     try{
@@ -1383,6 +1448,8 @@ async function userBuildsConfiguration(swProjectName:string,configurationToBuild
     }
 }
 
+// ================================================================================
+
 async function userCleansBuildsConfiguration(swProjectName:string, configurationToBuild:string) {
     try{
         await page.locator('text=Clean and Build ' + swProjectName + ' | main | ' + configurationToBuild ).first().click();
@@ -1394,6 +1461,9 @@ async function userCleansBuildsConfiguration(swProjectName:string, configuration
         userCleansBuildsConfiguration('DEBUG','userBuildsConfiguration:could not launch build command');
     }
 }
+
+// ================================================================================
+
 async function buildVerdictFromNotificationsList(buildFlag:string) {
 
     let errorsFound=0;
@@ -1436,16 +1506,22 @@ async function buildVerdictFromNotificationsList(buildFlag:string) {
     return updatNotificationsText;
 }
 
+// ================================================================================
+
 // This step is called when user tries to build a verdict from the notifications list
 Then('user builds verdict from notifications', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
      await buildVerdictFromNotificationsList('true');
 });
+
+// ================================================================================
 
 // This step is used to clear the list of notifications that may be used to build a test verdict
 // as long as it is not possible to use the console traces
 Then('user clears notifications list', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
     notificationsList = [];
 });
+
+// ================================================================================
 
 async function userclearsNotifications() {
     // clearing notifications
@@ -1462,6 +1538,9 @@ async function userclearsNotifications() {
     notificationsList = [];
     IDEtrace('DEBUG','notifications list cleared');
 }
+
+// ================================================================================
+
 async function userOpensClockConfigurationView() {
     IDEtrace('DEBUG','Opening clock configuration view');
     await page.locator('[data-testid="clock_button_open"] span').click();
@@ -1469,6 +1548,9 @@ async function userOpensClockConfigurationView() {
     await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 }
+
+// ================================================================================
+
 async function userOpensPinoutView() {
     IDEtrace('DEBUG','Opening pinout view');
     await page.locator('[data-testid="pinout_button_open"] span').click();
@@ -1476,6 +1558,9 @@ async function userOpensPinoutView() {
     await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 }
+
+// ================================================================================
+
 async function userRefreshesTasksList() {
     IDEtrace('DEBUG','Refreshing tasks list');          
     await page.locator('.p-TabBar-tabIcon.theia-plugin-view-container').first().click();
@@ -1486,6 +1571,9 @@ async function userRefreshesTasksList() {
     // await page.locator('.p-TabBar-tabIcon.theia-plugin-view-container').first().click(); // keeping tasks list opened
     IDEtrace('DEBUG','tasks list is refreshed now');
 }
+
+// ================================================================================
+
 async function userClosesOpenedWindows(products:string,deviceName:string) {
     // now we close all windows opened
     IDEtrace('DEBUG','closing all opened windows');
@@ -1502,6 +1590,8 @@ async function userClosesOpenedWindows(products:string,deviceName:string) {
         IDEtrace('ERROR','Failed to close opened windows');
     }
 }
+
+// ================================================================================
 
 async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string) {
     const locatorText="div[id='theia-statusBar']";
@@ -1523,6 +1613,9 @@ async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,pro
         }
     }
 }
+
+// ================================================================================
+
 async function userSelectsFileMainDotC(projectName:string,swProjectName:string) {
     
     IDEtrace('DEBUG','Entering userSelectsFileMainDotC');
@@ -1582,6 +1675,8 @@ async function userSelectsFileMainDotC(projectName:string,swProjectName:string) 
     IDEtrace('DEBUG','Leaving userSelectsFileMainDotC');
 }
 
+// ================================================================================
+
 async function  deleteProjectFromWorkspace(projectName:string) {
     IDEtrace('DEBUG','Entering deleteProjectFromWorkspace');
     openExplorer();
@@ -1608,6 +1703,9 @@ async function  deleteProjectFromWorkspace(projectName:string) {
     }
     IDEtrace('DEBUG','Leaving deleteProjectFromWorkspace');
 }
+
+// ================================================================================
+
 When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
     products:string,
     createProjectFlag:string,
@@ -1622,6 +1720,9 @@ When('user starts IDE tests for {string} {string} {string} {string} {string} {st
     await userStartsIDETests(this,products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag,numberOfTestsToRun);
 
 });
+
+// ================================================================================
+
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
                                     createProjectFlag:string,
@@ -1796,6 +1897,7 @@ async function userStartsIDETests(  context:CubeWorld,
     context.attach(summaryText);
 }
 
+// ================================================================================
 
 /**
  *
@@ -1906,6 +2008,8 @@ async function userGetsListOfItems(products:string) {
     return data;
 }
 
+// ================================================================================
+
 // This function fills the adequate list depending on "products" string
 async function userBuildsListOfProducts(products:string)
 {
@@ -1919,11 +2023,15 @@ async function userBuildsListOfProducts(products:string)
     if (products === "Expansion Board")  { expansionBoardsList=itemsList;}
 }
 
+// ================================================================================
+
 // This step is called when user wants to build a list of products available in the Finder :
 // Boards, mcus, mpus, expansion boards, parts
 Then('user builds list of {string}', { timeout: 90 * 1000 }, async function (this: CubeWorld, products:string) {
     await userBuildsListOfProducts(products);
 });
+
+// ================================================================================
 
 /**
  * This function adds the content of a list to the test report
@@ -1948,20 +2056,28 @@ async function userAddsListToTestReport(listToReport:string) {
     return textToReport;
 }
 
+// ================================================================================
+
 // This step is called when user wants to add a list to test report
 Then('user adds {string} list to test report', { timeout: 30 * 1000 }, async function (this: CubeWorld, listToReport: string) {
     const textToReport=await userAddsListToTestReport(listToReport);
     this.attach(textToReport,'text/plain');
 });
 
+// ================================================================================
+
 async function userGetsCubeStudioVersion(context:CubeWorld) {
     const cubeStudioVersion = await context.page.locator('div.about-details').textContent();
     await context.attach('cubeStudio version :' + cubeStudioVersion,'text/plain');
 }
 
+// ================================================================================
+
 Then('user gets cube studio version', async function (this: CubeWorld) {
     userGetsCubeStudioVersion(this);
 });
+
+// ================================================================================
 
 async function userGetsTheiaExtensionsVersions(context:CubeWorld) {
     const extensionsList = page.locator('div.theia-aboutDialog >> ul.theia-aboutExtensions >> li');
@@ -1990,6 +2106,8 @@ Then('user gets theia extensions', async function (this: CubeWorld) {
     await userGetsTheiaExtensionsVersions(this);
 });
 
+// ================================================================================
+
 async function userGetsTheiaNotifications()
 {
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
@@ -2009,10 +2127,14 @@ async function userGetsTheiaNotifications()
     IDEtrace('DEBUG','Leaving userGetsTheiaNotifications' ); 
 }
 
+// ================================================================================
+
 // This step is used when user wants to get the list of notifications appeared during the step  passed as a parameter
 Then('user gets notifications after {string}', { timeout: 20 * 1000 }, async function (this: CubeWorld, step:string) {
     await userGetsTheiaNotifications();
 });
+
+// ================================================================================
 
 // This function is called in order to convert a project before it could be built
 // The string parameter is the name of the project that should be in the explorer view
@@ -2021,20 +2143,32 @@ async function userConvertsProject(projectName:string) {
     await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
 }
 
+// ================================================================================
+
 // This step is called to convert a project before it could be built
 Then('user converts project {string}', async function (this: CubeWorld, projectName:string) {
     await userConvertsProject(projectName);
 });
+
+// ================================================================================
+
 Then('user types text {string}', async function (this: CubeWorld, textToType:string) {
     await clickText(textToType);
 });
+
+// ================================================================================
+
 async function userBuildsProject(projectName:string, swProjectName:string,releaseToBuild:string ) {
     clickText(`${projectName}: Build ${swProjectName} | main | ${releaseToBuild}`);
 }
 
+// ================================================================================
+
 Then('user builds project {string} {string} {string}', async function (this: CubeWorld, projectName:string, swProjectName:string, releaseToBuild:string) {
     await userBuildsProject(projectName, swProjectName,releaseToBuild);
 });
+
+// ================================================================================
 
 async function userCreatesProjectForDevice(projectName:string, deviceName:string)
 {
@@ -2069,6 +2203,8 @@ async function userCreatesProjectForDevice(projectName:string, deviceName:string
     
 }
 
+// ================================================================================
+
 When('user creates application project {string} with board {string}', async function (this: CubeWorld, proj_name:string, device_name:string) {
 
     await this.page.locator('button:has-text("Board")').first().click();
@@ -2090,14 +2226,20 @@ When('user creates application project {string} with board {string}', async func
     await clickButton('Create Application Project');
 });
 
+// ================================================================================
+
 async function userChoosesLaunchConfiguration(launchConfiguration:string) {
     await page.locator('text='+launchConfiguration).waitFor({state: "visible"});
     await page.locator('text='+launchConfiguration).click();
 }
 
+// ================================================================================
+
 When('user selects launch configuration {string}', async function (this: CubeWorld,launchConfiguration:string) {
     await userChoosesLaunchConfiguration(launchConfiguration);
 });
+
+// ================================================================================
 
 async function userAddsANewSWProject(projectName:string) {
     try
@@ -2114,21 +2256,31 @@ async function userAddsANewSWProject(projectName:string) {
     }
 }
 
+// ================================================================================
+
 Given('user adds a new software project {string} in application project panel', async function (this: CubeWorld, projectName:string) {
     await userAddsANewSWProject(projectName);
 });
+
+// ================================================================================
 
 Given('user adds a new software component to project {string} in application project panel', async function (this: CubeWorld, sw_proj:string) {
     await clickPencilIconAtRightOfText(sw_proj);
 });
 
+// ================================================================================
+
 Then('user gets conversion log messages from console', async function (this: CubeWorld) {
     await this.attach("user gets conversion log messages from console: nothing possible until now",'text/plain');
 });
 
+// ================================================================================
+
 Then('user gets build log messages from console', async function (this: CubeWorld) {
     await this.attach("user gets conversion log messages from console: nothing possible until now",'text/plain');
 });
+
+// ================================================================================
 
 // This step is called after calling a conversion step , and should set to "conversion" verdict depending
 // on the console traces (not available until now)
@@ -2136,9 +2288,13 @@ Then('user sets a conversion verdict', async function (this: CubeWorld) {
     await this.attach("user sets a conversion verdict : nothing done until now",'text/plain');
 });
 
+// ================================================================================
+
 Then('user sets a build verdict from console traces', async function (this: CubeWorld) {
     await this.attach("user sets a build verdict from console traces: nothing done until now",'text/plain');
 });
+
+// ================================================================================
 
 // this test specific step is used to perform some step over a breakpoint operations in an infinite loop
 Then('testuser performs {string} loops on breakpoints', async function (this: CubeWorld , numberOfLoops:string) {
@@ -2165,16 +2321,24 @@ Then('testuser performs {string} loops on breakpoints', async function (this: Cu
         image && (this.attach(image, 'image/png'));
     }
 });
+
+// ================================================================================
+
 async function userSelectsDebugContext(applicationName:string,swProjectName:string,versionType:string) {
     const locatorText=` text=[${applicationName} | ${swProjectName} | main | ${versionType}]`;
 
     await page.locator(locatorText).waitFor({state: "visible"});
     await page.locator(locatorText).click(); 
 }
+
+// ================================================================================
+
 // This step is called when user selects a debug context
 Then('user selects debug context for application {string}, sw project {string} and {string} version', async function (this: CubeWorld, application:string, swProject:string, version:string) {
     await userSelectsDebugContext(application,swProject, version);
 });
+
+// ================================================================================
 
 // This test specific step is used to patch file main.c (add i++)
 Then('testuser patches file main.c', async function (this: CubeWorld) {
@@ -2185,11 +2349,15 @@ Then('testuser patches file main.c', async function (this: CubeWorld) {
     await this.page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill('#include "main.h"\nint main() {\n    int i=0;\n  while(1) {\n    i++;\n  }\n  return 0;\n}');
 });
 
+// ================================================================================
+
 // this test specific step is called when test user want to add a breakpoint on line containing "i++" of file main.c
 When('testuser clicks on line with incremented i', async function (this: CubeWorld) {
     await this.page.locator('text=i++;').waitFor({state: "visible"});
     await this.page.locator('text=i++;').click();
 });
+
+// ================================================================================
 
 // This test specific step is called when testuser wants to open file main.c of test project
 Then('testuser opens file main.c of sw project {string} of application {string}', async function (this: CubeWorld, swProjectName:string,projectName:string) {
@@ -2211,9 +2379,13 @@ Then('testuser opens file main.c of sw project {string} of application {string}'
     await this.page.locator(':text-is("main.c")').first().click();
 });
 
+// ================================================================================
+
 Then('user performs git init command', async function (this: CubeWorld) {
     await page.locator('#git-init').first().click();
 });
+
+// ================================================================================
 
 Then('testuser checks that {string} files are in the staging area',async function (this: CubeWorld, numberOfCommits:string) {
     const locatorText='div.notification-count-container.scm-change-count >> span.notification-count';
@@ -2221,9 +2393,12 @@ Then('testuser checks that {string} files are in the staging area',async functio
 
     //expect.soft does not work with cucumber !!!!
     //expect.soft(staggedFiles).toBe(Number(Number(numberOfCommits)));
-
+    
+    IDEtrace('DEBUG', 'expected changes in the staging area : ' + numberOfCommits);
     IDEtrace('DEBUG', 'found ' + staggedFiles + ' in the staging area');
 });
+
+// ================================================================================
 
 const ActivateIDETraces=true;
 const report_IDE_ERROR_traces=true;
@@ -2231,6 +2406,8 @@ const report_IDE_WARNING_traces=false;
 const report_IDE_DEBUG_traces=true;
 const report_IDE_INFO_traces=true;
 //const report_IDE_DEBUG_tables=false;
+
+// ================================================================================
 
 function IDEtrace(traceLevel:string, traceMessage:string) {
     if (ActivateIDETraces)
@@ -2245,8 +2422,9 @@ function IDEtrace(traceLevel:string, traceMessage:string) {
         if (traceLevel==="INFO")    { if (report_IDE_INFO_traces)    { console.info(messageToEmit);  notificationsList.push(messageToEmit);} }
         if (traceLevel==="DEBUG")   { if (report_IDE_DEBUG_traces)   { console.debug(messageToEmit); notificationsList.push(messageToEmit);} }
     }
-    // console.log(notificationsList);
 }
+
+// ================================================================================
 
 Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async function (this: CubeWorld, viewPortSize:string) {
     if ( (viewPortSize === "FullHD") || (viewPortSize === "WQHD") || (viewPortSize === "4K"))
@@ -2271,6 +2449,8 @@ Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async functi
     }
 });
 
+// ================================================================================
+
 When('user runs quick command {string} to clone directory {string}', { timeout: 60 * 1000 }, async (quick_command:string, repoUrl:string) => {
 	const quickCommandPalette = theiaApp.quickCommandPalette; 
     await quickCommandPalette.open();
@@ -2278,6 +2458,8 @@ When('user runs quick command {string} to clone directory {string}', { timeout: 
     await quickCommandPalette.trigger(quick_command);
     await quickCommandPalette.type(repoUrl);
 });
+
+// ================================================================================
 
 When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
 
@@ -2293,6 +2475,9 @@ When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
     IDEtrace('DEBUG','Unstaging all staged changes done');
 
 });
+
+// ================================================================================
+
 When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async function (this: CubeWorld,expectedUnchanged:string) {
 
     IDEtrace('DEBUG','user checks that there are a given number of unstaged changes');
@@ -2306,6 +2491,7 @@ When('user checks that there are {string} unstaged changes', { timeout: 60 * 100
     IDEtrace('DEBUG','user checks that there are a given number of unstaged changes done')
 });
 
+// ================================================================================
 
 When('user creates git branch {string}', { timeout: 120 * 1000 }, async function(this: CubeWorld, gitBranchName:string) {
 
@@ -2373,6 +2559,8 @@ When('user creates git branch {string}', { timeout: 120 * 1000 }, async function
     IDEtrace('DEBUG','git branch ' + gitBranchName + ' creation done');
 });
 
+// ================================================================================
+
 When('user searches for commit {string} in git history', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitToFind:string) {
     const listOfCommits=await userGetsCommits();
 
@@ -2386,6 +2574,8 @@ When('user searches for commit {string} in git history', { timeout: 120 * 1000 }
         IDEtrace('ERROR','commit message ' + commitToFind + ' was not found in git history');
     }
 });
+
+// ================================================================================
 
 async function userGetsCommits()
 {
@@ -2445,6 +2635,9 @@ async function userGetsCommits()
     IDEtrace('DEBUG','Leaving userGetsCommits');
     return foundCommitsMessage;
 }
+
+// ================================================================================
+
 async function userGetsNotificationsText()
 {
     const notificationsListLength=notificationsList.length;
@@ -2459,19 +2652,21 @@ async function userGetsNotificationsText()
     return notificationsText;
 }
 
+// ================================================================================
+
 When('user adds notifications list to test report', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
  
     IDEtrace('DEBUG','Dumping notifications to test report');
-
     const notificationsText = await userGetsNotificationsText();
-
     IDEtrace('DEBUG','End of dumping notifications to test report');
-    
     this.attach(notificationsText);
     
 });
 
-When('user amends commit', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
+// ================================================================================
+
+async function userAmendsCommit()
+{
     IDEtrace('DEBUG','user amends commit');
     try
     {
@@ -2483,9 +2678,18 @@ When('user amends commit', { timeout: 120 * 1000 }, async function(this: CubeWor
         IDEtrace('DEBUG','Failed to click on Amend button');
     }
     IDEtrace('DEBUG','user amends commit done');
+}
+
+// ================================================================================
+
+When('user amends commit', { timeout: 120 * 1000 }, async function(this: CubeWorld) { 
+    await userAmendsCommit();   
 });
 
-When('user searches for amended commit {string}', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitMessageToSearch:string) {
+// ================================================================================
+
+async function userSearchesForAmendedCommits(commitMessageToSearch:string)
+{
     IDEtrace('DEBUG','searches for amended commit');
     try
     {
@@ -2494,7 +2698,67 @@ When('user searches for amended commit {string}', { timeout: 120 * 1000 }, async
     }
     catch
     {
-        IDEtrace('DEBUG','Failed to find amended commit');
+        IDEtrace('ERROR','Failed to find amended commit');
     }
     IDEtrace('DEBUG','searches for amended commit done');
+}
+
+// ================================================================================
+
+When('user searches for amended commit {string}', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitMessageToSearch:string) {
+    await userSearchesForAmendedCommits(commitMessageToSearch);
+});
+
+// ================================================================================
+
+When('user runs some commands using palette', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
+    
+    try
+    {
+        await page.locator('div[role="button"]').nth(3).click();
+        IDEtrace('DEBUG','opening commands palette is ok');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to open commands palette');
+    }
+    await new Promise( resolve => setTimeout(resolve,+ 4000) );
+    try
+    {
+        await page.locator('[aria-label="Type to narrow down results\\."]').click();
+        await page.locator('[aria-label="Type to narrow down results\\."]').fill('>Git clone');
+        await page.locator('[aria-label="Type to narrow down results\\."]').press('Enter');
+        await page.locator('[placeholder="Select Repository Location"]').click();
+        await page.locator('[placeholder="Select Repository Location"]').fill('https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY');
+        await page.locator('text=https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY').click();
+        IDEtrace('DEBUG','Git Clone command is ok');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to run Git Clone command');
+    }
+
+    await new Promise( resolve => setTimeout(resolve,+ 4000) );
+    try
+    {
+        await page.locator('div[role="button"]').nth(3).click();
+        IDEtrace('DEBUG','opening commands palette is ok');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to open commands palette');
+    }
+
+    await new Promise( resolve => setTimeout(resolve,+ 4000) );
+    try
+    {
+        await page.locator('span:has-text("Git: Fetch...")').first().click();
+        await page.locator('[placeholder="Pick a remote to fetch from\\:"]').click();
+        await page.locator('[placeholder="Pick a remote to fetch from\\:"]').fill('');
+        await page.locator('span:has-text("origin")').first().click();
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to run Git Fetch command');
+    }
 });
