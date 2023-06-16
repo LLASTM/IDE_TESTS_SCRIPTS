@@ -1469,15 +1469,15 @@ async function buildVerdictFromNotificationsList(buildFlag:string) {
     let errorsFound=0;
     let updatNotificationsText="";
 
-    // if (buildFlag === 'true')
-    // {
+    if (buildFlag === 'true')
+    {
     //     if (!notificationsList.includes('project build'))
     //     {
     //         errorsFound++;
     //         //expect.soft does not work with cucumber !!!!
     //         //expect.soft(errorsFound,'Testing if errorsFound is 0').toBe(0);
     //     }
-    // }
+    }
     const notificationsListLength=notificationsList.length;
     IDEtrace('DEBUG','found ' + notificationsListLength + ' notifications in list');
     IDEtrace('DEBUG','Dumping ERRORS found in notifications list');
@@ -2756,9 +2756,34 @@ When('user runs some commands using palette', { timeout: 120 * 1000 }, async fun
         await page.locator('[placeholder="Pick a remote to fetch from\\:"]').click();
         await page.locator('[placeholder="Pick a remote to fetch from\\:"]').fill('');
         await page.locator('span:has-text("origin")').first().click();
+        IDEtrace('DEBUG','Git Fetch command ran as expected');
     }
     catch
     {
         IDEtrace('ERROR','Failed to run Git Fetch command');
+    }
+});
+
+When('user closes board panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+    try
+    {
+        await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:board"] > .p-TabBar-tabCloseIcon').click();
+        IDEtrace('DEBUG','Board panel should be closed now');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to close board panel');
+    }
+});
+
+When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+    try
+    {
+        await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:mcu"] > .p-TabBar-tabCloseIcon').click();
+        IDEtrace('DEBUG','MCU panel should be closed now');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to close mcu panel');
     }
 });
