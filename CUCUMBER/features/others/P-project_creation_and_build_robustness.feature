@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @T1IDE-robustness
+@IDE @IDE:others @T1IDE-robustness @toto
 Feature: Creation and build of all projects for all MCU/Board
 
 Background:
