@@ -1,5 +1,5 @@
 // *****************************************************************************
-// Copyright (C) 2022 STMicroelectronics.
+// Copyright (C) 2023 STMicroelectronics.
 //
 // All rights reserved. This program and the accompanying materials
 // is the property of STMicroelectronics and must not be
@@ -260,6 +260,14 @@ defineParameterType({
     name: 'user_reaction_time_ms',
     regexp: /[0-9]+/,
     transformer: s => s
+})
+
+defineParameterType({
+    name: 'context_menu_name',
+    regexp: [/'([^']*)'/, /"([^"]*)"/],
+    transformer: function (singleQ, doubleQ) {
+        return singleQ ? singleQ : doubleQ
+    }
 })
 
 
@@ -656,6 +664,14 @@ async function clickSearchPanelIcon() {
     await page.locator("#shell-tab-search-view-container").first().click();
 }
 
+async function clickSourceControlIcon() {
+    await page.locator("#shell-tab-scm-view-container").first().click();
+}
+
+async function clickGitInitIcon() {
+    await page.locator("#git-init").first().click();
+}
+
 When('user clicks Finder icon', async()=>{
 	await clickFinderIcon();
 });
@@ -682,6 +698,11 @@ export async function getTab(name:string, position:number) {
 }
 When('user clicks tab {tab_name}', { timeout: 60 * 1000 }, async(name:string) =>{
     await (await getTab(name, 1)).click();
+});
+
+Given('user opens Source Control', async()=>{
+	await clickSourceControlIcon();
+    await clickGitInitIcon();
 });
 
 When('user clicks tab {tab_name} 2nd position', { timeout: 60 * 1000 }, async(name:string) =>{
@@ -922,6 +943,18 @@ When('user selects context menu from {string} item {string}', { timeout: 60 * 10
 Given("user reaction time is {user_reaction_time_ms} ms", { timeout: 60 * 1000 }, async function (delay: number) {
 	setUserReactionTime(delay);
 });
+
+When('user selects {string} from {context_menu_name} context menu', { timeout: 60 * 1000 }, async function (this: CubeWorld, menu: string, contextMenu: string) {
+    const ContextMenues = await CsUiFactory.newlistOfContextMenu(this.page);
+    const contextMenuInstance = ContextMenues.getbyname(contextMenu);
+    await contextMenuInstance.unique().click();
+    const path = menu.split('/');
+    for(let i in path) {
+        await contextMenuInstance.unique().selectItem(path[i]);
+    }
+});
+
+
 
 // ================================================================================
 
@@ -1423,10 +1456,10 @@ Then('user adds all files to staging area',{ timeout: 30 * 1000 }, async functio
 });
 
 // ================================================================================
-
-async function clickSourceControlIcon() {
-    await page.locator("div.p-TabBar-tabIcon.codicon.codicon-source-control").first().click();
-}
+//
+//async function clickSourceControlIcon() {
+//    await page.locator("div.p-TabBar-tabIcon.codicon.codicon-source-control").first().click();
+//}
 
 // ================================================================================
 
@@ -2789,3 +2822,5 @@ When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeW
         IDEtrace('ERROR','Failed to close mcu panel');
     }
 });
+
+
