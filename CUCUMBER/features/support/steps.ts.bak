@@ -495,24 +495,6 @@ When('user selects menu {menu_path}', { timeout: 60 * 1000 }, async(menu:string)
     await selectMenu(menu);
 });
 
-export async function selectMouseMenu(pattern:string, menu:string) {
-    await page.locator(`text=${pattern}`).click({button: 'right'});
-    await page.locator('div.p-Widget.p-Menu').locator('ul').locator('li').locator(`text=${menu}`).click();
-}
-
-When('from object containing text {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
-    await selectMouseMenu(pattern, menu);
-});
-
-When('from object containing regex {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
-    await selectMouseMenu(`/${pattern}/`, menu);
-});
-
-When('from object containing strict text {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
-    await selectMouseMenu(`/^${pattern}$/`, menu);
-});
-
-
 export async function deleteTextLineMatchingPattern(pattern:string) {
     await textEditor.deleteLineContainingText(pattern);
 }
@@ -635,10 +617,6 @@ When ('user clicks object containing text {ui_obj_text} below text {ui_obj_text}
 // regression test exists
 When('user clicks object containing text {ui_obj_text}', { timeout: 60 * 1000 }, async(pattern:string)=>{
     await clickText(pattern);
-});
-
-When('user clicks object containing strict text {ui_obj_text}', { timeout: 60 * 1000 }, async(pattern:string)=>{
-    await clickText(`/^${pattern}$/`);
 });
 
 export async function typeText(text:string) {
