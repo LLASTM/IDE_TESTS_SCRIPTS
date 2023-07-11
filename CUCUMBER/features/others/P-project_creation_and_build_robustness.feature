@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @T1IDE-robustness @toto
+@IDE @IDE:others @T1IDE-robustness
 Feature: Creation and build of all projects for all MCU/Board
 
 Background:
@@ -19,7 +19,7 @@ Scenario:
     When user clicks Finder icon
     When user synchronizes database
     #When user clicks button 'Synchronize' 
-    When user pauses for 10 seconds
+    When user pauses for 30 seconds
 
     When user builds list of 'Board'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run(-1 for all devices)
@@ -32,7 +32,7 @@ Scenario:
     When user clicks Finder icon
     When user synchronizes database
     #When user clicks button 'Synchronize' 
-    When user pauses for 10 seconds
+    When user pauses for 30 seconds
 
     When user builds list of 'MCU'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run(-1 for all devices)

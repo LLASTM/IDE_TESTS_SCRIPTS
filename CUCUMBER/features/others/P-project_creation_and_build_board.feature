@@ -24,7 +24,7 @@ Scenario:
 
     When user builds list of 'Board'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
-    When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '-1'
     
     #When user builds list of 'MCU'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
