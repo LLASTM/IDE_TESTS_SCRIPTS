@@ -19,22 +19,63 @@ numberOfLoops=$2
 echo launch_test.bash : tags to use=${tags_to_use}
 echo launch_test.bash : number of loops to run=${numberOfLoops}
 
-echo 1 - launch_tests.bash : creating some directories used for tests
 
-mkdir -p ../initial_workspaces/wsp00/directory1
-touch ../initial_workspaces/wsp00/directory1/file1.txt
+echo ======================================== command : overwritting some files in test-tools/e2e
+	cp ../test-tools/e2e/cucumber.js ../../../test-tools/e2e/.
+	cp ../test-tools/e2e/features/support/steps.ts ../../../test-tools/e2e/features/support/steps.ts
+	cp ../test-tools/e2e/features/models/theia-app.ts ../../../test-tools/e2e/features/models/theia-app.ts
+echo ======================================== command : overwritting some files in test-tools/e2e done
 
-mkdir -p ../initial_workspaces/wsp00/directory2
-touch ../initial_workspaces/wsp00/directory1/file2.txt
 
-mkdir -p ../initial_workspaces/wsp01
+echo ======================================== command : creating some directories used for tests as workspaces
 
-echo 1 - launch_tests.bash : creation of test directories done
+	mkdir -p ../initial_workspaces/wsp00/directory1
+	touch ../initial_workspaces/wsp00/directory1/file1.txt
 
-echo 2 - Starting IDE tests
+	mkdir -p ../initial_workspaces/wsp00/directory2
+	touch ../initial_workspaces/wsp00/directory1/file2.txt
+
+	mkdir -p ../initial_workspaces/wsp01
+
+echo  ======================================== command : creation of test directories done
 
 cd ../../../.. # go to build directory
 
+# to avoid to get the error : Address already in use, we must kill the process listening to the port
+pid2=`netstat -ano | findstr :3000 | awk '{print $NF}' | awk '{print $1}'`
+echo pid2=${pid2}
+if [ "${pid2}" != "" ]; then
+	taskkill //PID ${pid2} //F
+fi
+
+echo ======================================== command : starting cube studio
+pid=`ps -a | grep -i node | awk '{print $1;}'`
+echo pid=${pid}
+echo ============== ps -a command
+ps -a
+echo ============================
+ps -a | grep -i node | awk '{print $1;}'
+echo ============================
+
+if [ "${pid}" != "" ]; then
+        echo killing pid ${pid}
+        kill ${pid}
+        echo node process should be killed now
+else
+        echo no pid to kill node process was found
+fi
+yarn studio:browser start &
+yarn_start_status=$?
+if [ ${yarn_start_status} -ne 0 ]; then
+        echo command yarn studio:browser start failed, stopping script
+        exit 110
+fi
+sleep 15
+
+
+echo ======================================== command : starting cube studio done
+
+echo ======================================== command : Starting IDE tests
 loopCounter=0
 while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 
@@ -54,6 +95,7 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 
 	loopCounter=$[ ${loopCounter} + 1]
 done
+echo ======================================== command : Starting IDE tests done
 
 # tags available to customize IDE tests
 #

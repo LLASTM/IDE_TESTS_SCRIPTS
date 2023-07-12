@@ -1,5 +1,5 @@
 // *****************************************************************************
-// Copyright (C) 2023 STMicroelectronics.
+// Copyright (C) 2022 STMicroelectronics.
 //
 // All rights reserved. This program and the accompanying materials
 // is the property of STMicroelectronics and must not be
@@ -332,7 +332,10 @@ Given("user opens CubeStudio", { timeout: 60 * 1000 }, async function () {
 });
 
 export async function openCubeStudioInWorkspace(workspacePath: string) {
-    await cw_instance.init(cw_instance.featureRelDir +'/'+ workspacePath);
+    console.log();
+    console.log('cw_instance.featureRelDir='+cw_instance.featureRelDir);
+    console.log('workspacePath='+workspacePath);
+    await cw_instance.init(cw_instance.featureRelDir + '/' + workspacePath);
     page = cw_instance.page;
     theiaApp = cw_instance.theiaApp;
     menuBar = theiaApp.menuBar;
@@ -495,6 +498,24 @@ When('user selects menu {menu_path}', { timeout: 60 * 1000 }, async(menu:string)
     await selectMenu(menu);
 });
 
+export async function selectMouseMenu(pattern:string, menu:string) {
+    await page.locator(`text=${pattern}`).click({button: 'right'});
+    await page.locator('div.p-Widget.p-Menu').locator('ul').locator('li').locator(`text=${menu}`).click();
+}
+
+When('from object containing text {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
+    await selectMouseMenu(pattern, menu);
+});
+
+When('from object containing regex {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
+    await selectMouseMenu(`/${pattern}/`, menu);
+});
+
+When('from object containing strict text {ui_obj_text} user selects mouse menu {menu_path}', { timeout: 60 * 1000 }, async(pattern:string, menu:string) =>{
+    await selectMouseMenu(`/^${pattern}$/`, menu);
+});
+
+
 export async function deleteTextLineMatchingPattern(pattern:string) {
     await textEditor.deleteLineContainingText(pattern);
 }
@@ -573,7 +594,7 @@ Then('explorer view should popup', async()=>{
     expect(await explorerView.isDisplayed()).toBe(true);
 });
 
-Given('user pauses for {seconds_cnt} seconds', { timeout: 60 * 1000 }, async(delay:number)=>{
+Given('user pauses for {seconds_cnt} seconds', { timeout: -1 }, async(delay:number)=>{
     await sleep_ms(delay*1000);
 });
 
@@ -617,6 +638,10 @@ When ('user clicks object containing text {ui_obj_text} below text {ui_obj_text}
 // regression test exists
 When('user clicks object containing text {ui_obj_text}', { timeout: 60 * 1000 }, async(pattern:string)=>{
     await clickText(pattern);
+});
+
+When('user clicks object containing strict text {ui_obj_text}', { timeout: 60 * 1000 }, async(pattern:string)=>{
+    await clickText(`/^${pattern}$/`);
 });
 
 export async function typeText(text:string) {
@@ -798,6 +823,25 @@ async function text_should_appear_on_screen (cw: CubeWorld, expected_text:string
     let locator = cw.page.locator('text="'+expected_text+'" >> visible=true >> nth=0');
     await locator.waitFor();
 }
+
+async function waitUntilTextAppears (cw: CubeWorld, expected_text:string, timeout?: number) {
+    let locator = cw.page.locator('text="'+expected_text+'" >> visible=true >> nth=0');
+
+    if (timeout) {
+        await expect(locator).toBeVisible({ timeout: timeout*1000 });
+    } else {
+        await expect(locator).toBeVisible();
+    }
+}
+
+When('user waits until text {ui_obj_text} appears', { timeout: 60 * 1000 }, async function (this: CubeWorld, expected_text:string) {
+    await waitUntilTextAppears(this, expected_text);
+});
+
+When('user waits for max {seconds_cnt} seconds until text {ui_obj_text} appears', { timeout: -1 }, async function (this: CubeWorld, max_time:number, expected_text:string) {
+    await waitUntilTextAppears(this, expected_text, max_time);
+});
+
 Then('text {ui_obj_text} should appear on screen', { timeout: 60 * 1000 }, async function (this: CubeWorld, expected_text:string) {
     await text_should_appear_on_screen(this, expected_text);
 });
@@ -976,8 +1020,9 @@ Then('user adds a screenshot to test report', async function (this: CubeWorld) {
 
 // ================================================================================
 
-When('user synchronizes database', { timeout: 20 * 1000 }, async function (this: CubeWorld) {
+When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
     await this.page.locator('text=Synchronize').click();
+    await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
 });
 
 // ================================================================================
@@ -1280,7 +1325,7 @@ async function userExpectsToFindCommits(expectedCommitsNumber:string)
             catch (except)
             {
                 IDEtrace('ERROR','failed to access commit message #' + index );
-                console.log(except);
+                IDEtrace('ERROR',except);
             }              
         }
     }
@@ -1521,7 +1566,7 @@ async function buildVerdictFromNotificationsList(buildFlag:string) {
         if (currentItem.includes('ERROR') || currentItem.includes("Connection timed out") || currentItem.includes("has exited with code") || currentItem.includes("couldn't create connection to server") )
         {
             errorsFound++;
-            console.log('ERROR ' + errorsFound + ' : ' + currentItem);
+            IDEtrace('ERROR' , errorsFound + ' : ' + currentItem);
         }
         updatNotificationsText += currentItem + '\n';
     }
@@ -1755,6 +1800,159 @@ When('user starts IDE tests for {string} {string} {string} {string} {string} {st
 });
 
 // ================================================================================
+let yCounter=-1;
+// ================================================================================
+async function saveAllFiles()
+{
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=Save All').click();
+}
+// ================================================================================
+async function userAddsComponent(context:CubeWorld,component:string)
+{
+    IDEtrace('DEBUG','Entering userAddsComponent');
+    const delay=1;
+    const Xoffset=200;
+    const Yoffset=100;
+
+    await context.page.locator('input[type="search"]').click();
+    await context.page.locator('input[type="search"]').fill(component);
+    await context.page.locator('input[type="search"]').press('Enter');
+
+    const inititialLocator = context.page.locator('div.search-container >> div.element-list >> div.element').first();
+    await inititialLocator.hover();
+    const dragBox = await inititialLocator.boundingBox();
+
+    if (dragBox)
+    {
+        yCounter++;
+        
+        const Xorigin=Math.round(dragBox.x + dragBox.width / 2);
+        const Yorigin=Math.round(dragBox.y + dragBox.height / 2);
+
+        const Xtarget=Math.round(dragBox.x + dragBox.width / 2  + Xoffset);
+        const Ytarget=Math.round(dragBox.y + dragBox.height / 2 + Yoffset* yCounter);
+
+        await context.page.mouse.move(Xorigin, Yorigin , {steps:10}) ;
+        await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
+        await context.page.mouse.click(Xorigin, Yorigin);
+
+        await context.page.mouse.move(Xtarget, Ytarget , {steps:10}) ; 
+        await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
+        await context.page.mouse.click(Xtarget, Ytarget);
+
+        IDEtrace('DEBUG','dragAndDropSWComposer : mouse is up'); 
+    }
+    else
+    {
+        IDEtrace('ERROR','dragAndDropSWComposer : dragBox is null');
+    }
+
+    await saveAllFiles();
+    IDEtrace('DEBUG','Leaving userAddsComponent');
+    
+}
+// ================================================================================
+async function userResolvesDependencies()
+{
+    IDEtrace('DEBUG','Entering userResolvesDependencies');
+    await page.locator('#swcomposer-diagram_0 svg').click({
+    button: 'right'
+    });
+
+    await page.locator('text=Resolve All Dependencies').nth(1).click();
+
+    await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
+
+    await saveAllFiles();
+
+    //await page.pause();
+}
+// ================================================================================
+async function userGeneratesCode()
+{
+    // await page.pause();
+
+    IDEtrace('DEBUG','Entering userGeneratesCode');
+    await page.locator('#swcomposer-diagram_0 svg').click({
+    button: 'right'
+    });
+
+    await page.locator('text=Generate code for software project').click();
+
+    await new Promise( resolve => setTimeout(resolve, + 60 * 1000) );
+
+    await saveAllFiles();
+}
+// ================================================================================
+async function userDisablesDMATimerIT(context:CubeWorld)
+{
+    IDEtrace('DEBUG','Entering userDisablesDMATimerIT');
+
+    //await page.pause();
+
+     const selectorText='div[id="swcomposer-diagram_0"].sprotty >> svg.sprotty-graph >> g >> g.node.component';
+    
+    const locatorList=context.page.locator(selectorText);
+    const locatorCount=await locatorList.count();
+
+    IDEtrace('DEBUG','Locator list width is ' + locatorCount);
+
+    for(let index=0;index<locatorCount;index++)
+    {
+        const currentItem = locatorList.nth(index);
+        const searchedNode=currentItem.locator('g.comp-header >> text.component-label'); // "STM32 HAL Code Gen:System Init"
+        if (searchedNode)
+        {
+            const currentText=await searchedNode.textContent();
+            if (currentText) { IDEtrace('DEBUG',currentText);}
+            if (currentText === "STM32 HAL Code Gen:System Init")
+            {
+                IDEtrace('DEBUG','Found target node');
+
+                //const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled.configuration');
+                const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled >> rect'); 
+                IDEtrace('DEBUG','search for button, width=' + await newItem.count());
+     
+                if (newItem) {
+
+                    const newBox = await newItem.boundingBox();
+                    if (newBox) { 
+                        
+                        try {
+                                IDEtrace('DEBUG','trying to disable DMA IT');
+                                
+                                await newItem.hover({force:true, trial:true,timeout:10000});
+
+                                await newItem.click({force:true,timeout:10000});
+                                await newItem.dispatchEvent('click', MouseEvent,{timeout:6000}); 
+
+                                await new Promise( resolve => setTimeout(resolve, + 6000) ); 
+                                IDEtrace('DEBUG','click on button done');    
+                                await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('div[role="button"]:has-text("1MX")').click();
+                                await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('[aria-label="Enable DMA usage inside the HAL TIM"] input[type="checkbox"]').uncheck();                    
+                                IDEtrace('DEBUG','DMA IT should be disabled');
+                                await saveAllFiles();
+                        }
+                        catch
+                        {
+                            IDEtrace('ERROR','Failed to click');
+                        }                       
+                    }                   
+                    break;
+                }
+            }
+        }
+    }
+}
+// ================================================================================
+async function userOpensProjectInSoftwareComposer(swProjectName:string)
+{
+    const locatorText='text=S' + swProjectName + ' >> [data-testid="show_contextual_menu"] span';
+    await page.locator(locatorText).click();
+    await page.locator('[data-testid="sw_project_button_open"]').click(); 
+}
+// ================================================================================
 
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
@@ -1847,6 +2045,22 @@ async function userStartsIDETests(  context:CubeWorld,
             {
                 await userCreatesProjectForDevice(projectName, deviceName);
                 await userAddsANewSWProject(swProjectName);
+                await userOpensProjectInSoftwareComposer(swProjectName);
+                
+                // await userAddsCubeNoOsBlock();
+                // await userAddsHalCoreBlock();               
+                // await userAddsHalCodeGenBlock();
+                // await userAddsRCCInitBlock();   
+
+                await userAddsComponent(context,'cube no os');
+                await userAddsComponent(context,'hal: core');
+                await userAddsComponent(context,'hal code gen: generated code');
+                await userAddsComponent(context,'hal code gen: rcc init');
+
+                await userResolvesDependencies();
+                await userDisablesDMATimerIT(context);
+                await userGeneratesCode();
+                
             }
 
             // Add a flag and procedure here if we want to import already existing projects
@@ -2060,7 +2274,7 @@ async function userBuildsListOfProducts(products:string)
 
 // This step is called when user wants to build a list of products available in the Finder :
 // Boards, mcus, mpus, expansion boards, parts
-Then('user builds list of {string}', { timeout: 90 * 1000 }, async function (this: CubeWorld, products:string) {
+Then('user builds list of {string}', { timeout: 180 * 1000 }, async function (this: CubeWorld, products:string) {
     await userBuildsListOfProducts(products);
 });
 
@@ -2661,7 +2875,7 @@ async function userGetsCommits()
             catch (except)
             {
                 IDEtrace('ERROR','failed to access commit message #' + index );
-                console.log(except);
+                IDEtrace('ERROR',except);
             }              
         }
     }
