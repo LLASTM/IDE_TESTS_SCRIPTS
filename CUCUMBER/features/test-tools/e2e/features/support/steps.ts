@@ -1377,7 +1377,7 @@ async function userCreatesASetOfNewFiles(numberOfFiles:string) {
 
       await rightClickText('Files');
       clickText('New File');
-      await page.locator('text=New FileIDE_TESTS_FAKE_REPOSITORY/FilesOK >> input[type="text"]').fill(`textFile${index}.txt`);
+      await page.locator('[placeholder="File Name"]').fill(`textFile${index}.txt`);
       await page.locator('button:has-text("OK")').click();
     }
     IDEtrace('DEBUG','user creates a set of new files done');
