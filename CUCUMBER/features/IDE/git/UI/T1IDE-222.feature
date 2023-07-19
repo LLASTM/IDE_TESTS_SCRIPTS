@@ -16,13 +16,12 @@ Feature: As an end-user, I want to create new branches using CLI and GUI, so tha
     - if this last selection fails then an error is generated using an expect command
                       
   Background:
-    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user opens CubeStudio workspace in '../../../test_workspace'
     Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clicks Source Control icon
-    When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
-    When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
+    When user runs quick command 'Git: Clone' to clone repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user pauses for 8 seconds
 
     When user creates git branch 'git_branch_00'

@@ -3,8 +3,7 @@
 echo CUBE STUDIO BUILD SCRIPT
 
 # The manifest branch to use
-#BRANCH_TO_BUILD=m/main
-BRANCH_TO_BUILD=prg-cube/main
+BRANCH_TO_BUILD=m/main
 
 # the cube-ide branch to use for build
 IDE_BRANCH_TO_BUILD=main
@@ -176,6 +175,21 @@ while [ ${yarn_status} != 0 ]; do
 		exit 108
 	fi
 done
+
+echo  ======================================== command : yarn download:all
+yarn_status=666
+yarn_counter=0
+#while [ ${yarn_status} != 0 ]; do
+#	sleep 1
+#	if [ ${yarn_counter} -lt 2 ]; then
+		yarn download:all
+#		yarn_status=$?
+#		yarn_counter=$[ $yarn_counter + 1 ]
+#	else
+#		echo yarn download:all command failed, stopping script
+#		exit 100
+#	fi
+#done
 
 echo ======================================== command : yarn studio:browser build
 yarn_build_status=666

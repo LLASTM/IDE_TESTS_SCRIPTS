@@ -11,7 +11,7 @@
 Feature: report list of boards found in Finder
 
 Background:
-    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user opens CubeStudio workspace in '../test_workspace'
     Given user sets viewport size to 'FullHD'
 
     Given user clicks Finder icon

@@ -11,7 +11,7 @@ Feature:  As a squad leader, I want to get a running integration test on communi
           initialization feature so that I can support squad quality commitment
 
   Background:
-    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user opens CubeStudio workspace in '../../../test_workspace'
     Given user sets viewport size to 'FullHD'
 
   Scenario:

@@ -11,7 +11,7 @@
 Feature: Project creation for board B-U585I-IOT02A, builds its debug configuration and step over a breakpoint added in an infinite loop
   
   Background:
-    Given user opens CubeStudio workspace in '../initial_workspaces/wsp01'
+    Given user opens CubeStudio workspace in '../test_workspace'
     Given user sets viewport size to 'FullHD'
     Given user clicks Finder icon
     Given user clicks button 'Synchronize'

@@ -6,17 +6,16 @@
 # reproduced, disclosed to any third party, or used in any
 # unauthorized manner without written consent.
 # *****************************************************************************
-@IDE @IDE:git:ui @T1IDE-225 @T1IDE @T1IDE-UI @T1IDE-robustness
+@IDE @IDE:git:ui @T1IDE-227 @T1IDE @T1IDE-UI @T1IDE-robustness
 Feature: As an end-user, I want to tag my changes using CLI and GUI, so that I can remember my releases.
 
   Background:
-    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user opens CubeStudio workspace in '../../../test_workspace'
     Given user sets viewport size to 'FullHD'
 
   Scenario:
     When user clicks Source Control icon
-    When user runs quick command 'Git: Clone...' to clone directory 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
-    When user selects repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY' link
+    When user runs quick command 'Git: Clone' to clone repository 'https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY'
     When user pauses for 8 seconds
     When user creates git branch 'git_branch_00'
     When user clicks explorer icon

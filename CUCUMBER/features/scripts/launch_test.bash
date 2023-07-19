@@ -19,7 +19,8 @@ numberOfLoops=$2
 echo launch_test.bash : tags to use=${tags_to_use}
 echo launch_test.bash : number of loops to run=${numberOfLoops}
 
-
+echo ======================================== command : removing FAKE repositories if existing in ~/Appadata/Local
+	rm -rf ~/AppData/Local/IDE_TESTS_FAKE_REPOSITORY*
 echo ======================================== command : overwritting some files in test-tools/e2e
 	cp ../test-tools/e2e/cucumber.js ../../../test-tools/e2e/.
 	cp ../test-tools/e2e/features/support/steps.ts ../../../test-tools/e2e/features/support/steps.ts
@@ -27,17 +28,17 @@ echo ======================================== command : overwritting some files 
 echo ======================================== command : overwritting some files in test-tools/e2e done
 
 
-echo ======================================== command : creating some directories used for tests as workspaces
-
-	mkdir -p ../initial_workspaces/wsp00/directory1
-	touch ../initial_workspaces/wsp00/directory1/file1.txt
-
-	mkdir -p ../initial_workspaces/wsp00/directory2
-	touch ../initial_workspaces/wsp00/directory1/file2.txt
-
-	mkdir -p ../initial_workspaces/wsp01
-
-echo  ======================================== command : creation of test directories done
+#echo ======================================== command : creating some directories used for tests as workspaces
+#
+#	mkdir -p ../initial_workspaces/wsp00/directory1
+#	touch ../initial_workspaces/wsp00/directory1/file1.txt
+#
+#	mkdir -p ../initial_workspaces/wsp00/directory2
+#	touch ../initial_workspaces/wsp00/directory1/file2.txt
+#
+#	mkdir -p ../initial_workspaces/wsp01
+#
+#echo  ======================================== command : creation of test directories done
 
 cd ../../../.. # go to build directory
 

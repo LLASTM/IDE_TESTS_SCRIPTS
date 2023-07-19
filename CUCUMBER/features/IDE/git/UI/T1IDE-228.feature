@@ -11,7 +11,7 @@
 Feature:  As an end-user, I want to create/init a new repo, so that I can version control my project.
 
   Background:
-    Given user opens CubeStudio workspace in '../../../initial_workspaces/wsp00'
+    Given user opens CubeStudio workspace in '../../../test_workspace'
     Given user sets viewport size to 'FullHD'
 
   Scenario:
