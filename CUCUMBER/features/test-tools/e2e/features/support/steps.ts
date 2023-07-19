@@ -1375,9 +1375,12 @@ async function userCreatesASetOfNewFiles(numberOfFiles:string) {
     for (let index = 0; index < Number(numberOfFiles); index++) {
       IDEtrace('DEBUG','creating file #' + index);
 
+      console.log('+++++++++ before right click');
       await rightClickText('Files');
       clickText('New File');
-      await page.locator('[placeholder="File Name"]').fill(`textFile${index}.txt`);
+      console.log('+++++++++ after clickText');
+      await page.pause();
+      await page.locator('text=New FileIDE_TESTS_FAKE_REPOSITORY/FilesOK >> input[type="text"]').fill(`textFile${index}.txt`);
       await page.locator('button:has-text("OK")').click();
     }
     IDEtrace('DEBUG','user creates a set of new files done');
@@ -1619,23 +1622,23 @@ async function userclearsNotifications() {
 
 // ================================================================================
 
-async function userOpensClockConfigurationView() {
-    IDEtrace('DEBUG','Opening clock configuration view');
-    await page.locator('[data-testid="clock_button_open"] span').click();
-    await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
-    await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-}
+// async function userOpensClockConfigurationView() {
+//     IDEtrace('DEBUG','Opening clock configuration view');
+//     await page.locator('[data-testid="clock_button_open"] span').click();
+//     await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
+//     await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
+//     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+// }
 
-// ================================================================================
+// // ================================================================================
 
-async function userOpensPinoutView() {
-    IDEtrace('DEBUG','Opening pinout view');
-    await page.locator('[data-testid="pinout_button_open"] span').click();
-    await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
-    await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-}
+// async function userOpensPinoutView() {
+//     IDEtrace('DEBUG','Opening pinout view');
+//     await page.locator('[data-testid="pinout_button_open"] span').click();
+//     await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
+//     await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
+//     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+// }
 
 // ================================================================================
 
@@ -1671,87 +1674,87 @@ async function userClosesOpenedWindows(products:string,deviceName:string) {
 
 // ================================================================================
 
-async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string) {
-    const locatorText="div[id='theia-statusBar']";
-    const statusBar=await page.locator(locatorText).textContent();
-    // IDEtrace('DEBUG','userGetsTheiaStatusBar: status bar value is [' + statusBar + ']');
-    if (statusBar) { 
-        try 
-        {
-            const context=statusBar.split(']')[0].replace('[',''); 
-            IDEtrace('INFO','device:' + deviceName + ', context:[' + context + ']');
-            if (context !== projectName + ' | ' + swProjectName + ' | main | debug')
-            {
-                IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', unexpected context ' + context + ',from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
-             }
-        }
-        catch
-        {
-            IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', Failed to extract context from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
-        }
-    }
-}
+// async function userGetsTheiaStatusBar(deviceName:string, deviceStatus:string,projectName:string, swProjectName:string) {
+//     const locatorText="div[id='theia-statusBar']";
+//     const statusBar=await page.locator(locatorText).textContent();
+//     // IDEtrace('DEBUG','userGetsTheiaStatusBar: status bar value is [' + statusBar + ']');
+//     if (statusBar) { 
+//         try 
+//         {
+//             const context=statusBar.split(']')[0].replace('[',''); 
+//             IDEtrace('INFO','device:' + deviceName + ', context:[' + context + ']');
+//             if (context !== projectName + ' | ' + swProjectName + ' | main | debug')
+//             {
+//                 IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', unexpected context ' + context + ',from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
+//              }
+//         }
+//         catch
+//         {
+//             IDEtrace('ERROR','device:' + deviceName + ', device status:' + deviceStatus + ', Failed to extract context from status bar for project ' + projectName + ' and sw project name ' + swProjectName);
+//         }
+//     }
+// }
 
 // ================================================================================
 
-async function userSelectsFileMainDotC(projectName:string,swProjectName:string) {
+// async function userSelectsFileMainDotC(projectName:string,swProjectName:string) {
     
-    IDEtrace('DEBUG','Entering userSelectsFileMainDotC');
-    await openExplorer();
+//     IDEtrace('DEBUG','Entering userSelectsFileMainDotC');
+//     await openExplorer();
 
-    page.setDefaultTimeout(10000);
-    try
-    {
-        await page.locator('#files >> text=' + projectName).waitFor({state: "visible"});
-        await page.locator('#files >> text=' + projectName).click();
-        //await clickText(projectName);
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-        IDEtrace('DEBUG','click on ' + projectName + ' done');
-    }
-    catch
-    {
-        IDEtrace('ERROR','click on ' + projectName + ' failed');
-    }
-    try
-    {
-        await page.locator('#files >> text=' + swProjectName).waitFor({state: "visible"});
-        await page.locator('#files >> text=' + swProjectName).click();
-        //await clickText(swProjectName);
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-        IDEtrace('DEBUG','click on ' + swProjectName + ' done');
-    }
-    catch
-    {
-        IDEtrace('ERROR','click on ' + swProjectName + ' failed');
-    }
+//     page.setDefaultTimeout(10000);
+//     try
+//     {
+//         await page.locator('#files >> text=' + projectName).waitFor({state: "visible"});
+//         await page.locator('#files >> text=' + projectName).click();
+//         //await clickText(projectName);
+//         await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+//         IDEtrace('DEBUG','click on ' + projectName + ' done');
+//     }
+//     catch
+//     {
+//         IDEtrace('ERROR','click on ' + projectName + ' failed');
+//     }
+//     try
+//     {
+//         await page.locator('#files >> text=' + swProjectName).waitFor({state: "visible"});
+//         await page.locator('#files >> text=' + swProjectName).click();
+//         //await clickText(swProjectName);
+//         await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+//         IDEtrace('DEBUG','click on ' + swProjectName + ' done');
+//     }
+//     catch
+//     {
+//         IDEtrace('ERROR','click on ' + swProjectName + ' failed');
+//     }
 
-    try
-    {
-        await page.locator(':text-is("src")').first().waitFor({state: "visible"});
-        await page.locator(':text-is("src")').first().click();
+//     try
+//     {
+//         await page.locator(':text-is("src")').first().waitFor({state: "visible"});
+//         await page.locator(':text-is("src")').first().click();
 
-        IDEtrace('DEBUG','click on src directory done');
-    }
-    catch
-    {
-        IDEtrace('ERROR','click on src directory failed');
-    }  
-    try
-    {  
-        await page.locator(':text-is("main.c")').first().waitFor({state: "visible"});
-        await page.locator(':text-is("main.c")').first().click();
-        //await clickText('main.c');
-        await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
-        IDEtrace('DEBUG','click on file main.c done');
-    }
-    catch
-    {
-        IDEtrace('ERROR','Failed to click on file main.c');
-        //notificationsList.push('Error : Failed to click on file main.c');
-    }
-    page.setDefaultTimeout(30000);
-    IDEtrace('DEBUG','Leaving userSelectsFileMainDotC');
-}
+//         IDEtrace('DEBUG','click on src directory done');
+//     }
+//     catch
+//     {
+//         IDEtrace('ERROR','click on src directory failed');
+//     }  
+//     try
+//     {  
+//         await page.locator(':text-is("main.c")').first().waitFor({state: "visible"});
+//         await page.locator(':text-is("main.c")').first().click();
+//         //await clickText('main.c');
+//         await new Promise( resolve => setTimeout(resolve, + 1 * 1000) );
+//         IDEtrace('DEBUG','click on file main.c done');
+//     }
+//     catch
+//     {
+//         IDEtrace('ERROR','Failed to click on file main.c');
+//         //notificationsList.push('Error : Failed to click on file main.c');
+//     }
+//     page.setDefaultTimeout(30000);
+//     IDEtrace('DEBUG','Leaving userSelectsFileMainDotC');
+// }
 
 // ================================================================================
 
@@ -1855,12 +1858,18 @@ async function userAddsComponent(context:CubeWorld,component:string)
 // ================================================================================
 async function userResolvesDependencies()
 {
-    IDEtrace('DEBUG','Entering userResolvesDependencies');
-    await page.locator('#swcomposer-diagram_0 svg').click({
-    button: 'right'
-    });
 
-    await page.locator('text=Resolve All Dependencies').nth(1).click();
+    // click on empty zone
+    // await page.mouse.click(800,100);
+    // IDEtrace('DEBUG','Entering userResolvesDependencies');
+    // await page.locator('#swcomposer-diagram_0 svg').click({
+    // button: 'right'
+    // });
+
+    
+    // await page.locator('text=Resolve All Dependencies').nth(1).click();
+
+    await page.locator('button:has-text("Resolve all Dependencies")').click();
 
     await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
 
@@ -1873,77 +1882,185 @@ async function userGeneratesCode()
 {
     // await page.pause();
 
-    IDEtrace('DEBUG','Entering userGeneratesCode');
-    await page.locator('#swcomposer-diagram_0 svg').click({
-    button: 'right'
-    });
+    // IDEtrace('DEBUG','Entering userGeneratesCode');
+    // await page.locator('#swcomposer-diagram_0 svg').click({
+    // button: 'right'
+    // });
+    // await page.locator('text=Generate code for software project').click();
 
-    await page.locator('text=Generate code for software project').click();
-
+    await page.locator('button:has-text("Generate code")').nth(1).click();
     await new Promise( resolve => setTimeout(resolve, + 60 * 1000) );
 
     await saveAllFiles();
 }
 // ================================================================================
-async function userDisablesDMATimerIT(context:CubeWorld)
+async function userGetsText()
 {
-    IDEtrace('DEBUG','Entering userDisablesDMATimerIT');
+    await new Promise( resolve => setTimeout(resolve, 4000) );
+    
+    const divNodesLocator = await page.locator('div.view-lines >> div.view-line');
+    const numberOfLines=await divNodesLocator.count();
+
+    IDEtrace('DEBUG','Number of lines found : ' + numberOfLines);
 
     //await page.pause();
 
-     const selectorText='div[id="swcomposer-diagram_0"].sprotty >> svg.sprotty-graph >> g >> g.node.component';
+    let textContent="";
+
+    console.log('++++++++++++++++++++ searching for text ++++++++++++++++++++++++++++++++++');
     
-    const locatorList=context.page.locator(selectorText);
-    const locatorCount=await locatorList.count();
-
-    IDEtrace('DEBUG','Locator list width is ' + locatorCount);
-
-    for(let index=0;index<locatorCount;index++)
+    for(let index=0;index<numberOfLines;index++)
     {
-        const currentItem = locatorList.nth(index);
-        const searchedNode=currentItem.locator('g.comp-header >> text.component-label'); // "STM32 HAL Code Gen:System Init"
-        if (searchedNode)
+        const currentLineLocator = divNodesLocator.nth(index);
+        const spanNodes=await currentLineLocator.locator('span >> span');
+        const spanNodesNumber=await spanNodes.count();
+        console.log('Found ' + spanNodesNumber + ' span nodes for line ' + index);
+
+       let lineText="";
+        for(let index=0;index<spanNodesNumber;index++)
         {
-            const currentText=await searchedNode.textContent();
-            if (currentText) { IDEtrace('DEBUG',currentText);}
-            if (currentText === "STM32 HAL Code Gen:System Init")
-            {
-                IDEtrace('DEBUG','Found target node');
-
-                //const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled.configuration');
-                const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled >> rect'); 
-                IDEtrace('DEBUG','search for button, width=' + await newItem.count());
-     
-                if (newItem) {
-
-                    const newBox = await newItem.boundingBox();
-                    if (newBox) { 
-                        
-                        try {
-                                IDEtrace('DEBUG','trying to disable DMA IT');
-                                
-                                await newItem.hover({force:true, trial:true,timeout:10000});
-
-                                await newItem.click({force:true,timeout:10000});
-                                await newItem.dispatchEvent('click', MouseEvent,{timeout:6000}); 
-
-                                await new Promise( resolve => setTimeout(resolve, + 6000) ); 
-                                IDEtrace('DEBUG','click on button done');    
-                                await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('div[role="button"]:has-text("1MX")').click();
-                                await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('[aria-label="Enable DMA usage inside the HAL TIM"] input[type="checkbox"]').uncheck();                    
-                                IDEtrace('DEBUG','DMA IT should be disabled');
-                                await saveAllFiles();
-                        }
-                        catch
-                        {
-                            IDEtrace('ERROR','Failed to click');
-                        }                       
-                    }                   
-                    break;
-                }
-            }
+                const newItem=spanNodes.nth(index);
+                const text=await newItem.textContent();
+                //console.log('Found text : [' + text + ']');
+                lineText += text;
         }
+        console.log('Found line : [' + lineText + ']');
+        textContent += lineText + '\n';
     }
+    IDEtrace('DEBUG',textContent);
+    console.log('+++++++++++++++++ searching for text done +++++++++++++++++++++++++++++++++++++');
+
+    //await page.pause();
+
+    return textContent;
+}
+// ================================================================================
+async function userAddsCompilerToCsolution(projectName:string)
+{
+
+    // opens explorer
+    await page.locator('.p-TabBar-tabIcon.codicon.codicon-files').first().click();
+  
+    // opens project
+    await page.locator('.theia-TreeNodeSegment').first().click();
+
+    // opens csolution.yml file
+    await page.locator('text=' + projectName + '.csolution.yml').click();
+
+    let csolutionFileContent=await userGetsText();
+
+    // append text content
+    csolutionFileContent += '  compiler: GCC' ;
+
+    IDEtrace('DEBUG','++++++++ csolution file content');
+    IDEtrace('DEBUG',csolutionFileContent);
+    IDEtrace('DEBUG','++++++++ csolution file content displayed');
+
+    // Erase content
+    await page.locator('text=Selection').click();
+    await page.locator('text=Select All').first().click();
+    await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
+    await page.locator('text=Cut').nth(1).click();
+
+    await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(csolutionFileContent);
+
+    IDEtrace('DEBUG', 'converting invisible characters');
+
+    await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
+    await page.locator('text=Replace in Files').click();
+
+    await page.locator('.codicon.codicon-regex').click();
+
+    await page.locator('[placeholder="Search"]').click();
+    await page.locator('[placeholder="Search"]').fill('[\\xa0]');
+    await page.locator('[placeholder="Search"]').press('Enter');
+    await new Promise( resolve => setTimeout(resolve, 4000) );
+
+    await page.locator('[placeholder="Replace"]').click();
+    await page.locator('[placeholder="Replace"]').fill(' ');
+    await page.locator('[placeholder="Replace"]').press('Enter');
+    await new Promise( resolve => setTimeout(resolve, 4000) );
+
+    await page.locator('.codicon.codicon-replace-all').click();
+    await page.locator('text=OK').click();
+    IDEtrace('DEBUG', 'converting invisible characters done');
+
+    // save file
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=SaveCtrl+S >> div').nth(1).click();
+
+    // close editor
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=Close Editor').click();
+}
+// ================================================================================
+// async function userDisablesDMATimerIT(context:CubeWorld)
+// {
+//     IDEtrace('DEBUG','Entering userDisablesDMATimerIT');
+
+//     //await page.pause();
+
+//      const selectorText='div[id="swcomposer-diagram_0"].sprotty >> svg.sprotty-graph >> g >> g.node.component';
+    
+//     const locatorList=context.page.locator(selectorText);
+//     const locatorCount=await locatorList.count();
+
+//     IDEtrace('DEBUG','Locator list width is ' + locatorCount);
+
+//     for(let index=0;index<locatorCount;index++)
+//     {
+//         const currentItem = locatorList.nth(index);
+//         const searchedNode=currentItem.locator('g.comp-header >> text.component-label'); // "STM32 HAL Code Gen:System Init"
+//         if (searchedNode)
+//         {
+//             const currentText=await searchedNode.textContent();
+//             if (currentText) { IDEtrace('DEBUG',currentText);}
+//             if (currentText === "STM32 HAL Code Gen:System Init")
+//             {
+//                 IDEtrace('DEBUG','Found target node');
+
+//                 //const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled.configuration');
+//                 const newItem=currentItem.locator('g.comp.sprotty-comp >> g.comp-instances.instances >> g.sprotty-button.enabled >> rect'); 
+//                 IDEtrace('DEBUG','search for button, width=' + await newItem.count());
+     
+//                 if (newItem) {
+
+//                     const newBox = await newItem.boundingBox();
+//                     if (newBox) { 
+                        
+//                         try {
+//                                 IDEtrace('DEBUG','trying to disable DMA IT');
+                                
+//                                 await newItem.hover({force:true, trial:true,timeout:10000});
+
+//                                 await newItem.click({force:true,timeout:10000});
+//                                 await newItem.dispatchEvent('click', MouseEvent,{timeout:6000}); 
+
+//                                 await new Promise( resolve => setTimeout(resolve, 6000) ); 
+//                                 IDEtrace('DEBUG','click on button done');    
+//                                 await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('div[role="button"]:has-text("1MX")').click();
+//                                 await context.page.frameLocator('iframe').frameLocator('#active-frame').locator('[aria-label="Enable DMA usage inside the HAL TIM"] input[type="checkbox"]').uncheck();                    
+//                                 IDEtrace('DEBUG','DMA IT should be disabled');
+//                                 await saveAllFiles();
+//                         }
+//                         catch
+//                         {
+//                             IDEtrace('ERROR','Failed to click');
+//                         }                       
+//                     }                   
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+async function userClosesEditor()
+{
+    // close editor
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=Close Editor').click();
+    IDEtrace('DEBUG','Editor should be closed now');
 }
 // ================================================================================
 async function userOpensProjectInSoftwareComposer(swProjectName:string)
@@ -2045,6 +2162,7 @@ async function userStartsIDETests(  context:CubeWorld,
             {
                 await userCreatesProjectForDevice(projectName, deviceName);
                 await userAddsANewSWProject(swProjectName);
+                await userAddsCompilerToCsolution(projectName);
                 await userOpensProjectInSoftwareComposer(swProjectName);
                 
                 // await userAddsCubeNoOsBlock();
@@ -2058,48 +2176,50 @@ async function userStartsIDETests(  context:CubeWorld,
                 await userAddsComponent(context,'hal code gen: rcc init');
 
                 await userResolvesDependencies();
-                await userDisablesDMATimerIT(context);
-                await userGeneratesCode();
-                
+                //await userDisablesDMATimerIT(context);
+                await userGeneratesCode();      
+                await userClosesEditor();
             }
+
 
             // Add a flag and procedure here if we want to import already existing projects
 
-            if (checkContextFlag === 'true')
-            {
-                await userSelectsFileMainDotC(projectName,swProjectName);
-                await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName);
-            }
+            // if (checkContextFlag === 'true')
+            // {
+            //     await userSelectsFileMainDotC(projectName,swProjectName);
+            //     await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName);
+            // }
 
-            try {
-                    // we close editor containing file main.c
-                    await page.locator('[id="theia\\:menubar"] >> text=File').click();
-                    await page.locator('text=Close Editor').click();
-                    IDEtrace('DEBUG','editor closed');
-            }
-            catch
-            {
-                IDEtrace('ERROR','Failed to close editor');
-            }
+            // try {
+            //         // we close editor containing file main.c
+            //         await page.locator('[id="theia\\:menubar"] >> text=File').click();
+            //         await page.locator('text=Close Editor').click();
+            //         IDEtrace('DEBUG','editor closed');
+            // }
+            // catch
+            // {
+            //     IDEtrace('ERROR','Failed to close editor');
+            // }
             
-            if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
-            if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
+            // if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
+            // if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
 
-            page.setDefaultTimeout(10000);
-            try {
-                await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-                await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
-                await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-                IDEtrace('DEBUG','Application project is closed');
-            }
-            catch
-            {
-                IDEtrace('ERROR','Failed to close Cube : Application Project window');
-                //notificationsList.push('Error : Failed to close Cube : Application Project window');
-            }        
+            // page.setDefaultTimeout(10000);
+            // try {
+            //     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            //     await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
+            //     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+            //     IDEtrace('DEBUG','Application project is closed');
+            // }
+            // catch
+            // {
+            //     IDEtrace('ERROR','Failed to close Cube : Application Project window');
+            //     //notificationsList.push('Error : Failed to close Cube : Application Project window');
+            // }        
 
             if (buildFlag==='true')
             {
+                await page.pause();
                 await userRefreshesTasksList();
 
                 await userBuildsConfiguration(swProjectName,'debug');

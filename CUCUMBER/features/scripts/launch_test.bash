@@ -42,11 +42,13 @@ echo  ======================================== command : creation of test direct
 cd ../../../.. # go to build directory
 
 # to avoid to get the error : Address already in use, we must kill the process listening to the port
-pid2=`netstat -ano | findstr :3000 | awk '{print $NF}' | awk '{print $1}'`
-echo pid2=${pid2}
-if [ "${pid2}" != "" ]; then
-	taskkill //PID ${pid2} //F
-fi
+pidList=`netstat -ano | findstr :3000 | awk '{print $NF}'`
+for pid in `echo ${pidList}`;do
+	if [ "${pid}" != "0" ]; then
+		echo taskkill //PID ${pid} //F
+		taskkill //PID ${pid} //F
+	fi
+done
 
 echo ======================================== command : starting cube studio
 pid=`ps -a | grep -i node | awk '{print $1;}'`

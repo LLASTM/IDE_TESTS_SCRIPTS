@@ -3,7 +3,8 @@
 echo CUBE STUDIO BUILD SCRIPT
 
 # The manifest branch to use
-BRANCH_TO_BUILD=m/main
+#BRANCH_TO_BUILD=m/main
+BRANCH_TO_BUILD=prg-cube/main
 
 # the cube-ide branch to use for build
 IDE_BRANCH_TO_BUILD=main
@@ -227,11 +228,13 @@ fi
 echo ============================
 
 # to avoid to get the error : Address already in use, we must kill the process listening to the port
-pid2=`netstat -ano | findstr :3000 | awk '{print $NF}' | awk '{print $1;}'`
-echo pid2=${pid2}
-if [ "${pid2}" != "" ]; then
-	taskkill //PID ${pid2} //F
-fi
+pidList=`netstat -ano | findstr :3000 | awk '{print $NF}'`
+for pid in `echo ${pidList}`;do
+        if [ "${pid}" != "0" ]; then
+                echo taskkill //PID ${pid} //F
+                taskkill //PID ${pid} //F
+        fi
+done
 
 cd ${BUILD_PATH}
 
