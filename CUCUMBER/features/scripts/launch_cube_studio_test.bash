@@ -16,29 +16,27 @@
 tags_to_use=$1
 numberOfLoops=$2
 
+if [ "${tags_to_use}" == "" ]; then
+	tags_to_use="@T1IDE"
+fi
+
+if [ "${numberOfLoops}" == "" ]; then
+	numberOfLoops=1
+fi
+
 echo launch_test.bash : tags to use=${tags_to_use}
 echo launch_test.bash : number of loops to run=${numberOfLoops}
 
 echo ======================================== command : removing FAKE repositories if existing in ~/Appadata/Local
-	rm -rf ~/AppData/Local/IDE_TESTS_FAKE_REPOSITORY*
+	rm -rf ${HOME}/AppData/Local/IDE_TESTS_FAKE_REPOSITORY*
+echo ======================================== command : removing cloud directories from ~/AppData/Local/Temp
+	rm -rf ${HOME}/AppData/Local/Temp/cloud*
 echo ======================================== command : overwritting some files in test-tools/e2e
 	cp ../test-tools/e2e/cucumber.js ../../../test-tools/e2e/.
-	cp ../test-tools/e2e/features/support/steps.ts ../../../test-tools/e2e/features/support/steps.ts
+	cat ../test-tools/e2e/features/support/steps_diff.ts >> ../../../test-tools/e2e/features/support/steps.ts
 	cp ../test-tools/e2e/features/models/theia-app.ts ../../../test-tools/e2e/features/models/theia-app.ts
 echo ======================================== command : overwritting some files in test-tools/e2e done
 
-
-#echo ======================================== command : creating some directories used for tests as workspaces
-#
-#	mkdir -p ../initial_workspaces/wsp00/directory1
-#	touch ../initial_workspaces/wsp00/directory1/file1.txt
-#
-#	mkdir -p ../initial_workspaces/wsp00/directory2
-#	touch ../initial_workspaces/wsp00/directory1/file2.txt
-#
-#	mkdir -p ../initial_workspaces/wsp01
-#
-#echo  ======================================== command : creation of test directories done
 
 cd ../../../.. # go to build directory
 
@@ -92,13 +90,27 @@ while [ ${loopCounter} -lt ${numberOfLoops} ]; do
 	# launch all tests coming from cube-ide repo
 	yarn e2e:tests:custom "${tags_to_use}" --remote-server localhost:3000
 
-	traces_directory=$HOME/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
+	traces_directory=${HOME}/tests_artifacts/traces_`date | sed -e "s/ /_/g" -e "s/:/_/g"`
 	cp -rf repos/test-tools/e2e/traces ${traces_directory}
 	echo tests artifacts saved to directory ${traces_directory}
 
 	loopCounter=$[ ${loopCounter} + 1]
 done
 echo ======================================== command : Starting IDE tests done
+
+echo ======================================== command : git checkout
+echo now we must checkout the fike steps.ts for next test
+echo path is $PWD before running git checkout
+cd repos/test-tools/e2e
+git checkout features/support/steps.ts
+checkout_status=$?
+if [ ${checkout_status} -ne 0 ]; then
+	echo error at git checkout
+	exit  111
+fi
+cd ../../..
+echo ======================================== command : git checkout done
+
 
 # tags available to customize IDE tests
 #

@@ -1,19 +1,32 @@
 #!/bin/bash
 
+echo ========================
 echo CUBE STUDIO BUILD SCRIPT
+echo ========================
 
 # The manifest branch to use
 BRANCH_TO_BUILD=m/main
 
 # the cube-ide branch to use for build
-IDE_BRANCH_TO_BUILD=main
+if [ "${1}" == "" ]; then
+	IDE_BRANCH_TO_BUILD=main
+else
+	IDE_BRANCH_TO_BUILD=${1}
+fi
 
 # setting location for build directory
-WORKSPACE=~/tmp/cube_studio
+WORKSPACE=${HOME}/tmp/cube_studio_`date`
+WORKSPACE=`echo ${WORKSPACE} | sed -e "s/ /_/g" | sed -e "s/:/_/g"`
+
 BUILD_PATH=${WORKSPACE}/CUBE_STUDIO_BUILD_DIRECTORY
 TRACES_DIRECTORY=${WORKSPACE}/LOGFILES
 
-rm -rf /tmp/cube_studio*
+echo Branch used for manifest is ${BRANCH_TO_BUILD}
+echo Branch used for cube-ide is ${IDE_BRANCH_TO_BUILD}
+echo output for build is at : ${WORKSPACE}
+echo directory containing build is ${BUILD_PATH}
+echo directory containing traces is ${TRACES_DIRECTORY}
+echo CMSIS_PACK_ROOT=${CMSIS_PACK_ROOT}
 
 if [ -d ${WORKSPACE} ]; then
 	old_directory=${WORKSPACE}_`date`
@@ -22,26 +35,25 @@ if [ -d ${WORKSPACE} ]; then
 	/bin/mv ${WORKSPACE} ${old_directory}
 	move_status=$?
 	if [ ${move_status} -ne 0 ]; then
-        echo error when performing move command, searching for an existing running node process
-	pid=`ps -a | grep node | awk '{print $1;}'`
-	if [ "${pid}" != "" ]; then
-		echo killing pid ${pid}
-		kill ${pid}
-		echo node process should be killed now, trying move command again
-		/bin/mv ${WORKSPACE} ${old_directory}
-		move_status=$?
-		if [ ${move_status} -ne 0 ]; then
-			echo move command failed again, stopping script on error
-			exit 97
+        	echo error when performing move command, searching for an existing running node process
+		pid=`ps -a | grep node | awk '{print $1;}'`
+		if [ "${pid}" != "" ]; then
+			echo killing pid ${pid}
+			kill ${pid}
+			echo node process should be killed now, trying move command again
+			/bin/mv ${WORKSPACE} ${old_directory}
+			move_status=$?
+			if [ ${move_status} -ne 0 ]; then
+				echo move command failed again, stopping script on error
+				exit 97
+			else
+				echo second move command succeeded, continuing script execution
+			fi
 		else
-			echo second move command succeeded, continuing script execution
+			echo no pid to kill node process was found, stopping script on error
+        		exit 98
 		fi
-	else
-		echo no pid to kill node process was found, stopping script on error
-        	exit 98
 	fi
-fi
-
 fi
 
 mkdir -p ${WORKSPACE}
@@ -51,22 +63,16 @@ mkdir -p ${TRACES_DIRECTORY}
 echo directory ${TRACES_DIRECTORY} should be created
 exec &> >(tee -a ${TRACES_DIRECTORY}/build_cube_studio.log)
 
-echo WORKSPACE=${WORKSPACE}
-echo BUILD_PATH=${BUILD_PATH}
-echo TRACES_DIRECTORY=${TRACES_DIRECTORY}
-echo BRANCH_TO_BUILD=${BRANCH_TO_BUILD}
-echo IDE_BRANCH_TO_BUILD=${IDE_BRANCH_TO_BUILD}
-echo CMSIS_PACK_ROOT=${CMSIS_PACK_ROOT}
 
 echo Creating directory ${BUILD_PATH}
 mkdir ${BUILD_PATH}
 
 echo ==================== Deleting various directories
-rm -rf  ~/AppData/Local/Cube/packs/
-rm -rf  ~/AppData/Local/Cube/bundles/*
-rm -rf  ~/AppData/Roaming/Cube/logs
-rm -rf  ~/AppData/Roaming/Finder
-rm -rf  ~/.cache/clangd/index/*
+rm -rf  ${HOME}/AppData/Local/Cube/packs/
+rm -rf  ${HOME}/AppData/Local/Cube/bundles/*
+rm -rf  ${HOME}/AppData/Roaming/Cube/logs
+rm -rf  ${HOME}/AppData/Roaming/Finder
+rm -rf  ${HOME}/.cache/clangd/index/*
 echo ===================================================
 
 printenv
@@ -178,18 +184,13 @@ done
 
 echo  ======================================== command : yarn download:all
 yarn_status=666
-yarn_counter=0
-#while [ ${yarn_status} != 0 ]; do
-#	sleep 1
-#	if [ ${yarn_counter} -lt 2 ]; then
-		yarn download:all
-#		yarn_status=$?
-#		yarn_counter=$[ $yarn_counter + 1 ]
-#	else
-#		echo yarn download:all command failed, stopping script
-#		exit 100
-#	fi
-#done
+yarn download:all
+yarn_status=$?
+if [ ${yarn_status} -ne 0 ]; then
+	echo yarn download:all command failed with error ${yarn_status}
+	#echo yarn download:all command failed, stopping script
+	#exit 125
+fi
 
 echo ======================================== command : yarn studio:browser build
 yarn_build_status=666

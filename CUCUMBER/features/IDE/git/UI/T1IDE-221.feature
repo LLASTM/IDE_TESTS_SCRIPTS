@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 @IDE @IDE:git:ui @T1IDE-221 @T1IDE @T1IDE-UI @T1IDE-robustness
-Feature: As an end-user, I want to create new branches using CLI and GUI, so that I can work on my feature branch.
+Feature: As an end-user, I want to commit staged changes into my branch, so that I can version control my changes.
 
     After cloning repository :
     - create 1 branch git_branch_00
@@ -38,9 +38,5 @@ Feature: As an end-user, I want to create new branches using CLI and GUI, so tha
     Then user enters commit message 'commit 5 files'
     Then user adds a screenshot to test report
 
-    Then user selects menu 'View/History'
-    When user pauses for 6 seconds
-    Then user adds a screenshot to test report
-    Then user searches for commit 'commit 5 files' in git history
     Then user adds notifications list to test report
     

@@ -22,7 +22,6 @@ Background:
     Given user clicks Finder icon
     
     Given user synchronizes database
-    #When user clicks button 'Synchronize' 
     Given user pauses for 10 seconds
 
 Scenario:

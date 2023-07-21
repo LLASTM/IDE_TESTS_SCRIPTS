@@ -16,18 +16,10 @@ Feature:  As an end-user, I want to create/init a new repo, so that I can versio
 
   Scenario:
     When user clicks Source Control icon
-    
-    #When user clicks object containing text '+'
     When user performs git init command
-    
-    #When user clicks object containing text '...'
-    #When user pauses for 2 seconds
-    #When user selects menu 'Changes/Stage All Changes'
-    #When user pauses for 2 seconds
     When user adds all files to staging area
 
     Then testuser checks that '2' files are in the staging area
-
     When user adds a screenshot to test report
 
    

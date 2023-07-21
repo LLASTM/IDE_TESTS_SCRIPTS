@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 
-@IDE @IDE:others @IDE:others:no_board @IDE-version @T1IDE-robustness
+@T1IDE @IDE:others @IDE:others:no_board @IDE-version @T1IDE-robustness
 Feature: get cubestudio version using About menu and add it to test report
 
   Background:

@@ -7,7 +7,7 @@
 # unauthorized manner without written consent.
 # *****************************************************************************
 @IDE @IDE:git:ui @T1IDE-227 @T1IDE @T1IDE-UI @T1IDE-robustness
-Feature: As an end-user, I want to tag my changes using CLI and GUI, so that I can remember my releases.
+Feature: As an end-user, I want to amend my commit, so that I can improve my commit even more before pushing.
 
   Background:
     Given user opens CubeStudio workspace in '../../../test_workspace'
@@ -21,16 +21,6 @@ Feature: As an end-user, I want to tag my changes using CLI and GUI, so that I c
     When user clicks explorer icon
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
     When user clicks object containing text 'Files'
-
-    #When user creates a set of '5' new files
-    #Then user clicks Source Control icon
-    #When user adds all files to staging area
-    #Then user checks that '5' files are in the staging area
-    #When user pauses for 6 seconds
-    #When user adds a screenshot to test report
-    #Then user clicks on commit signed off button
-    #Then user enters commit message 'commit 5 files'
-    #Then user adds a screenshot to test report
 
     When user clicks object containing text 'textFile01.txt'
     Then testuser patches file textFile01.txt
