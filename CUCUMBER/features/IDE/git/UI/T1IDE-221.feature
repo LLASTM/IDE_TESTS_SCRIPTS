@@ -34,8 +34,7 @@ Feature: As an end-user, I want to commit staged changes into my branch, so that
     Then user checks that '5' files are in the staging area
     When user pauses for 6 seconds
     When user adds a screenshot to test report
-    Then user clicks on commit signed off button
-    Then user enters commit message 'commit 5 files'
+    Then user clicks on commit signed off button 'commit #5'
     Then user adds a screenshot to test report
 
     Then user adds notifications list to test report

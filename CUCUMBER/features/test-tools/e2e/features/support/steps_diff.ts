@@ -18,9 +18,15 @@ Then('user adds a screenshot to test report', async function (this: CubeWorld) {
 
 // ================================================================================
 
-When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
-    await this.page.locator('text=Synchronize').click();
+async function userSysnchronizesDatabase() {
+    await page.locator('text=Synchronize').click();
     await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
+}
+
+// ================================================================================
+
+When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
+    await userSysnchronizesDatabase();
 });
 
 // ================================================================================
@@ -160,7 +166,7 @@ Then('user clicks on staging all changes button',{ timeout: 90 * 1000 }, async f
 // ================================================================================
 
 // This function is called when performing a commit (signed off) operation
-async function userClicksOnCommitSignedOff() {
+async function userClicksOnCommitSignedOff(commitMessage:string, workspacePath:string) {
     IDEtrace('DEBUG','userClicksOnCommitSignedOff:click on commit signed off');
 
     await page.locator('[id="__more__"]').first().waitFor({state: "visible"});
@@ -181,32 +187,37 @@ async function userClicksOnCommitSignedOff() {
           {
             currentNode.waitFor({state: "visible"});
             currentNode.click();
- 
+
             await page.locator('text=Commit Staged (Signed Off)').click();
 
-            try {
-                await page.locator('text=Close').click();
-                IDEtrace('DEBUG','userClicksOnCommitSignedOff: closing pop-up about user name and email for git');
+            // click on first line
+            await page.locator('.monaco-editor.no-user-select.showUnused.showDeprecated.vs.focused > .overflow-guard > .monaco-scrollable-element > .lines-content > .view-lines > div').first().click();
+            await page.locator('text=Selection').click();
+            await page.locator('text=Select All').first().click();
+            await page.locator('text=Edit').first().click();
+            await page.locator('text=Cut').click();
+            await page.locator('.monaco-editor.no-user-select.showUnused.showDeprecated.vs.focused > .overflow-guard > .monaco-scrollable-element > .lines-content > .view-lines > .view-line').click();
+
+            try
+            {
+                await page.locator('.monaco-editor.no-user-select.showUnused.showDeprecated.vs.focused > .overflow-guard > .monaco-scrollable-element > .lines-content > .view-lines > .view-line').click({timeout:2000});
+                IDEtrace('DEBUG', 'userClicksOnCommitSignedOff: click on first line is ok');
+                await page.keyboard.type(commitMessage);
+
+                IDEtrace('DEBUG', 'userClicksOnCommitSignedOff: fill commit message done as expected');
             }
             catch
             {
-                IDEtrace('DEBUG','userClicksOnCommitSignedOff: no pop-up about user name and email for git found');
+                IDEtrace('DEBUG', 'userClicksOnCommitSignedOff: could not fill commit message');
+                expect(1).toBe(0);
             }
+ 
+            await page.locator('[id="theia\\:menubar"] >> text=File').click();
+            await page.locator('text=Save').nth(1).click();
+            await page.locator('[id="theia\\:menubar"] >> text=File').click();
+            await page.locator('text=Close Editor').click();
+
             break;
-            // 
-            // const targetElement=page.locator('li.p-Menu-item[data-command="__git.tabbar.toolbar.git.commit.signOff"]');
-            // if (targetElement)
-            // {
-            //   IDEtrace('DEBUG','userClicksOnCommitSignedOff: target element found');
-            //   targetElement.waitFor({state: "visible"});
-            //   targetElement.click();
-            //   await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-            //   break;
-            // }
-            // else
-            // {
-            //   console.error("user clicks on commit signed off button: target element not found");
-            // }
           }
         }
       }
@@ -216,9 +227,10 @@ async function userClicksOnCommitSignedOff() {
 
 // ================================================================================
 
-// This step is called when performing a commit (signed off) operation
-Then('user clicks on commit signed off button',{ timeout: 60 * 1000 }, async function (this: CubeWorld) {
-    await userClicksOnCommitSignedOff();
+Then('user clicks on commit signed off button {string}',{ timeout: 300 * 1000 }, async function (this: CubeWorld, commitMessage:string) {
+    const workspacePath = this.theiaApp.workspace['workspacePath'].replace(/\\/gi, '\\\\/').replace('C:','c\\\\%3A');
+    IDEtrace('DEBUG', 'workspacePath modified is ' + workspacePath);
+    await userClicksOnCommitSignedOff(commitMessage,workspacePath);
 });
 
 // ================================================================================
@@ -363,15 +375,13 @@ async function userExpectsToFindCommits(expectedCommitsNumber:string)
             {
                 IDEtrace('ERROR','failed to access commit message #' + index );
                 IDEtrace('ERROR',except);
-            }              
+            }
         }
     }
-    
     //context.attach(foundCommitsMessage,'text/plain');
     //expect(foundCommitsNumber).not.toContain('FAILURE');
 
     return foundCommitsMessage ;
-
 }
 
 // ================================================================================
@@ -423,6 +433,7 @@ async function userCreatesASetOfNewFiles(numberOfFiles:string) {
       await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
     }
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
     IDEtrace('DEBUG','user creates a set of new files done');
 }
 // ================================================================================
@@ -442,21 +453,29 @@ async function userAddsGitTag(gitTagName:string) {
 
     IDEtrace('DEBUG','Leaving userAddsGitTag , tag is : ' + gitTagName);
 }
+
 // ================================================================================
+
 Then('user adds git tag {string}',{ timeout: 120 * 1000 }, async function (this: CubeWorld,gitTagName:string) {
     await userAddsGitTag(gitTagName);
 });
+
 // ================================================================================
+
 Then('user displays git branch {string}',{ timeout: 60 * 1000 }, async function (this: CubeWorld,gitBranchName:string) {
-    IDEtrace('DEBUG','Entering user displays git branch');
-    
-    await this.page.locator('[aria-label="\\$\\(git-branch\\) ' + gitBranchName + '\\+\\, IDE_TESTS_FAKE_REPOSITORY \\(Git\\) - ' + gitBranchName + '\\+\\, Checkout Branch\\/Tag\\.\\.\\."] span').first().click();
+    IDEtrace('DEBUG','Entering user displays git branch ' + gitBranchName);
+    await page.locator('span:has-text("' + gitBranchName + '")').click();
+    const image = await this.page?.screenshot();
+    image && (this.attach(image, 'image/png'));
+
     await this.page.locator('[placeholder="Select a branch or tag to checkout"]').click();
     await this.page.locator('[placeholder="Select a branch or tag to checkout"]').press('Escape');
     
     IDEtrace('DEBUG','Leaving user displays git branch');
 });
+
 // ================================================================================
+
 async function userDeletesGitTag(gitTagToDelete:string)
 {
     IDEtrace('DEBUG','Entering user deletes git tag');
@@ -469,10 +488,13 @@ async function userDeletesGitTag(gitTagToDelete:string)
     await page.locator('span:has-text("' + gitTagToDelete + '")').first().click();
     IDEtrace('DEBUG','Leaving user deletes git tag');
 }
+
 // ================================================================================
+
 Then('user deletes git tag {string}', async function (this: CubeWorld,gitTagToDelete:string) {
     await userDeletesGitTag(gitTagToDelete);
 });
+
 // ================================================================================
 
 // This step is used to create a set of files, used for some git related tests
@@ -592,12 +614,6 @@ Then('user searches for commit {string} in History view', { timeout: 30 * 1000 }
 Then('user adds all files to staging area',{ timeout: 30 * 1000 }, async function (this: CubeWorld) {
     await userAddsAllChangesToStagingArea();
 });
-
-// ================================================================================
-//
-//async function clickSourceControlIcon() {
-//    await page.locator("div.p-TabBar-tabIcon.codicon.codicon-source-control").first().click();
-//}
 
 // ================================================================================
 
@@ -893,14 +909,19 @@ When('user starts IDE tests for {string} {string} {string} {string} {string} {st
 });
 
 // ================================================================================
+
 let yCounter=-1;
+
 // ================================================================================
+
 async function saveAllFiles()
 {
     await page.locator('[id="theia\\:menubar"] >> text=File').click();
     await page.locator('text=Save All').click();
 }
+
 // ================================================================================
+
 async function userAddsComponent(context:CubeWorld,component:string)
 {
     IDEtrace('DEBUG','Entering userAddsComponent');
@@ -945,16 +966,11 @@ async function userAddsComponent(context:CubeWorld,component:string)
     IDEtrace('DEBUG','Leaving userAddsComponent');
     
 }
+
 // ================================================================================
+
 async function userResolvesDependencies()
 {
-
-    // click on empty zone
-    // await page.mouse.click(800,100);
-    // IDEtrace('DEBUG','Entering userResolvesDependencies');
-    // await page.locator('#swcomposer-diagram_0 svg').click({
-    // button: 'right'
-    // });
 
     await page.locator('button:has-text("Resolve all Dependencies")').click();
     await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
@@ -962,21 +978,19 @@ async function userResolvesDependencies()
     await saveAllFiles();
 
 }
+
 // ================================================================================
+
 async function userGeneratesCode()
 {
-    // IDEtrace('DEBUG','Entering userGeneratesCode');
-    // await page.locator('#swcomposer-diagram_0 svg').click({
-    // button: 'right'
-    // });
-    // await page.locator('text=Generate code for software project').click();
-
     await page.locator('button:has-text("Generate code")').nth(1).click();
     await new Promise( resolve => setTimeout(resolve, + 60 * 1000) );
 
     await saveAllFiles();
 }
+
 // ================================================================================
+
 async function userGetsText()
 {
     await new Promise( resolve => setTimeout(resolve, 4000) );
@@ -1013,7 +1027,9 @@ async function userGetsText()
 
     return textContent;
 }
+
 // ================================================================================
+
 async function userAddsCompilerToCsolution(projectName:string)
 {
 
@@ -1072,7 +1088,9 @@ async function userAddsCompilerToCsolution(projectName:string)
     await page.locator('[id="theia\\:menubar"] >> text=File').click();
     await page.locator('text=Close Editor').click();
 }
+
 // ================================================================================
+
 // async function userDisablesDMATimerIT(context:CubeWorld)
 // {
 //     IDEtrace('DEBUG','Entering userDisablesDMATimerIT');
@@ -1134,6 +1152,8 @@ async function userAddsCompilerToCsolution(projectName:string)
 //     }
 // }
 
+// ================================================================================
+
 async function userClosesEditor()
 {
     // close editor
@@ -1141,13 +1161,16 @@ async function userClosesEditor()
     await page.locator('text=Close Editor').click();
     IDEtrace('DEBUG','Editor should be closed now');
 }
+
 // ================================================================================
+
 async function userOpensProjectInSoftwareComposer(swProjectName:string)
 {
     const locatorText='text=S' + swProjectName + ' >> [data-testid="show_contextual_menu"] span';
     await page.locator(locatorText).click();
     await page.locator('[data-testid="sw_project_button_open"]').click(); 
 }
+
 // ================================================================================
 
 async function userStartsIDETests(  context:CubeWorld,
@@ -1552,6 +1575,8 @@ async function userGetsTheiaExtensionsVersions(context:CubeWorld) {
     await context.attach(allExtensionsText,'text/plain');
 }
 
+// ================================================================================
+
 // This step is used to report the version of each theia extension into the test report
 Then('user gets theia extensions', async function (this: CubeWorld) {
     await userGetsTheiaExtensionsVersions(this);
@@ -1829,7 +1854,9 @@ Then('testuser opens file main.c of sw project {string} of application {string}'
     await this.page.locator(':text-is("main.c")').waitFor({state: "visible"});
     await this.page.locator(':text-is("main.c")').first().click();
 });
+
 // ================================================================================
+
 async function userRunsGitInitCommand()
 {
     // record for build #188
@@ -1840,6 +1867,7 @@ async function userRunsGitInitCommand()
     await page.locator('text=Initialize Repository').click();
     await page.locator('.monaco-icon-name-container').first().click();
 }
+
 // ================================================================================
 
 Then('user performs git init command', async function (this: CubeWorld) {
@@ -1913,6 +1941,7 @@ Given('user sets viewport size to {string}',{ timeout: 30 * 1000 }, async functi
 });
 
 // ================================================================================
+
 async function userClonesRepository (context: CubeWorld,quick_command:string, repoUrl:string)
 {
     const workspacePath=context.theiaApp.workspace['workspacePath'];
@@ -1968,6 +1997,7 @@ async function userClonesRepository (context: CubeWorld,quick_command:string, re
     await context.page.locator('text=Select as Repository Destination').click();
     await context.page.locator('text=Add to Workspace').click();
 }
+
 // ================================================================================
 
 When('user runs quick command {string} to clone repository {string}', { timeout: 180 * 1000 }, async function (this: CubeWorld,quick_command:string, repoUrl:string)
@@ -1977,8 +2007,8 @@ When('user runs quick command {string} to clone repository {string}', { timeout:
 
 // ================================================================================
 
-When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
-
+async function userUnstagesAllChanges()
+{
     IDEtrace('DEBUG','Unstaging all staged changes');
 
     await page.locator('[id="__more__"]').first().click();
@@ -1986,13 +2016,18 @@ When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
     await page.locator('text=Unstage All Changes').click();
 
     IDEtrace('DEBUG','Unstaging all staged changes done');
+}
 
+// ================================================================================
+
+When('user unstages all staged changes', { timeout: 60 * 1000 }, async () => {
+    await userUnstagesAllChanges();
 });
 
 // ================================================================================
 
-When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async function (this: CubeWorld,expectedUnchanged:string) {
-
+async function userChecksThatThereAreUnstagesChanges(expectedUnchanged:string)
+{
     IDEtrace('DEBUG','user checks that there are a given number of unstaged changes');
     const locatorText='div.theia-scm-inline-actions-container >> div.status';
     const unstagedFiles=await page.locator(locatorText).count();
@@ -2001,7 +2036,13 @@ When('user checks that there are {string} unstaged changes', { timeout: 60 * 100
 
     expect.soft(unstagedFiles).toEqual(Number(expectedUnchanged));
 
-    IDEtrace('DEBUG','user checks that there are a given number of unstaged changes done')
+    IDEtrace('DEBUG','user checks that there are a given number of unstaged changes done');
+}
+
+// ================================================================================
+
+When('user checks that there are {string} unstaged changes', { timeout: 60 * 1000 }, async function (this: CubeWorld,expectedUnchanged:string) {
+    await userChecksThatThereAreUnstagesChanges(expectedUnchanged);
 });
 
 // ================================================================================
@@ -2053,36 +2094,46 @@ async function userCreatesGitBranch(context: CubeWorld,gitBranchName:string)
         IDEtrace('ERROR','userCreatesGitBranch: failed to display list of branches');
     }
 
+    IDEtrace('DEBUG','userCreatesGitBranch: git branch ' + gitBranchName + ' creation done');
+}
+
+// ================================================================================
+
+async function userChangesFromGivenBranchToMainBranch(gitBranchName:string)
+{
     IDEtrace('DEBUG','userCreatesGitBranch: we try to go back to main branch');
     try
     {
         await page.locator('[aria-label="\\$\\(git-branch\\) ' + gitBranchName + '\\, IDE_TESTS_FAKE_REPOSITORY \\(Git\\) - ' + gitBranchName + '\\, Checkout Branch\\/Tag\\.\\.\\."] >> text=' + gitBranchName).click();
-        //await page.locator('span:has-text("' + gitBranchName + '")').click();
-        IDEtrace('DEBUG','userCreatesGitBranch: click to get list of branches is OK');
-
-        const image = await context.page?.screenshot();
-        await context.attach(image, 'image/png'); 
+        IDEtrace('DEBUG','user selects main branch: click to get list of branches is OK');
 
         await page.locator('span:has-text("main")').nth(1).click();       
         await new Promise( resolve => setTimeout(resolve, 4 * 1000) );  
-        IDEtrace('DEBUG','userCreatesGitBranch: click on main branch is done');
+        IDEtrace('DEBUG','user selects main branch: click on main branch is done');
     }
     catch
     {
-        IDEtrace('ERROR', 'userCreatesGitBranch: Failed to go back on main branch');
+        IDEtrace('ERROR', 'user selects main branch: Failed to go back on main branch');
         expect(1).toEqual(0);
     }
-    
-    IDEtrace('DEBUG','userCreatesGitBranch: git branch ' + gitBranchName + ' creation done');
 }
+
 // ================================================================================
+
+When('user changes from branch {string} to main branch',async function(this: CubeWorld,gitBranchName:string) {
+    await userChangesFromGivenBranchToMainBranch(gitBranchName);
+});
+
+// ================================================================================
+
 When('user creates git branch {string}', { timeout: 60 * 1000 }, async function(this: CubeWorld, gitBranchName:string) {
     await userCreatesGitBranch(this,gitBranchName);
 });
 
 // ================================================================================
 
-When('user searches for commit {string} in git history', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitToFind:string) {
+async function userSearchesForCommitInGitHistory(commitToFind:string)
+{
     const listOfCommits=await userGetsCommits();
 
     IDEtrace('DEBUG',listOfCommits);
@@ -2094,6 +2145,12 @@ When('user searches for commit {string} in git history', { timeout: 120 * 1000 }
     {
         IDEtrace('ERROR','commit message ' + commitToFind + ' was not found in git history');
     }
+}
+
+// ================================================================================
+
+When('user searches for commit {string} in git history', { timeout: 120 * 1000 }, async function(this: CubeWorld, commitToFind:string) {
+    await userSearchesForCommitInGitHistory(commitToFind);
 });
 
 // ================================================================================
@@ -2190,10 +2247,12 @@ async function userAmendsCommit()
 {
     IDEtrace('DEBUG','Entering userAmendsCommit');
 
+    // await page.pause();
+
     await page.locator('[id="__more__"]').first().click();
-    await page.locator('text=Commit').nth(1).click();
+    await page.locator('text=Commit').click();
     await page.locator('text=Commit Staged (Amend)').click();
-    IDEtrace('DEBUG','userAmendsCommit : click on amend commit done');
+    IDEtrace('DEBUG','userAmendsCommit : click on Commit Staged (Amend) done');
     
     try
     {
@@ -2216,12 +2275,18 @@ async function userAmendsCommit()
     {
         IDEtrace('DEBUG','userAmendsCommit : No Eclipse Theia pop-up found');
     }
+
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=Save').nth(1).click();
+    await page.locator('[id="theia\\:menubar"] >> text=File').click();
+    await page.locator('text=Close Editor').click();
+
     IDEtrace('DEBUG','Leaving userAmendsCommit');
 }
 // ================================================================================
 
 When('user amends commit', { timeout: 120 * 1000 }, async function(this: CubeWorld) { 
-    await userAmendsCommit();   
+    await userAmendsCommit();
 });
 
 // ================================================================================
@@ -2231,12 +2296,13 @@ async function userSearchesForAmendedCommits(commitMessageToSearch:string)
     IDEtrace('DEBUG','searches for amended commit');
     try
     {
-        await page.locator('#amendedCommits >> text=' + commitMessageToSearch).click();
+        await page.locator('#amendedCommits >> text=' + commitMessageToSearch).click({timeout:4000});
         IDEtrace('DEBUG','searches for amended commit ' + commitMessageToSearch + ' is OK ');
     }
     catch
     {
         IDEtrace('ERROR','Failed to find amended commit');
+        expect(1).toBe(0);
     }
     IDEtrace('DEBUG','searches for amended commit done');
 }
@@ -2249,60 +2315,8 @@ When('user searches for amended commit {string}', { timeout: 30 * 1000 }, async 
 
 // ================================================================================
 
-When('user runs some commands using palette', { timeout: 120 * 1000 }, async function(this: CubeWorld) {
-    
-    try
-    {
-        await page.locator('div[role="button"]').nth(3).click();
-        IDEtrace('DEBUG','opening commands palette is ok');
-    }
-    catch
-    {
-        IDEtrace('ERROR','Failed to open commands palette');
-    }
-    await new Promise( resolve => setTimeout(resolve,+ 4000) );
-    try
-    {
-        await page.locator('[aria-label="Type to narrow down results\\."]').click();
-        await page.locator('[aria-label="Type to narrow down results\\."]').fill('>Git clone');
-        await page.locator('[aria-label="Type to narrow down results\\."]').press('Enter');
-        await page.locator('[placeholder="Select Repository Location"]').click();
-        await page.locator('[placeholder="Select Repository Location"]').fill('https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY');
-        await page.locator('text=https://github.com/LLASTM/IDE_TESTS_FAKE_REPOSITORY').click();
-        IDEtrace('DEBUG','Git Clone command is ok');
-    }
-    catch
-    {
-        IDEtrace('ERROR','Failed to run Git Clone command');
-    }
-
-    await new Promise( resolve => setTimeout(resolve,+ 4000) );
-    try
-    {
-        await page.locator('div[role="button"]').nth(3).click();
-        IDEtrace('DEBUG','opening commands palette is ok');
-    }
-    catch
-    {
-        IDEtrace('ERROR','Failed to open commands palette');
-    }
-
-    await new Promise( resolve => setTimeout(resolve,+ 4000) );
-    try
-    {
-        await page.locator('span:has-text("Git: Fetch...")').first().click();
-        await page.locator('[placeholder="Pick a remote to fetch from\\:"]').click();
-        await page.locator('[placeholder="Pick a remote to fetch from\\:"]').fill('');
-        await page.locator('span:has-text("origin")').first().click();
-        IDEtrace('DEBUG','Git Fetch command ran as expected');
-    }
-    catch
-    {
-        IDEtrace('ERROR','Failed to run Git Fetch command');
-    }
-});
-
-When('user closes board panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+async function userClosesBoardPanel()
+{
     try
     {
         await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:board"] > .p-TabBar-tabCloseIcon').click();
@@ -2313,9 +2327,17 @@ When('user closes board panel', { timeout: 10 * 1000 }, async function(this: Cub
     {
         IDEtrace('ERROR','Failed to close board panel');
     }
+}
+// ================================================================================
+
+When('user closes board panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+    await userClosesBoardPanel();
 });
 
-When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+// ================================================================================
+
+async function userClosesMcuPanel()
+{
     try
     {
         await page.locator('[id="shell-tab-category\\:\\:hardware\\:\\:mcu"] > .p-TabBar-tabCloseIcon').click();
@@ -2326,6 +2348,12 @@ When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeW
     {
         IDEtrace('ERROR','Failed to close mcu panel');
     }
+}
+
+// ================================================================================
+
+When('user closes mcu panel', { timeout: 10 * 1000 }, async function(this: CubeWorld) {
+    await userClosesMcuPanel();
 });
 
-
+// ================================================================================

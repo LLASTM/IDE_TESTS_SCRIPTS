@@ -37,6 +37,8 @@ echo ======================================== command : overwritting some files 
 	cp ../test-tools/e2e/features/models/theia-app.ts ../../../test-tools/e2e/features/models/theia-app.ts
 echo ======================================== command : overwritting some files in test-tools/e2e done
 
+git config --global user.name "TEST USER"
+git config --global user.email "TEST@TEST.COM"
 
 cd ../../../.. # go to build directory
 

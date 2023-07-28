@@ -11,3 +11,5 @@ IDE : this directory contains the IDE tests files
 others : this directory contains other tests that are not IDE tests
 
 cucumber : contains a file settings.json that should be copied to build directory/.vscode, it is used to get completion with cucumber
+
+test_workspace : used as a workspace for tests

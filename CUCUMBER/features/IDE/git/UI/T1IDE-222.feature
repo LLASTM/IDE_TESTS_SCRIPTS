@@ -25,8 +25,8 @@ Feature: As an end-user, I want to create new branches using CLI and GUI, so tha
     When user pauses for 8 seconds
 
     When user creates git branch 'git_branch_00'
+    When user changes from branch 'git_branch_00' to main branch
     When user creates git branch 'git_branch_01'
+    When user changes from branch 'git_branch_01' to main branch
     When user creates git branch 'git_branch_02'
-    
-   
-    
+    When user changes from branch 'git_branch_02' to main branch

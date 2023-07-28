@@ -29,8 +29,8 @@ Feature: As an end-user, I want to tag my changes using CLI and GUI, so that I c
     Then user selects menu 'File/Close Editor'
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
-    Then user clicks on commit signed off button
-    Then user enters commit message 'commit number 1'
+    Then user clicks on commit signed off button 'commit #1'
+    #Then user enters commit message 'commit #1'
     When user pauses for 6 seconds
     Then user adds git tag 'TAG#1'
     Then user displays git branch 'git_branch_00'

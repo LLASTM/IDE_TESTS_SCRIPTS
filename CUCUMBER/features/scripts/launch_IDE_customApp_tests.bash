@@ -1,6 +1,12 @@
 #!/bin/bash
 
 tags_to_use=$1
+if [ "${tags_to_use}" == "" ]; then
+        tags_to_use="@T1IDE"
+fi
+
+git config --global user.name "TEST USER"
+git config --global user.email "TEST@TEST.COM"
 
 echo ======================================== command : removing cloud directories from ~/AppData/Local/Temp
 rm -rf ${HOME}/AppData/Local/Temp/cloud*

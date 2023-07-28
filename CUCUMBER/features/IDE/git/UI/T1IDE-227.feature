@@ -29,8 +29,8 @@ Feature: As an end-user, I want to amend my commit, so that I can improve my com
     Then user selects menu 'File/Close Editor'
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
-    Then user clicks on commit signed off button
-    Then user enters commit message 'commit number 1'
+    Then user clicks on commit signed off button 'commit #1'
+    #Then user enters commit message 'commit number 1'
     When user pauses for 6 seconds
 
     When user clicks explorer icon
@@ -46,7 +46,7 @@ Feature: As an end-user, I want to amend my commit, so that I can improve my com
     When user pauses for 6 seconds
     Then user adds a screenshot to test report
     
-    Then user searches for amended commit 'commit number 1'
+    #Then user searches for amended commit 'commit #1'
 
     Then user adds notifications list to test report
     

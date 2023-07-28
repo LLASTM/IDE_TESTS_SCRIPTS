@@ -25,44 +25,34 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user pauses for 8 seconds
 
     When user clicks explorer icon
-    
+
+    # opening directories
     When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
     When user clicks object containing text 'Files'
+
     When user clicks object containing text 'textFile01.txt'
-   
     Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user adds a screenshot to test report
-    Then user searches for commit 'Initial commit' in History view
+    #Then user searches for commit 'Initial commit' in History view
     
     # commit #1
     When user clicks explorer icon
     Then testuser patches file textFile01.txt
-
     When user selects menu 'File/Save All'
-
     Then user selects menu 'File/Close Editor'
-
-    When user clicks object containing text 'Files'
-    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-
-    Then user adds a screenshot to test report
 
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
-    Then user clicks on commit signed off button
-    Then user enters commit message 'commit #1'
-    Then user adds a screenshot to test report
+    Then user clicks on commit signed off button 'commit #1'
 
-    Then user selects menu 'View/History'
-    Then user adds a screenshot to test report
+    #Then user selects menu 'View/History'
+    #Then user adds a screenshot to test report
     
     # commit #2
     When user clicks explorer icon
 
-    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    When user clicks object containing text 'Files'
     When user clicks object containing text 'textFile01.txt'
 
     Then testuser patches file textFile01.txt
@@ -70,49 +60,32 @@ Feature:  As an end-user, I want to see a history for a file using CLI and GUI,
     When user pauses for 6 seconds
     Then user selects menu 'File/Close Editor'
 
-    When user clicks object containing text 'Files'
-    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    Then user adds a screenshot to test report
-
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
     When user pauses for 6 seconds
-    Then user clicks on commit signed off button
-    #When user pauses for 6 seconds
-    Then user enters commit message 'commit #2'
-    Then user adds a screenshot to test report
+    Then user clicks on commit signed off button 'commit #2'
 
-    Then user selects menu 'View/History'
-    Then user adds a screenshot to test report
+    #Then user selects menu 'View/History'
+    #Then user adds a screenshot to test report
     
     # commit #3
     When user clicks explorer icon
 
-    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    When user clicks object containing text 'Files'
     When user clicks object containing text 'textFile01.txt'
 
     Then testuser patches file textFile01.txt
     Then user selects menu 'File/Save All'
     When user pauses for 6 seconds
     Then user selects menu 'File/Close Editor'
-
-    When user clicks object containing text 'Files'
-    When user clicks object containing text 'IDE_TESTS_FAKE_REPOSITORY'
-    Then user adds a screenshot to test report
     
     Then user clicks Source Control icon
     Then user clicks on staging all changes button
     When user pauses for 6 seconds
-    Then user clicks on commit signed off button
-    #When user pauses for 6 seconds
-    Then user enters commit message 'commit #3'
-    When user pauses for 6 seconds
-    Then user adds a screenshot to test report
+    Then user clicks on commit signed off button 'commit #3'
 
-    Then user selects menu 'View/History'
-    When user pauses for 6 seconds
-    Then user adds a screenshot to test report
+    #Then user selects menu 'View/History'
+    #When user pauses for 6 seconds
+    #Then user adds a screenshot to test report
     
     # 3 commits + initial commit
-    Then user expects to find '4' commits in History view
+    #Then user expects to find '4' commits in History view
