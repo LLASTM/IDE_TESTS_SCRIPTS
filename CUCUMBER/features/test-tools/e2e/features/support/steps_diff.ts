@@ -20,12 +20,12 @@ Then('user adds a screenshot to test report', async function (this: CubeWorld) {
 
 async function userSysnchronizesDatabase() {
     await page.locator('text=Synchronize').click();
-    await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
+    await new Promise( resolve => setTimeout(resolve, + 20 * 1000) );
 }
 
 // ================================================================================
 
-When('user synchronizes database', { timeout: 60 * 1000 }, async function (this: CubeWorld) {
+When('user synchronizes database', { timeout: 30 * 1000 }, async function (this: CubeWorld) {
     await userSysnchronizesDatabase();
 });
 
@@ -984,7 +984,7 @@ async function userResolvesDependencies()
 async function userGeneratesCode()
 {
     await page.locator('button:has-text("Generate code")').nth(1).click();
-    await new Promise( resolve => setTimeout(resolve, + 60 * 1000) );
+    await new Promise( resolve => setTimeout(resolve, + 20 * 1000) );
 
     await saveAllFiles();
 }
@@ -1037,8 +1037,11 @@ async function userAddsCompilerToCsolution(projectName:string)
     await page.locator('.p-TabBar-tabIcon.codicon.codicon-files').first().click();
   
     // opens project
-    await page.locator('.theia-TreeNodeSegment').first().click();
-
+    //await page.locator('.theia-TreeNodeSegment').first().click();
+	//await page.pause();
+	
+	await page.locator('div.theia-TreeNodeSegment.theia-TreeNodeSegmentGrow:text-is("' + projectName + '")').first().click();
+	
     // opens csolution.yml file
     await page.locator('text=' + projectName + '.csolution.yml').click();
 
@@ -1047,24 +1050,31 @@ async function userAddsCompilerToCsolution(projectName:string)
     // append text content
     csolutionFileContent += '  compiler: GCC' ;
 
-    IDEtrace('DEBUG','++++++++ csolution file content');
-    IDEtrace('DEBUG',csolutionFileContent);
-    IDEtrace('DEBUG','++++++++ csolution file content displayed');
+    //IDEtrace('DEBUG','userAddsCompilerToCsolution : ++++++++ csolution file content');
+    //IDEtrace('DEBUG',csolutionFileContent);
+    //IDEtrace('DEBUG',' : userAddsCompilerToCsolution++++++++ csolution file content displayed');
 
     // Erase content
     await page.locator('text=Selection').click();
-    await page.locator('text=Select All').first().click();
+	await page.locator('text=Select All').first().click();
     await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
     await page.locator('text=Cut').nth(1).click();
 
     await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(csolutionFileContent);
 
-    IDEtrace('DEBUG', 'converting invisible characters');
+    IDEtrace('DEBUG', 'userAddsCompilerToCsolution : converting invisible characters');
 
     await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
+	await new Promise( resolve => setTimeout(resolve, 4000) );
     await page.locator('text=Replace in Files').click();
+	await new Promise( resolve => setTimeout(resolve, 4000) );
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on Replace in Files button');
 
-    await page.locator('.codicon.codicon-regex').click();
+	//await page.pause();
+
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on use regular expression button to enable it');
+	await page.locator('.codicon.codicon-regex.option').first().click({timeout:2000});
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button');
 
     await page.locator('[placeholder="Search"]').click();
     await page.locator('[placeholder="Search"]').fill('[\\xa0]');
@@ -1076,9 +1086,20 @@ async function userAddsCompilerToCsolution(projectName:string)
     await page.locator('[placeholder="Replace"]').press('Enter');
     await new Promise( resolve => setTimeout(resolve, 4000) );
 
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on replace all button');
     await page.locator('.codicon.codicon-replace-all').click();
-    await page.locator('text=OK').click();
-    IDEtrace('DEBUG', 'converting invisible characters done');
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on replace all button');
+    //try { await page.locator('text=OK').click(); }
+	//catch { IDEtrace('DEBUG', 'userAddsCompilerToCsolution : no pop-up with OK button was found');}
+	
+	await page.locator('button.theia-button.main:text-is("OK")').first().click();
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on OK button');
+	
+	// disable regular expression button for next test
+	await page.locator('.codicon.codicon-regex.option').first().click({timeout:2000});
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button to disable it');
+	
+    IDEtrace('DEBUG', 'userAddsCompilerToCsolution : converting invisible characters done');
 
     // save file
     await page.locator('[id="theia\\:menubar"] >> text=File').click();
@@ -1087,6 +1108,8 @@ async function userAddsCompilerToCsolution(projectName:string)
     // close editor
     await page.locator('[id="theia\\:menubar"] >> text=File').click();
     await page.locator('text=Close Editor').click();
+	
+	IDEtrace('DEBUG', 'Leaving userAddsCompilerToCsolution');
 }
 
 // ================================================================================
@@ -1173,6 +1196,68 @@ async function userOpensProjectInSoftwareComposer(swProjectName:string)
 
 // ================================================================================
 
+async function userClosesTerminal(terminalTitle:string)
+{
+	// closing terminal
+	IDEtrace('DEBUG','userClosesTerminal : before li.p-TabBar-tab.p-mod-closable.p-mod-current[title="Terminal"] >> div[title="Close"]');
+	
+	const listsLocator=await page.locator('li.p-TabBar-tab.p-mod-closable.p-mod-current');
+	const childrenCounter = await listsLocator.count();
+    IDEtrace('DEBUG','userClosesTerminal : found ' + childrenCounter + ' lists');
+
+    for (let index = 0; index < childrenCounter; index++)
+	{
+		const listTitle = await listsLocator.nth(index).getAttribute('title');
+        if (listTitle)
+        {
+            IDEtrace('DEBUG','userClosesTerminal : Found list title : ' + listTitle);
+            
+            if ( listTitle.includes(terminalTitle) )
+            {
+                await listsLocator.nth(index).locator('div[title="Close"]').click();
+            }
+        }
+	}
+
+	//try {await page.locator('li.p-TabBar-tab.p-mod-closable.p-mod-current[title="Terminal 0"] >> div[title="Close"]').first().click({timeout:6000});}
+	//catch {IDEtrace('DEBUG','userClosesTerminal : Failed to close terminal');}
+	//IDEtrace('DEBUG','userClosesTerminal : after li.p-TabBar-tab.p-mod-closable.p-mod-current >> div["title=Close"]');
+}
+
+// ================================================================================
+
+async function userCopiesGpdscFiles(projectName:string,swProjectName:string)
+{
+	await page.locator('[id="theia\\:menubar"] >> text=Terminal').click();
+	await page.locator('text=New Terminal').first().click();
+
+	await page.locator('[aria-label="Terminal input"]').fill('cp ' + projectName + '/' + swProjectName + '/targets/main/generated/* ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
+	await page.locator('[aria-label="Terminal input"]').press('Enter');
+	
+	//await page.pause();
+
+	await userClosesTerminal('Terminal');
+}
+
+// ================================================================================
+
+async function userClosesProject(projectName:string)
+{
+	//await page.pause();
+	await openExplorer();
+	await page.locator('div.theia-TreeNodeSegment.theia-TreeNodeSegmentGrow:text-is("' + projectName + '")').first().click();
+}
+
+// ================================================================================
+
+async function userClosesBuildTerminal()
+{
+	//await page.pause();
+	await userClosesTerminal('Task: Cube build all');
+}
+
+// ================================================================================
+//
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
                                     createProjectFlag:string,
@@ -1274,6 +1359,7 @@ async function userStartsIDETests(  context:CubeWorld,
 
                 await userAddsComponent(context,'cube no os');
                 await userAddsComponent(context,'hal: core');
+                await userAddsComponent(context,'dma');
                 await userAddsComponent(context,'hal code gen: generated code');
                 await userAddsComponent(context,'hal code gen: rcc init');
 
@@ -1281,6 +1367,7 @@ async function userStartsIDETests(  context:CubeWorld,
                 //await userDisablesDMATimerIT(context);
                 await userGeneratesCode();      
                 await userClosesEditor();
+				await userCopiesGpdscFiles(projectName,swProjectName);
             }
 
 
@@ -1329,9 +1416,12 @@ async function userStartsIDETests(  context:CubeWorld,
                 // await userCleansBuildsConfiguration(swProjectName,'release');
 
                 // Build All configurations, all projects
-                
-                await page.locator('select').selectOption('All');
+                await page.locator('select').selectOption('All'); // All before
                 await page.locator('button:has-text("Build")').click();
+				await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
+				
+				await userClosesBuildTerminal();
+		
             }
 
             await userClosesEditor();
@@ -1339,7 +1429,8 @@ async function userStartsIDETests(  context:CubeWorld,
             await userClosesOpenedWindows(products,deviceName);
 
             if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
-
+			else { await userClosesProject(projectName); }
+			
             await userGetsTheiaNotifications();
 
             textForTestReport=await buildVerdictFromNotificationsList(buildFlag);
