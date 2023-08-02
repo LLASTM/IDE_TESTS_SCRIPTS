@@ -29,5 +29,5 @@ Scenario:
     When user builds list of 'MCU'
     # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
     # -1 means all tests to be run
-    When user starts IDE tests for 'MCU' 'true' 'true' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'true' 'false' 'true' 'true' 'false' 'false' '4'
 

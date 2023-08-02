@@ -728,23 +728,23 @@ async function userclearsNotifications() {
 
 // ================================================================================
 
-// async function userOpensClockConfigurationView() {
-//     IDEtrace('DEBUG','Opening clock configuration view');
-//     await page.locator('[data-testid="clock_button_open"] span').click();
-//     await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
-//     await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
-//     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-// }
+async function userOpensClockConfigurationView() {
+    IDEtrace('DEBUG','Opening clock configuration view');
+    await page.locator('[data-testid="clock_button_open"] span').click();
+    await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
+    await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+}
 
 // // ================================================================================
 
-// async function userOpensPinoutView() {
-//     IDEtrace('DEBUG','Opening pinout view');
-//     await page.locator('[data-testid="pinout_button_open"] span').click();
-//     await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
-//     await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
-//     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-// }
+async function userOpensPinoutView() {
+    IDEtrace('DEBUG','Opening pinout view');
+    await page.locator('[data-testid="pinout_button_open"] span').click();
+    await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
+    await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
+    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
+}
 
 // ================================================================================
 
@@ -1057,17 +1057,22 @@ async function userAddsCompilerToCsolution(projectName:string)
     // Erase content
     await page.locator('text=Selection').click();
 	await page.locator('text=Select All').first().click();
+    await new Promise( resolve => setTimeout(resolve, 4000) );
     await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
-    await page.locator('text=Cut').nth(1).click();
+    await new Promise( resolve => setTimeout(resolve, 1000) );
+
+    try {await page.locator('text=Cut').click({timeout:2000}); } catch {IDEtrace('DEBUG',' using first for Cut command failed');}
 
     await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(csolutionFileContent);
+    await new Promise( resolve => setTimeout(resolve, 1000) );
 
     IDEtrace('DEBUG', 'userAddsCompilerToCsolution : converting invisible characters');
 
-    await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
-	await new Promise( resolve => setTimeout(resolve, 4000) );
-    await page.locator('text=Replace in Files').click();
-	await new Promise( resolve => setTimeout(resolve, 4000) );
+    //await page.pause();
+    //await page.locator('[id="theia\\:menubar"] >> text=Edit').click({timeout:6000});
+	await new Promise( resolve => setTimeout(resolve, 1000) );
+    await page.locator('text=Replace in Files').click({timeout:6000});
+	await new Promise( resolve => setTimeout(resolve, 1000) );
 	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on Replace in Files button');
 
 	//await page.pause();
@@ -1231,10 +1236,17 @@ async function userCopiesGpdscFiles(projectName:string,swProjectName:string)
 	await page.locator('[id="theia\\:menubar"] >> text=Terminal').click();
 	await page.locator('text=New Terminal').first().click();
 
-	await page.locator('[aria-label="Terminal input"]').fill('cp ' + projectName + '/' + swProjectName + '/targets/main/generated/* ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
-	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    //await page.pause();
+
+    IDEtrace('DEBUG','userCopiesGpdscFiles : moving files from ' + projectName + '/' + swProjectName + '/generated');
+    IDEtrace('DEBUG','userCopiesGpdscFiles : moving files to ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen');
 	
-	//await page.pause();
+    await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.gpdsc ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
+	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.c ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
+	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.h ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
+	await page.locator('[aria-label="Terminal input"]').press('Enter');
 
 	await userClosesTerminal('Terminal');
 }
@@ -1244,20 +1256,72 @@ async function userCopiesGpdscFiles(projectName:string,swProjectName:string)
 async function userClosesProject(projectName:string)
 {
 	//await page.pause();
-	await openExplorer();
+	//await openExplorer();
 	await page.locator('div.theia-TreeNodeSegment.theia-TreeNodeSegmentGrow:text-is("' + projectName + '")').first().click();
 }
+
+// ================================================================================
+
+//async function userGetsBuildTerminalContent()
+//{
+    // This function can not be done with CS #199
+    //await page.locator('text=Select All').click();
+    //await page.locator('text=Copy').click();
+//}
 
 // ================================================================================
 
 async function userClosesBuildTerminal()
 {
 	//await page.pause();
-	await userClosesTerminal('Task: Cube build all');
+
+    try
+    {
+        await userClosesTerminal('Task: Cube build project');
+        //await userClosesTerminal('Task: Cube build all');
+    }
+    catch
+    {
+        IDEtrace('ERROR','Failed to close build terminal');
+    }
 }
 
 // ================================================================================
-//
+
+async function userSetsContext(projectName:string, swProjectName:string)
+{
+    let returned_value : boolean  = true ;
+    IDEtrace('DEBUG', 'stopped in userSetsContext with project ' + projectName) ;
+    
+    await openExplorer();
+    await page.locator('[id="navigator\\.refresh"]').click();
+    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+
+    try {
+        await page.locator('#files >> text=generated').first().click({timeout:1000});
+        await page.locator('#files >> text=stm32_rcc.c').click({timeout:1000});
+        await page.locator('[id="theia\\:menubar"] >> text=File').click({timeout:1000});
+        await page.locator('text=Close Editor').click({timeout:1000});
+    } 
+    catch
+    {
+        IDEtrace('ERROR', 'File stm32_rcc.c was not found, certainly a problem at project creation !!');
+        returned_value=false;
+    }
+    return returned_value ;
+}
+// ================================================================================
+
+async function userBuildsCurrentProject()
+{
+    // Build current project
+    await page.locator('select').selectOption('Project'); // All before
+    await page.locator('button:has-text("Build")').click();
+    await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
+}
+
+// ================================================================================
+
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
                                     createProjectFlag:string,
@@ -1335,7 +1399,7 @@ async function userStartsIDETests(  context:CubeWorld,
                 const date=new Date();
                 testDate=date.toTimeString().split(' ')[0];
             }
-            
+
         }
         if ( (deviceStatus === 'Active') || (deviceStatus === 'Coming soon') )
         {
@@ -1351,11 +1415,6 @@ async function userStartsIDETests(  context:CubeWorld,
                 await userAddsANewSWProject(swProjectName);
                 await userAddsCompilerToCsolution(projectName);
                 await userOpensProjectInSoftwareComposer(swProjectName);
-                
-                // await userAddsCubeNoOsBlock();
-                // await userAddsHalCoreBlock();               
-                // await userAddsHalCodeGenBlock();
-                // await userAddsRCCInitBlock();   
 
                 await userAddsComponent(context,'cube no os');
                 await userAddsComponent(context,'hal: core');
@@ -1365,11 +1424,10 @@ async function userStartsIDETests(  context:CubeWorld,
 
                 await userResolvesDependencies();
                 //await userDisablesDMATimerIT(context);
-                await userGeneratesCode();      
+                await userGeneratesCode();
                 await userClosesEditor();
 				await userCopiesGpdscFiles(projectName,swProjectName);
             }
-
 
             // Add a flag and procedure here if we want to import already existing projects
 
@@ -1389,48 +1447,38 @@ async function userStartsIDETests(  context:CubeWorld,
             // {
             //     IDEtrace('ERROR','Failed to close editor');
             // }
-            
-            // if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
-            // if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
 
-            // page.setDefaultTimeout(10000);
-            // try {
-            //     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-            //     await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
-            //     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-            //     IDEtrace('DEBUG','Application project is closed');
-            // }
-            // catch
-            // {
-            //     IDEtrace('ERROR','Failed to close Cube : Application Project window');
-            //     //notificationsList.push('Error : Failed to close Cube : Application Project window');
-            // }        
+            if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
+            if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
 
+            let contextStatus:boolean =false;
             if (buildFlag==='true')
             {
-                //await page.pause();
-                // await userRefreshesTasksList();
-                // await userBuildsConfiguration(swProjectName,'debug');
-                // await userBuildsConfiguration(swProjectName,'release');                   
-                // await userCleansBuildsConfiguration(swProjectName,'debug');
-                // await userCleansBuildsConfiguration(swProjectName,'release');
-
-                // Build All configurations, all projects
-                await page.locator('select').selectOption('All'); // All before
-                await page.locator('button:has-text("Build")').click();
-				await new Promise( resolve => setTimeout(resolve, + 30 * 1000) );
-				
-				await userClosesBuildTerminal();
-		
+                contextStatus=await userSetsContext(projectName,swProjectName);
+                if (contextStatus)
+                {
+                    if ( contextStatus === true ) // true means no error
+                    {
+                        await userBuildsCurrentProject();
+                        await userClosesBuildTerminal();
+                        await userClosesEditor();
+                    }
+                }
             }
-
-            await userClosesEditor();
 
             await userClosesOpenedWindows(products,deviceName);
 
             if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
-			else { await userClosesProject(projectName); }
-			
+			else
+            { 
+                //await page.pause();
+                if (contextStatus === false )
+                { 
+                    await userClosesProject(projectName);
+                    await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
+                }
+            }
+
             await userGetsTheiaNotifications();
 
             textForTestReport=await buildVerdictFromNotificationsList(buildFlag);
@@ -1739,7 +1787,9 @@ Then('user builds project {string} {string} {string}', async function (this: Cub
 
 async function userCreatesProjectForDevice(projectName:string, deviceName:string)
 {
-    IDEtrace('DEBUG','Entering userCreatesProjectForDevice');
+    IDEtrace('DEBUG','Entering userCreatesProjectForDevice for device ' + deviceName + ' , project is ' + projectName);
+
+    //await page.pause();
 
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 

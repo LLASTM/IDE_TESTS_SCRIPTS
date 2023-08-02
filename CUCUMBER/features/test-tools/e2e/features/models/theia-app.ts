@@ -1,5 +1,5 @@
 // *****************************************************************************
-// Copyright (C) 2021 logi.cals GmbH, EclipseSource and others.
+// Copyright (C) 2021-2023 logi.cals GmbH, EclipseSource and others.
 //
 // This program and the accompanying materials are made available under the
 // terms of the Eclipse Public License v. 2.0 which is available at
@@ -21,6 +21,7 @@ import { TheiaMenuBar } from './theia-main-menu';
 import { TheiaPreferenceScope, TheiaPreferenceView } from './theia-preference-view';
 import { TheiaQuickCommandPalette } from './theia-quick-command-palette';
 import { TheiaStatusBar } from './theia-status-bar';
+import { TheiaTerminal } from './theia-terminal';
 import { TheiaView } from './theia-view';
 import { TheiaWorkspace } from './theia-workspace';
 
@@ -57,10 +58,13 @@ export class TheiaApp {
     }
 
     protected async load(): Promise<void> {
-        console.log('\n' + 'url=' + '/#' + this.workspace.urlEncodedPath);
+        //await this.loadOrReload(this.page, '/#' + this.workspace.urlEncodedPath);
+	console.log('\n' + 'url=' + '/#' + this.workspace.urlEncodedPath);
         console.log('Before calling loadOrReload');
         await this.loadOrReload(this.page, 'http://localhost:3000' + '/#' + this.workspace.urlEncodedPath);
         console.log('After calling loadOrReload');
+
+	await this.loadOrReload(this.page, 'http://localhost:3000' + '/#' + this.workspace.urlEncodedPath);
         await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
         await this.page.waitForSelector(this.appData.shellSelector);
         await this.waitForInitialized();
@@ -71,10 +75,7 @@ export class TheiaApp {
             await page.reload();
         } else {
             const wasLoadedAlready = await page.isVisible(this.appData.shellSelector);
-            console.log('loadOrReload: after await page.isVisible');
-            console.log('loadOrReload:url=' + url);
             await page.goto(url);
-            console.log('loadOrReload: after page.goto(url)');
             if (wasLoadedAlready) {
                 // Theia doesn't refresh on URL change only
                 // So we need to reload if the app was already loaded before
@@ -115,6 +116,7 @@ export class TheiaApp {
             throw Error('TheiaExplorerView could not be opened.');
         }
         if (expectFileNodes) {
+            await explorer.waitForVisibleFileNodes();
             const fileStatElements = await explorer.visibleFileStatNodes(DOT_FILES_FILTER);
             if (fileStatElements.length < 1) {
                 throw Error('TheiaExplorerView is empty.');
@@ -150,6 +152,41 @@ export class TheiaApp {
         await editor.activate();
         await editor.waitForVisible();
         return editor;
+    }
+
+    async openTerminal<T extends TheiaTerminal>(terminalFactory: { new(id: string, app: TheiaApp): T }): Promise<T> {
+        const mainMenu = await this.menuBar.openMenu('Terminal');
+        const menuItem = await mainMenu.menuItemByName('New Terminal');
+        if (!menuItem) {
+            throw Error('Menu item \'New Terminal\' could not be found.');
+        }
+
+        const newTabIds = await this.runAndWaitForNewTabs(() => menuItem.click());
+        if (newTabIds.length > 1) {
+            console.warn('More than one new tab detected after opening the terminal');
+        }
+
+        return new terminalFactory(newTabIds[0], this);
+    }
+
+    protected async runAndWaitForNewTabs(command: () => Promise<void>): Promise<string[]> {
+        const tabIdsBefore = await this.visibleTabIds();
+        await command();
+        return (await this.waitForNewTabs(tabIdsBefore)).filter(item => !tabIdsBefore.includes(item));
+    }
+
+    protected async waitForNewTabs(tabIds: string[]): Promise<string[]> {
+        let tabIdsCurrent: string[];
+        while ((tabIdsCurrent = (await this.visibleTabIds())).length <= tabIds.length) {
+            console.debug('Awaiting a new tab to appear');
+        }
+        return tabIdsCurrent;
+    }
+
+    protected async visibleTabIds(): Promise<string[]> {
+        const tabs = await this.page.$$('.p-TabBar-tab');
+        const tabIds = (await Promise.all(tabs.map(tab => tab.getAttribute('id')))).filter(id => !!id);
+        return tabIds as string[];
     }
 
     /** Specific Theia apps may add additional conditions to wait for. */
