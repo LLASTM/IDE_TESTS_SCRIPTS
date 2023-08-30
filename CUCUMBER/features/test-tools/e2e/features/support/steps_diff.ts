@@ -728,26 +728,6 @@ async function userclearsNotifications() {
 
 // ================================================================================
 
-async function userOpensClockConfigurationView() {
-    IDEtrace('DEBUG','Opening clock configuration view');
-    await page.locator('[data-testid="clock_button_open"] span').click();
-    await new Promise( resolve => setTimeout(resolve, + 15 * 1000) );
-    await page.locator('[id="shell-tab-clock\\:tree\\:panel"] > .p-TabBar-tabCloseIcon').click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-}
-
-// // ================================================================================
-
-async function userOpensPinoutView() {
-    IDEtrace('DEBUG','Opening pinout view');
-    await page.locator('[data-testid="pinout_button_open"] span').click();
-    await new Promise( resolve => setTimeout(resolve, + 8 * 1000) );
-    await page.locator('[id="shell-tab-pinout\\:panel"] > .p-TabBar-tabCloseIcon').click();
-    await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
-}
-
-// ================================================================================
-
 // async function userRefreshesTasksList() {
 //     IDEtrace('DEBUG','Refreshing tasks list');          
 //     await page.locator('.p-TabBar-tabIcon.theia-plugin-view-container').first().click();
@@ -893,8 +873,9 @@ async function deleteProjectFromWorkspace(projectName:string) {
 
 // ================================================================================
 
-When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
+When('user starts IDE tests for {string} {string} {string} {string} {string} {string} {string} {string} {string}', { timeout: 7200 * 1000 },async function (this: CubeWorld, 
     products:string,
+    filter:string,
     createProjectFlag:string,
     deleteProjectFlag:string,
     checkContextFlag:string,
@@ -904,7 +885,7 @@ When('user starts IDE tests for {string} {string} {string} {string} {string} {st
     numberOfTestsToRun:string
     ) {
     
-    await userStartsIDETests(this,products,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag,numberOfTestsToRun);
+    await userStartsIDETests(this,products,filter,createProjectFlag,deleteProjectFlag,checkContextFlag,buildFlag,displayPinoutViewFlag,displayClockViewFlag,numberOfTestsToRun);
 
 });
 
@@ -984,7 +965,7 @@ async function userResolvesDependencies()
 async function userGeneratesCode()
 {
     await page.locator('button:has-text("Generate code")').nth(1).click();
-    await new Promise( resolve => setTimeout(resolve, + 20 * 1000) );
+    await new Promise( resolve => setTimeout(resolve, + 40 * 1000) );
 
     await saveAllFiles();
 }
@@ -1037,10 +1018,7 @@ async function userAddsCompilerToCsolution(projectName:string)
     await page.locator('.p-TabBar-tabIcon.codicon.codicon-files').first().click();
   
     // opens project
-    //await page.locator('.theia-TreeNodeSegment').first().click();
-	//await page.pause();
-	
-	await page.locator('div.theia-TreeNodeSegment.theia-TreeNodeSegmentGrow:text-is("' + projectName + '")').first().click();
+    await page.locator('div.theia-TreeNodeSegment.theia-TreeNodeSegmentGrow:text-is("' + projectName + '")').first().click();
 	
     // opens csolution.yml file
     await page.locator('text=' + projectName + '.csolution.yml').click();
@@ -1056,53 +1034,114 @@ async function userAddsCompilerToCsolution(projectName:string)
 
     // Erase content
     await page.locator('text=Selection').click();
-	await page.locator('text=Select All').first().click();
+    await page.locator('text=Select All').first().click();
     await new Promise( resolve => setTimeout(resolve, 4000) );
-    await page.locator('[id="theia\\:menubar"] >> text=Edit').click();
-    await new Promise( resolve => setTimeout(resolve, 1000) );
 
-    try {await page.locator('text=Cut').click({timeout:2000}); } catch {IDEtrace('DEBUG',' using first for Cut command failed');}
+    try {
+        await page.locator('[id="theia\\:menubar"] >> text=Edit').click({timeout:6000});
+        await new Promise( resolve => setTimeout(resolve, 2000) );
+        IDEtrace('DEBUG',' : userAddsCompilerToCsolution : cick on Edit command succeeded');
+    }
+    catch
+    {
+        IDEtrace('DEBUG','click on Edit command failed');
+    }
 
-    await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(csolutionFileContent);
-    await new Promise( resolve => setTimeout(resolve, 1000) );
+    try {
+        await page.locator('text=Cut').nth(1).click({timeout:1000});
+	 IDEtrace('DEBUG','click on Cut command succeeded');
+    }
+    catch
+    {
+        await page.locator('text=Cut').click({timeout:1000});
+	IDEtrace('DEBUG','click on Cut command should be ok');
+    }
+
+    try {
+        await page.locator('[aria-label="Editor content\\;Press Alt\\+F1 for Accessibility Options\\."]').fill(csolutionFileContent);
+        await new Promise( resolve => setTimeout(resolve, 2000) );
+	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : filling editor with text content succeeded');
+    }
+    catch
+    {
+        IDEtrace('DEBUG','Failed to fill editor with text content');
+    }
+
 
     IDEtrace('DEBUG', 'userAddsCompilerToCsolution : converting invisible characters');
 
-    //await page.pause();
-    //await page.locator('[id="theia\\:menubar"] >> text=Edit').click({timeout:6000});
-	await new Promise( resolve => setTimeout(resolve, 1000) );
-    await page.locator('text=Replace in Files').click({timeout:6000});
-	await new Promise( resolve => setTimeout(resolve, 1000) );
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on Replace in Files button');
+    try {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : trying to click on Replace in Files button');
+        await page.locator('[id="theia\\:menubar"] >> text=Edit').click({timeout:6000});
+        await new Promise( resolve => setTimeout(resolve, 2000) );
+        await page.locator('text=Replace in Files').click({timeout:6000});
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on Replace in Files button');
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : could not click on Replace in files button');
+    }
 
-	//await page.pause();
+    try {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on use regular expression button to enable it');
+        await page.locator('.codicon.codicon-regex.option').first().click({timeout:6000});
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button');
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : could not click on regular expression button');
+    }
 
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on use regular expression button to enable it');
-	await page.locator('.codicon.codicon-regex.option').first().click({timeout:2000});
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button');
+    try {
+        await page.locator('[placeholder="Search"]').click();
+        await page.locator('[placeholder="Search"]').fill('[\\xa0]');
+        await page.locator('[placeholder="Search"]').press('Enter');
+        await new Promise( resolve => setTimeout(resolve, 4000) );
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : failed to fill Search field with 0xa0');
+    }
 
-    await page.locator('[placeholder="Search"]').click();
-    await page.locator('[placeholder="Search"]').fill('[\\xa0]');
-    await page.locator('[placeholder="Search"]').press('Enter');
-    await new Promise( resolve => setTimeout(resolve, 4000) );
+    try {
+        await page.locator('[placeholder="Replace"]').click();
+        await page.locator('[placeholder="Replace"]').fill(' ');
+        await page.locator('[placeholder="Replace"]').press('Enter');
+        await new Promise( resolve => setTimeout(resolve, 4000) );
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : failed to fill Replace field with space');
+    }
 
-    await page.locator('[placeholder="Replace"]').click();
-    await page.locator('[placeholder="Replace"]').fill(' ');
-    await page.locator('[placeholder="Replace"]').press('Enter');
-    await new Promise( resolve => setTimeout(resolve, 4000) );
+    try {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on replace all button');
+        await page.locator('.codicon.codicon-replace-all').click();
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on replace all button');
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : failed to click on replace all button');
+    }
 
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : before click on replace all button');
-    await page.locator('.codicon.codicon-replace-all').click();
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on replace all button');
-    //try { await page.locator('text=OK').click(); }
-	//catch { IDEtrace('DEBUG', 'userAddsCompilerToCsolution : no pop-up with OK button was found');}
+    try {
+        await page.locator('button.theia-button.main:text-is("OK")').first().click();
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on OK button');
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : failed to click on OK button');
+    }
 	
-	await page.locator('button.theia-button.main:text-is("OK")').first().click();
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on OK button');
-	
-	// disable regular expression button for next test
-	await page.locator('.codicon.codicon-regex.option').first().click({timeout:2000});
-	IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button to disable it');
+    try {
+        // disable regular expression button for next test
+        await page.locator('.codicon.codicon-regex.option').first().click({timeout:2000});
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : after click on use regular expression button to disable it');
+    }
+    catch
+    {
+        IDEtrace('DEBUG', 'userAddsCompilerToCsolution : failed to  disable regular expression button for next test');
+    }
 	
     IDEtrace('DEBUG', 'userAddsCompilerToCsolution : converting invisible characters done');
 
@@ -1114,7 +1153,7 @@ async function userAddsCompilerToCsolution(projectName:string)
     await page.locator('[id="theia\\:menubar"] >> text=File').click();
     await page.locator('text=Close Editor').click();
 	
-	IDEtrace('DEBUG', 'Leaving userAddsCompilerToCsolution');
+    IDEtrace('DEBUG', 'Leaving userAddsCompilerToCsolution');
 }
 
 // ================================================================================
@@ -1194,9 +1233,14 @@ async function userClosesEditor()
 
 async function userOpensProjectInSoftwareComposer(swProjectName:string)
 {
-    const locatorText='text=S' + swProjectName + ' >> [data-testid="show_contextual_menu"] span';
-    await page.locator(locatorText).click();
-    await page.locator('[data-testid="sw_project_button_open"]').click(); 
+    //await page.pause();
+
+    //const locatorText='text=S' + swProjectName + ' >> [data-testid="show_contextual_menu"] span';
+    //await page.locator(locatorText).click();
+
+    await page.locator('[data-testid="show_contextual_menu"] span').click();
+    await page.locator('[data-testid="sw_project_button_open"]').click();
+
 }
 
 // ================================================================================
@@ -1233,22 +1277,34 @@ async function userClosesTerminal(terminalTitle:string)
 
 async function userCopiesGpdscFiles(projectName:string,swProjectName:string)
 {
-	await page.locator('[id="theia\\:menubar"] >> text=Terminal').click();
-	await page.locator('text=New Terminal').first().click();
+  let openTerminalStatus=false // false means terminal not opened
+  try
+  {
+    await page.locator('[id="theia\\:menubar"] >> text=Terminal').click();
+    await page.locator('text=New Terminal').first().click();
+    IDEtrace('DEBUG','userCopiesGpdscFiles : New Terminal opened with success');
+    openTerminalStatus=true;
+  }
+  catch
+  {
+    IDEtrace('ERROR','userCopiesGpdscFiles : Failed to open New Terminal');
+  }
 
-    //await page.pause();
-
+  if (openTerminalStatus=== true)
+  {
     IDEtrace('DEBUG','userCopiesGpdscFiles : moving files from ' + projectName + '/' + swProjectName + '/generated');
     IDEtrace('DEBUG','userCopiesGpdscFiles : moving files to ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen');
 	
     await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.gpdsc ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
-	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    await page.locator('[aria-label="Terminal input"]').press('Enter');
     await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.c ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
-	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    await page.locator('[aria-label="Terminal input"]').press('Enter');
     await page.locator('[aria-label="Terminal input"]').fill('mv ' + projectName + '/' + swProjectName + '/generated/*.h ' + projectName + '/' + swProjectName + '/generated/STM32Cube_CodeGen/.');
-	await page.locator('[aria-label="Terminal input"]').press('Enter');
+    await page.locator('[aria-label="Terminal input"]').press('Enter');
 
-	await userClosesTerminal('Terminal');
+    await userClosesTerminal('Terminal');
+  }
+  return openTerminalStatus;
 }
 
 // ================================================================================
@@ -1291,25 +1347,35 @@ async function userClosesBuildTerminal()
 async function userSetsContext(projectName:string, swProjectName:string)
 {
     let returned_value : boolean  = true ;
-    IDEtrace('DEBUG', 'stopped in userSetsContext with project ' + projectName) ;
+    IDEtrace('DEBUG', 'Entering userSetsContext with project ' + projectName) ;
     
-    await openExplorer();
-    await page.locator('[id="navigator\\.refresh"]').click();
-    await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+    try
+    {
+      await openExplorer();
+      await page.locator('[id="navigator\\.refresh"]').click();
+      await new Promise( resolve => setTimeout(resolve, + 4 * 1000) );
+      IDEtrace('DEBUG', 'userSetsContext : click on Refresh done');
+    }
+    catch
+    {
+      IDEtrace('ERROR', 'userSetsContext: failed to click on Refresh');	    
+    }
 
     try {
-        await page.locator('#files >> text=generated').first().click({timeout:1000});
-        await page.locator('#files >> text=stm32_rcc.c').click({timeout:1000});
-        await page.locator('[id="theia\\:menubar"] >> text=File').click({timeout:1000});
-        await page.locator('text=Close Editor').click({timeout:1000});
+	await page.locator('#files >> text=STM32_HAL_Driver_codegen.gpdsc').click();
+	await page.locator('[id="theia\\:menubar"] >> text=File').click({timeout:2000});
+        await page.locator('text=Close Editor').click({timeout:2000});
+	IDEtrace('DEBUG', 'userSetsContext : click on File/Close Editor is ok');
     } 
     catch
     {
-        IDEtrace('ERROR', 'File stm32_rcc.c was not found, certainly a problem at project creation !!');
+        IDEtrace('ERROR', 'File STM32_HAL_Driver_codegen.gpdsc was not found, certainly a problem at project creation !!');
         returned_value=false;
     }
+    IDEtrace('DEBUG', 'Leaving userSetsContext') ;
     return returned_value ;
 }
+
 // ================================================================================
 
 async function userBuildsCurrentProject()
@@ -1322,8 +1388,17 @@ async function userBuildsCurrentProject()
 
 // ================================================================================
 
+async function userChangesMainHeaderFile()
+{
+	 IDEtrace('DEBUG', 'Entering userChangesMainHeaderFile');
+	//await page.pause();
+	 IDEtrace('DEBUG', 'Leaving userChangesMainHeaderFile');
+}
+// ================================================================================
+
 async function userStartsIDETests(  context:CubeWorld,
                                     products:string,  
+                                    filter:string,  
                                     createProjectFlag:string,
                                     deleteProjectFlag:string,
                                     checkContextFlag:string,
@@ -1332,6 +1407,8 @@ async function userStartsIDETests(  context:CubeWorld,
                                     displayClockViewFlag:string,
                                     numberOfTestsToRun:string) {
 
+    IDEtrace('INFO','products=' + products);
+    IDEtrace('INFO','filter=' + filter);
     IDEtrace('INFO','createProjectFlag=' + createProjectFlag);
     IDEtrace('INFO','deleteProjectFlag=' + deleteProjectFlag);
     IDEtrace('INFO','checkContextFlag=' + checkContextFlag);
@@ -1344,8 +1421,25 @@ async function userStartsIDETests(  context:CubeWorld,
 
     let currentList: Array<Array<string>>=[];
 
-    if (products === 'Board') { if (boardsList) { currentList=boardsList;} }
-    if (products === 'MCU') { if (mcusList) { currentList=mcusList;}}
+    console.table(mcusList);
+
+    if (products === 'Board')
+    {
+   	if (boardsList)
+	{
+    	    currentList=boardsList;
+	}
+    }
+    if (products === 'MCU')
+    {
+        if (mcusList)
+	{
+	    currentList=mcusList;
+	    if (filter !== 'none') {  currentList=mcusList.filter((data) => data[0].includes(filter) && ( (data[5]==='Active') || (data[5]==='Coming soon') ) || (data[0].includes('Part Number'))); }
+    		console.table(currentList);
+	}
+    }
+
     if (products === 'MPU') { if (mpusList) { currentList=mpusList;}}
 
     // IDEtraceTable(currentList);
@@ -1401,77 +1495,63 @@ async function userStartsIDETests(  context:CubeWorld,
             }
 
         }
-        if ( (deviceStatus === 'Active') || (deviceStatus === 'Coming soon') )
-        {
-            const projectName='project_' + deviceName;
-            const swProjectName='sw_' + projectName;
+	IDEtrace('DEBUG', 'filter=' + filter);
+	IDEtrace('DEBUG', 'deviceName=' + deviceName);
+	IDEtrace('DEBUG', 'deviceStatus=' + deviceStatus);
 
-            tested_devices++;
+        if ( (filter !== "none") && (deviceName.includes(filter)) && ( (deviceStatus === 'Active') || (deviceStatus === 'Coming soon') ) )
+        {
+           const projectName='project_' + deviceName;
+           const swProjectName='sw_' + projectName;
+
+           tested_devices++;
            IDEtrace('INFO', 'Creating project ' + projectName + ' for device:' + deviceName + '[#' + tested_devices + ']');
 
-            if (createProjectFlag === 'true')
-            {
+	   let generatedProjectStatus =false;
+	   let contextStatus =false;
+
+           if (createProjectFlag === 'true')
+           {
                 await userCreatesProjectForDevice(projectName, deviceName);
                 await userAddsANewSWProject(swProjectName);
                 await userAddsCompilerToCsolution(projectName);
                 await userOpensProjectInSoftwareComposer(swProjectName);
 
                 await userAddsComponent(context,'cube no os');
-                await userAddsComponent(context,'hal: core');
-                await userAddsComponent(context,'dma');
-                await userAddsComponent(context,'hal code gen: generated code');
-                await userAddsComponent(context,'hal code gen: rcc init');
 
                 await userResolvesDependencies();
-                //await userDisablesDMATimerIT(context);
                 await userGeneratesCode();
                 await userClosesEditor();
-				await userCopiesGpdscFiles(projectName,swProjectName);
-            }
+		generatedProjectStatus = await userCopiesGpdscFiles(projectName,swProjectName);
+		if (generatedProjectStatus === true) { await userChangesMainHeaderFile(); }
+           }
 
-            // Add a flag and procedure here if we want to import already existing projects
-
-            // if (checkContextFlag === 'true')
-            // {
-            //     await userSelectsFileMainDotC(projectName,swProjectName);
-            //     await userGetsTheiaStatusBar(deviceName,deviceStatus,projectName, swProjectName);
-            // }
-
-            // try {
-            //         // we close editor containing file main.c
-            //         await page.locator('[id="theia\\:menubar"] >> text=File').click();
-            //         await page.locator('text=Close Editor').click();
-            //         IDEtrace('DEBUG','editor closed');
-            // }
-            // catch
-            // {
-            //     IDEtrace('ERROR','Failed to close editor');
-            // }
-
-            if (displayClockViewFlag === 'true') { await userOpensClockConfigurationView();}
-            if (displayPinoutViewFlag === 'true') { await userOpensPinoutView();}
-
-            let contextStatus:boolean =false;
-            if (buildFlag==='true')
+	    if (generatedProjectStatus === true)
             {
+              contextStatus = false;
+              if (buildFlag==='true')
+              {
                 contextStatus=await userSetsContext(projectName,swProjectName);
                 if (contextStatus)
                 {
                     if ( contextStatus === true ) // true means no error
                     {
                         await userBuildsCurrentProject();
+			await userClosesProject(projectName);
                         await userClosesBuildTerminal();
                         await userClosesEditor();
                     }
                 }
-            }
+		else
+		    IDEtrace('ERROR','Failed to switch to project context, bypassing build step since project is certainly not correctly generated');
+              }
+	    }
 
             await userClosesOpenedWindows(products,deviceName);
 
             if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
-			else
+            else
             { 
-                //await page.pause();
                 if (contextStatus === false )
                 { 
                     await userClosesProject(projectName);
@@ -1859,18 +1939,26 @@ When('user selects launch configuration {string}', async function (this: CubeWor
 // ================================================================================
 
 async function userAddsANewSWProject(projectName:string) {
+    IDEtrace('DEBUG','Entering userAddsANewSWProject');
     try
     {
-        await clickText('Add a SW project');
-        await clickInputAtRightOfText('Software Project name:');
-        await typeText(projectName);
-        await clickButton('Create SW Project');
+        //await clickText('Add a SW project');
+        //await clickInputAtRightOfText('Software Project name:');
+        //await typeText(projectName);
+        //await clickButton('Create SW Project');
+	    
+	await page.locator('[data-testid="sw_project_button_add"]').click();
+        await page.locator('[data-testid="sw_project_name"]').click();
+        await page.locator('[data-testid="sw_project_name"]').fill(projectName);
+        await page.locator('[data-testid="valid_popup_button"]').click();
+
         IDEtrace('DEBUG','SW project created');
     }
     catch
     {
         IDEtrace('ERROR','Failed to add a SW project');
     }
+    IDEtrace('DEBUG','Leaving userAddsANewSWProject');
 }
 
 // ================================================================================

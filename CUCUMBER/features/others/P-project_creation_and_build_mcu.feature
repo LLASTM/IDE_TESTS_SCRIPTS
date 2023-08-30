@@ -22,12 +22,19 @@ Background:
 
 Scenario:
 
-    #When user builds list of 'Board'
-    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
-    #When user starts IDE tests for 'Board' 'true' 'true' 'true' 'true' 'false' 'false' '2'
-    
     When user builds list of 'MCU'
-    # flags on line below : products, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
+    # flags on line below : products, filter, create project, delete project at end of test , check context, build project,  open pinout view, open clock view, number of tests to run
     # -1 means all tests to be run
-    When user starts IDE tests for 'MCU' 'true' 'false' 'true' 'true' 'false' 'false' '4'
 
+
+    When user starts IDE tests for 'MCU' 'STM32U535' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U545' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U575' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U585' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U595' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U5A5' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U599' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U5A9' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U5F7' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U5F9' 'true' 'false' 'true' 'true' 'false' 'false' '2'
+    When user starts IDE tests for 'MCU' 'STM32U5G9' 'true' 'false' 'true' 'true' 'false' 'false' '2'
