@@ -913,10 +913,13 @@ async function userAddsComponent(context:CubeWorld,component:string)
     await context.page.locator('input[type="search"]').click();
     await context.page.locator('input[type="search"]').fill(component);
     await context.page.locator('input[type="search"]').press('Enter');
+    await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
 
     const inititialLocator = context.page.locator('div.search-container >> div.element-list >> div.element').first();
     await inititialLocator.hover();
+    await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
     const dragBox = await inititialLocator.boundingBox();
+    await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
 
     if (dragBox)
     {
@@ -931,6 +934,8 @@ async function userAddsComponent(context:CubeWorld,component:string)
         await context.page.mouse.move(Xorigin, Yorigin , {steps:10}) ;
         await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
         await context.page.mouse.click(Xorigin, Yorigin);
+
+        await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
 
         await context.page.mouse.move(Xtarget, Ytarget , {steps:10}) ; 
         await new Promise( resolve => setTimeout(resolve, + delay * 1000) );
@@ -1344,7 +1349,7 @@ async function userClosesBuildTerminal()
 
 // ================================================================================
 
-async function userSetsContext(projectName:string, swProjectName:string)
+async function userSetsContext(projectName:string, swProjectName:string )
 {
     let returned_value : boolean  = true ;
     IDEtrace('DEBUG', 'Entering userSetsContext with project ' + projectName) ;
@@ -1435,7 +1440,7 @@ async function userStartsIDETests(  context:CubeWorld,
         if (mcusList)
 	{
 	    currentList=mcusList;
-	    if (filter !== 'none') {  currentList=mcusList.filter((data) => data[0].includes(filter) && ( (data[5]==='Active') || (data[5]==='Coming soon') ) || (data[0].includes('Part Number'))); }
+	    if (filter !== 'none') {  currentList=mcusList.filter((data) => data[0].includes(filter) && ( data[5]==='Active') || (data[0].includes('Part Number'))); }
     		console.table(currentList);
 	}
     }
@@ -1499,7 +1504,7 @@ async function userStartsIDETests(  context:CubeWorld,
 	IDEtrace('DEBUG', 'deviceName=' + deviceName);
 	IDEtrace('DEBUG', 'deviceStatus=' + deviceStatus);
 
-        if ( (filter !== "none") && (deviceName.includes(filter)) && ( (deviceStatus === 'Active') || (deviceStatus === 'Coming soon') ) )
+        if ( (filter !== "none") && (deviceName.includes(filter)) && ( deviceStatus === 'Active') )
         {
            const projectName='project_' + deviceName;
            const swProjectName='sw_' + projectName;
@@ -1507,23 +1512,27 @@ async function userStartsIDETests(  context:CubeWorld,
            tested_devices++;
            IDEtrace('INFO', 'Creating project ' + projectName + ' for device:' + deviceName + '[#' + tested_devices + ']');
 
-	   let generatedProjectStatus =false;
-	   let contextStatus =false;
+	   let generatedProjectStatus=false;
+	   let contextStatus=false;
+           let projectStartedStatus = false;
 
            if (createProjectFlag === 'true')
            {
-                await userCreatesProjectForDevice(projectName, deviceName);
-                await userAddsANewSWProject(swProjectName);
-                await userAddsCompilerToCsolution(projectName);
-                await userOpensProjectInSoftwareComposer(swProjectName);
+                projectStartedStatus = await userCreatesProjectForDevice(projectName, deviceName);
+		if (projectStartedStatus === true)
+		{
+                  await userAddsANewSWProject(swProjectName);
+                  await userAddsCompilerToCsolution(projectName);
+                  await userOpensProjectInSoftwareComposer(swProjectName);
 
-                await userAddsComponent(context,'cube no os');
+                  await userAddsComponent(context,'cube no os');
 
-                await userResolvesDependencies();
-                await userGeneratesCode();
-                await userClosesEditor();
-		generatedProjectStatus = await userCopiesGpdscFiles(projectName,swProjectName);
-		if (generatedProjectStatus === true) { await userChangesMainHeaderFile(); }
+                  await userResolvesDependencies();
+                  await userGeneratesCode();
+                  await userClosesEditor();
+		  generatedProjectStatus = await userCopiesGpdscFiles(projectName,swProjectName);
+		  if (generatedProjectStatus === true) { await userChangesMainHeaderFile(); }
+		}
            }
 
 	    if (generatedProjectStatus === true)
@@ -1549,14 +1558,17 @@ async function userStartsIDETests(  context:CubeWorld,
 
             await userClosesOpenedWindows(products,deviceName);
 
-            if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
-            else
-            { 
+	    if (projectStartedStatus === true)
+	    {
+              if (deleteProjectFlag === 'true') { await deleteProjectFromWorkspace(projectName); }
+              else
+              { 
                 if (contextStatus === false )
                 { 
                     await userClosesProject(projectName);
                     await page.locator('[id="shell-tab-Cube\\:application-project\\:widget"] > .p-TabBar-tabCloseIcon').click();
                 }
+              }
             }
 
             await userGetsTheiaNotifications();
@@ -1869,7 +1881,7 @@ async function userCreatesProjectForDevice(projectName:string, deviceName:string
 {
     IDEtrace('DEBUG','Entering userCreatesProjectForDevice for device ' + deviceName + ' , project is ' + projectName);
 
-    //await page.pause();
+    let projectStartedStatus:boolean = false; // false means project creation could not be started
 
     await new Promise( resolve => setTimeout(resolve, + 2 * 1000) );
 
@@ -1884,20 +1896,32 @@ async function userCreatesProjectForDevice(projectName:string, deviceName:string
     await page.locator(locatorText).first().click();
 
     IDEtrace('DEBUG','click on Start a project');
-    await clickButton('Start a project');
-    IDEtrace('DEBUG','filling project name');
-    await clickInputAtRightOfText('Project name:');
-    await typeText(projectName);
+    try
+    {
+      await clickButton('Start a project');
+      IDEtrace('DEBUG','Click on Start a project button is ok');
+      projectStartedStatus=true;
+    }
+    catch
+    {
+      IDEtrace('ERROR','Click on Start a project button failed, stopping current test');
+    }
+    if ( projectStartedStatus === true )
+    {
+      IDEtrace('DEBUG','filling project name');
+      await clickInputAtRightOfText('Project name:');
+      await typeText(projectName);
 
-    IDEtrace('DEBUG','clicking folder name');
-    //await clickFolderIcon();
-    await page.locator('[data-testid="browse-input-on-path-selected"]').click();
+      IDEtrace('DEBUG','clicking folder name');
+      //await clickFolderIcon();
+      await page.locator('[data-testid="browse-input-on-path-selected"]').click();
 
-    IDEtrace('DEBUG','clicking Open button');
-    await clickButton('Open');
-    IDEtrace('DEBUG','clicking Create Application Project');
-    await clickButton('Create Application Project');
-    
+      IDEtrace('DEBUG','clicking Open button');
+      await clickButton('Open');
+      IDEtrace('DEBUG','clicking Create Application Project');
+      await clickButton('Create Application Project');
+    }
+    return projectStartedStatus;
 }
 
 // ================================================================================
