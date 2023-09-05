@@ -1,30 +1,15 @@
 #!/bin/bash
 
 tags_to_use=$1
+
 if [ "${tags_to_use}" == "" ]; then
-        tags_to_use="@T1IDE"
+	tags_to_use="@T1IDE"
 fi
 
-git config --global user.name "TEST USER"
-git config --global user.email "TEST@TEST.COM"
-
+echo Running script launch_IDE_customApp_tests.bash with parameter ${tags_to_use}
+echo
 echo ======================================== command : removing cloud directories from ~/AppData/Local/Temp
 rm -rf ${HOME}/AppData/Local/Temp/cloud*
-
-# =====================================================================
-# first we are copying 2 files into plugins directory to get git access
-if [ -d ../../plugins ]; then
-	rm -rf ../../plugins
-	mkdir ../../plugins
-else
-	mkdir ../../plugins
-fi
-pushd ../../plugins
-powershell.exe -inputformat none -noprofile wget -Uri https://open-vsx.org/api/vscode/git/1.77.0/file/vscode.git-1.77.0.vsix -OutFile vscode.git-1.77.0.vsix
-unzip -d vscode.git ./vscode.git-1.77.0.vsix
-powershell.exe -inputformat none -noprofile wget -Uri https://open-vsx.org/api/vscode/git-base/1.77.0/file/vscode.git-base-1.77.0.vsix -Outfile vscode.git-base-1.77.0.vsix
-unzip -d vscode.git-base ./vscode.git-base-1.77.0.vsix
-popd
 
 # =====================================================================
 
