@@ -1,0 +1,23 @@
+{
+  "name": "app-project-e2e-tests",
+  "author": "STMicroelectronics",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "cd scripts && bash ./launch_custom_tests.bash @notest"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@playwright/test": "^1.31.2"
+  },
+  "devDependencies": {
+    "@types/chromedriver": "^81.0.1",
+    "chromedriver": "^107.0.3"
+  },
+  "workspaces": {
+    "packages":[],
+    "nohoist": [
+      "*"
+    ]
+  }
+}
